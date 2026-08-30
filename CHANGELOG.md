@@ -14,6 +14,7 @@ Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.
 - ampliados `.gitignore` e o verificador local para credenciais, configurações sensíveis, JWT, cabeçalhos Bearer, URIs de banco autenticadas e arquivos de uma única linha;
 - corrigido o gerador para impedir vazamento de estilo de código inline para a prosa;
 - corrigida a paginação de tabelas longas para evitar uma última linha órfã antes de novo capítulo;
+- criado manifesto auditável e commit-âncora da v1.2, sem reescrever os commits já publicados fora do padrão de release.
 - regenerados e validados Markdown, DOCX e PDF.
 
 ## [1.1] — 2026-08-28

@@ -13,6 +13,7 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 - `CHANGELOG.md`: histórico das versões publicadas do plano-mestre.
 - `docs/decision-log.md`: decisões surgidas durante a construção.
 - `docs/deviation-log.md`: divergências depois do congelamento experimental.
+- `docs/releases/v1.2.md`: manifesto auditável, hashes e gates da release 1.2.
 - `scripts/check_repository_safety.ps1`: verificação de caminhos proibidos e padrões de credenciais sem exibir o valor suspeito.
 - `odoo-19.0/`: snapshot local ignorado pelo Git e usado somente para exploração; antes do experimento, origem oficial, commit/checksum e digest da imagem devem ser fixados no manifesto de reprodução.
 

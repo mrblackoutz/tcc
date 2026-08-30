@@ -89,3 +89,15 @@ Substitui ou é substituída por:
 - **Evidência:** validação do pacote DOCX, relatório do verificador do repositório e manifesto experimental.
 - **Responsável:** grupo.
 - **Afeta:** geração e validação de artefatos, publicação de datasets, execução experimental e pacote de reprodução.
+
+## DEC-007 — Âncora da release 1.2 sem reescrita do histórico publicado
+
+- **Data:** 30/08/2026
+- **Status:** aceita
+- **Contexto:** durante a janela de geração final, os commits `81b8191` e `39baf53` foram criados e enviados a `origin/main` por um processo externo a este fluxo, com mensagens fora do padrão de release. O reflog registra `update by push`; reescrevê-los violaria a política já adotada e poderia apagar trabalho compartilhado.
+- **Alternativas consideradas:** amend/rebase e force-push; criar versão 1.2.1 sem mudança científica; preservar os commits e criar uma âncora auditável da mesma v1.2.
+- **Decisão:** não reescrever nem remover os commits publicados; criar `docs/releases/v1.2.md` com hashes, gates e a exceção histórica e versioná-lo em commit local dedicado no padrão `docs(plan): release v1.2 — ancora auditavel`.
+- **Consequências:** o histórico permanece íntegro e a v1.2 ganha um ponto de auditoria explícito; os dois commits anteriores continuam visíveis como preparação/correção. O commit-âncora não será enviado ao remoto sem autorização do usuário.
+- **Evidência:** reflog de `origin/main`, commits `81b8191` e `39baf53`, manifesto da release e resultados de validação.
+- **Responsável:** grupo.
+- **Afeta:** histórico Git, changelog, política de releases e publicação remota.

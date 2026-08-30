@@ -48,6 +48,7 @@ Depois da mudança:
 - Usar mensagem no padrão `docs(plan): release vX.Y — resumo`.
 - Não misturar uma versão do plano com código experimental não relacionado.
 - Não reescrever commit de versão já publicado com amend, squash, rebase ou force-push. Correções posteriores geram nova versão e novo commit.
+- Se uma versão for publicada por processo externo em commits fora do padrão, preservar o histórico, registrar a exceção no decision log e criar um manifesto/commit-âncora auditável; não corrigir o remoto sem autorização explícita.
 - Usar `git add` com caminhos explícitos. É proibido preparar versão com `git add -A`, `git add .` ou globs amplos.
 - Não enviar ao remoto sem pedido explícito do usuário.
 
