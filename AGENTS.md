@@ -93,6 +93,7 @@ Revisar a lista preparada linha por linha. Arquivos binários gerados podem ser 
 - Nunca preparar DOCX ou PDF mais antigos que o Markdown que os originou.
 - Em uma release do plano, geração e validação devem ocorrer sobre a mesma árvore e versão; o resultado `PASS` deve ser obtido antes do staging.
 - O DOCX deve usar `creator` e `lastModifiedBy` institucionais ou genéricos e não pode conter comentários, alterações controladas, macros, objetos incorporados ou relacionamentos externos não revisados.
+- A inspeção visual deve cobrir capa, tabelas densas e transições entre capítulos; reprovar página intermediária formada apenas por cabeçalho ou linha residual de tabela.
 - `experiments/raw` permanece fora do Git, mas não pode ser descartado. Preservar os dados brutos em armazenamento externo criptografado, com controle de acesso e cópia imutável; versionar no repositório apenas manifesto SHA-256, schema, proveniência, versão e política de retenção sem informações sensíveis.
 - Somente datasets e resultados sintéticos saneados podem ser publicados, após revisão por dois integrantes. Cabeçalhos de autorização, prompts ou respostas com credenciais, dumps do Odoo e documentos reais nunca são publicáveis.
 - O script local é uma barreira mínima, não uma prova absoluta. Antes de tornar o repositório público, executar também um scanner dedicado de segredos e revisar seus achados sem reproduzir valores sensíveis.

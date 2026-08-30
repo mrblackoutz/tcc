@@ -270,6 +270,8 @@ function Add-MarkdownTable($Doc, $Selection, [string[]]$Rows) {
     $table.AllowAutoFit = -1
     $table.AutoFitBehavior(2)
     $table.Rows.AllowBreakAcrossPages = if ($parsed.Count -gt 12) { -1 } else { 0 }
+    [single]$cellParagraphSpacing = if ($parsed.Count -gt 12) { 1.5 } else { 2.0 }
+    [single]$cellVerticalPadding = if ($parsed.Count -gt 12) { 3.0 } else { 4.0 }
     for ($r = 1; $r -le $parsed.Count; $r++) {
         $values = $parsed[$r - 1]
         for ($c = 1; $c -le $columns; $c++) {
@@ -281,11 +283,11 @@ function Add-MarkdownTable($Doc, $Selection, [string[]]$Rows) {
             $range.Font.Name = "Aptos"
             $range.Font.Size = 8.3
             $range.Font.Color = Get-Rgb 35 43 50
-            $range.ParagraphFormat.SpaceAfter = 2
-            $range.ParagraphFormat.SpaceBefore = 2
+            $range.ParagraphFormat.SpaceAfter = $cellParagraphSpacing
+            $range.ParagraphFormat.SpaceBefore = $cellParagraphSpacing
             $cell.VerticalAlignment = 1
-            $cell.TopPadding = 4
-            $cell.BottomPadding = 4
+            $cell.TopPadding = $cellVerticalPadding
+            $cell.BottomPadding = $cellVerticalPadding
             $cell.LeftPadding = 5
             $cell.RightPadding = 5
             if ($r -eq 1) {
@@ -299,6 +301,11 @@ function Add-MarkdownTable($Doc, $Selection, [string[]]$Rows) {
         }
     }
     $table.Rows.Item(1).HeadingFormat = -1
+    if ($parsed.Count -gt 2) {
+        # Keep the final pair together so a level-one page break cannot leave
+        # a single orphan row on an otherwise empty page.
+        $table.Rows.Item($parsed.Count - 1).Range.ParagraphFormat.KeepWithNext = -1
+    }
     $Selection.SetRange($table.Range.End, $table.Range.End)
     $Selection.TypeParagraph()
     Set-ParagraphBase $Selection
