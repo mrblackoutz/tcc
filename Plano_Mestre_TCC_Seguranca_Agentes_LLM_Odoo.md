@@ -11,9 +11,9 @@
 **Disciplina/atividade:** Trabalho de Conclusão de Curso II (TCC II)
 **Autores:** Felipe Ujvari Gasparino de Sousa; Gustavo Nascimento Siqueira; Thomaz de Souza Scopel
 **Orientador:** Mario Olimpio de Menezes
-**Versão:** 1.2.1
-**Data:** 30 de agosto de 2026
-**Status:** W06 confirmada; fonte Odoo fixada em `a4b877245c9cb5e3d7152d1593a518170f115ca1`; edital e template FCI 2026/2 auditados; digest OCI e protocolo pós-piloto ainda pendentes — pré-congelamento
+**Versão:** 1.2.2
+**Data:** 31 de agosto de 2026
+**Status:** plano-mestre corrente somente em Markdown; W06 confirmada; fonte Odoo fixada em `a4b877245c9cb5e3d7152d1593a518170f115ca1`; digest OCI e protocolo pós-piloto ainda pendentes — pré-congelamento
 
 > Documento de trabalho. O relatório e o fonte editável do TCC I, o edital `EditalTCC_2026_2-V1` e o template FCI 2026 foram recuperados e auditados. Autores e orientador foram confirmados em 30 de agosto de 2026. As lacunas institucionais residuais estão no Gate 0 e em `docs/institutional-requirements.md`.
 
@@ -40,9 +40,10 @@
 | 1.1 | 28/08/2026 | Título sugerido pelo orientador incorporado, sem alteração do problema ou do desenho experimental | Grupo / orientador |
 | 1.2 | 30/08/2026 | Odoo 19.0 Community confirmado; base conceitual, método e limitações do TCC I incorporados; W03, W04, W06 e W07 detalhadas; governança de decisões, segredos e versões instituída | Grupo |
 | 1.2.1 | 30/08/2026 | W06 confirmada; fonte Odoo fixada; edital, template e fonte do TCC I auditados; autoria/orientação e ausência de participantes humanos confirmadas; cronograma e estrutura do artigo alinhados a 2026/2 | Grupo |
+| 1.2.2 | 31/08/2026 | Plano-mestre simplificado para Markdown como único formato corrente; conversor Word removido; DOCX/PDF da v1.2.1 preservados apenas como histórico | Grupo |
 | 1.3 | [data] | Congelamento após piloto | [nome] |
 
-A versão 1.2.1 é uma correção pré-freeze que fecha decisões já abertas sem declarar o protocolo congelado. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
+A versão 1.2.2 é uma correção de governança documental, sem mudança no problema, hipóteses ou desenho experimental. Ela substitui o fluxo de três formatos pelo Markdown normativo único, conforme DEC-012. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
 
 ## Como usar este documento
 
@@ -63,17 +64,17 @@ Uma versão do plano-mestre só é considerada publicada quando, no mesmo ciclo:
 
 1. número, data, status e histórico deste documento forem atualizados;
 2. `CHANGELOG.md`, `docs/decision-log.md` e, quando aplicável, `docs/deviation-log.md` refletirem a mudança;
-3. Markdown, DOCX e PDF forem regenerados e validados;
+3. o Markdown corrente tiver estrutura, links internos, hashes e segurança validados;
 4. os arquivos preparados para commit passarem por revisão de escopo e varredura de segredos;
 5. for criado um commit Git dedicado à versão, no padrão `docs(plan): release vX.Y[.Z] — resumo`.
 
-Os nomes estáveis dos três artefatos do plano serão preservados; a versão fica registrada dentro dos arquivos e no Git. Commits de versão publicados não devem ser reescritos com `amend`, squash, rebase ou force-push. Uma correção posterior gera nova versão e novo commit. Alterações de implementação podem usar commits separados, mas devem citar a versão do plano e o ID da decisão que as autorizou.
+O único artefato corrente do plano é `Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md`. O DOCX, o PDF e o validador preservados no repositório pertencem à evidência histórica da v1.2.1 e não devem ser apresentados como versão atual. Commits de versão publicados não devem ser reescritos com `amend`, squash, rebase ou force-push. Uma correção posterior gera nova versão e novo commit. Alterações de implementação usam commits separados, citando a versão do plano e o ID da decisão que as autorizou.
 
 Toda decisão ou modificação relevante surgida durante a construção deverá ser registrada antes da implementação em `docs/decision-log.md`, com contexto, alternativas, decisão, consequências, evidência e responsável. Depois do congelamento experimental, qualquer divergência também entra em `docs/deviation-log.md`, sem apagar a regra original e respeitando as exigências de reexecução ou nova amostra de §14.4.
 
 Segredos e dados reais nunca serão versionados. Chaves de API, tokens, senhas, certificados privados, arquivos `.env`, dumps, bancos, filestore, documentos fiscais reais, PII e logs brutos potencialmente sensíveis permanecem somente no ambiente local ou em gerenciador de segredos. O repositório aceita apenas `.env.example` sem valores, dados sintéticos revisados e resultados saneados aprovados para publicação.
 
-Os dados brutos experimentais também permanecem fora do Git, mas não serão descartados: ficarão sob acesso restrito em armazenamento externo criptografado e imutável. O repositório preservará um manifesto saneado com hashes SHA-256, schema, proveniência, versão, localização lógica e política de retenção. DOCX e PDF só poderão acompanhar uma release quando forem posteriores ao Markdown, passarem pela validação estrutural e não contiverem metadados pessoais, comentários, revisões, macros, objetos incorporados ou relações externas não revisadas.
+Os dados brutos experimentais também permanecem fora do Git, mas não serão descartados: ficarão sob acesso restrito em armazenamento externo criptografado e imutável. O repositório preservará um manifesto saneado com hashes SHA-256, schema, proveniência, versão, localização lógica e política de retenção. Novos DOCX/PDF do plano não serão gerados. O artigo institucional permanece um artefato separado e seguirá seus próprios gates de template, metadados, revisão e inspeção visual.
 
 ## Glossário operacional
 
@@ -1146,9 +1147,9 @@ tcc/
 ├── README.md
 ├── AGENTS.md
 ├── CHANGELOG.md
-├── Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.{md,docx,pdf}
-├── build_tcc_docx.ps1
-├── validate_tcc_docx.ps1
+├── Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md
+├── Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.{docx,pdf}  # histórico v1.2.1
+├── validate_tcc_docx.ps1                                  # histórico v1.2.1
 ├── LICENSE
 ├── CITATION.cff
 ├── docker-compose.yml

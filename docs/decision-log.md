@@ -152,3 +152,15 @@ Substitui ou é substituída por:
 - **Evidência:** confirmação explícita do grupo em 30/08/2026, dados integralmente sintéticos e escopo ético do plano.
 - **Responsável:** grupo.
 - **Afeta:** escopo, metodologia, threat model, métricas de revisão, ética, limitações e artigo.
+
+## DEC-012 — Plano-mestre editável somente em Markdown
+
+- **Data:** 31/08/2026
+- **Status:** aceita
+- **Contexto:** a geração do plano em DOCX/PDF por automação do Microsoft Word acrescenta tempo, dependência de ambiente gráfico e gates de metadados sem contribuir para o artefato científico. O artigo institucional continua sendo um arquivo separado no template FCI; ele não depende de converter o plano-mestre para Word.
+- **Alternativas consideradas:** manter Markdown, DOCX e PDF obrigatórios em toda release; substituir imediatamente o conversor por outra cadeia de PDF; usar somente Markdown como fonte e preservar os binários da v1.2.1 como evidência histórica.
+- **Decisão:** a partir da v1.2.2, o plano-mestre será publicado e editado somente em `Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md`. Remover `build_tcc_docx.ps1` e não gerar novos DOCX/PDF do plano. O DOCX, o PDF, o validador e os manifests das versões anteriores permanecem no histórico sem representar a versão corrente. O artigo final continua separado e seguirá o template FCI vigente.
+- **Consequências:** releases do plano ficam menores, independentes do Word e mais rápidas; o Markdown passa a ser o único artefato normativo corrente; links, estrutura, segurança e manifesto continuam obrigatórios. Uma futura necessidade de PDF exige decisão e pipeline próprios, sem restabelecer silenciosamente o DOCX.
+- **Evidência:** decisão explícita do grupo em 31/08/2026 e distinção já fixada por DEC-010 entre plano operacional e artigo institucional.
+- **Responsável:** grupo.
+- **Afeta:** política de releases, `AGENTS.md`, `README.md`, `CHANGELOG.md`, árvore do repositório, artefatos históricos e scripts de geração/validação.

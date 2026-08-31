@@ -39,7 +39,7 @@ Depois da mudança:
 
 1. executar testes proporcionais ao risco;
 2. atualizar decisão, documentação, checklist e changelog aplicáveis;
-3. regenerar DOCX/PDF se o plano-mestre mudou;
+3. validar o Markdown corrente; não regenerar DOCX/PDF do plano-mestre, conforme DEC-012;
 4. executar a verificação de segurança do repositório antes e depois de preparar o commit;
 5. relatar separadamente o que foi implementado, testado, pendente ou apenas proposto.
 
@@ -47,7 +47,7 @@ Depois da mudança:
 
 - Toda versão publicada do plano deve corresponder a um commit Git dedicado.
 - Atualizar número, data, status, histórico interno e `CHANGELOG.md` no mesmo commit.
-- Incluir no commit o Markdown, DOCX, PDF e scripts que afetem sua geração ou validação.
+- Incluir no commit o Markdown, changelog, decisões, manifesto da release e scripts que afetem sua validação. DOCX/PDF do plano não são artefatos correntes.
 - Usar mensagem no padrão `docs(plan): release vX.Y[.Z] — resumo`.
 - Não misturar uma versão do plano com código experimental não relacionado.
 - Não reescrever commit de versão já publicado com amend, squash, rebase ou force-push. Correções posteriores geram nova versão e novo commit.
@@ -95,10 +95,11 @@ Revisar a lista preparada linha por linha. Arquivos binários gerados podem ser 
 
 ## Gate de artefatos e dados experimentais
 
-- Nunca preparar DOCX ou PDF mais antigos que o Markdown que os originou.
-- Em uma release do plano, geração e validação devem ocorrer sobre a mesma árvore e versão; o resultado `PASS` deve ser obtido antes do staging.
-- O DOCX deve usar `creator` e `lastModifiedBy` institucionais ou genéricos e não pode conter comentários, alterações controladas, macros, objetos incorporados ou relacionamentos externos não revisados.
-- A inspeção visual deve cobrir capa, tabelas densas e transições entre capítulos; reprovar página intermediária formada apenas por cabeçalho ou linha residual de tabela.
+- Desde a v1.2.2, o plano-mestre corrente é publicado somente em Markdown. Não gerar nem preparar novos DOCX/PDF do plano sem nova decisão material.
+- O DOCX/PDF e o validador da v1.2.1 permanecem apenas como evidência histórica vinculada ao respectivo manifesto; não representam a versão corrente.
+- Em uma release do plano, validação, hashes e manifesto devem corresponder à mesma árvore e versão; o resultado `PASS` deve ser obtido antes do staging.
+- Se o artigo institucional ou um futuro artefato binário autorizado for gerado, sua fonte deve ser validada na mesma árvore. DOCX deve usar `creator` e `lastModifiedBy` institucionais ou genéricos e não pode conter comentários, alterações controladas, macros, objetos incorporados ou relacionamentos externos não revisados.
+- A inspeção visual do artigo institucional ou de futuro PDF autorizado deve cobrir capa, tabelas densas e transições entre capítulos; reprovar página intermediária formada apenas por cabeçalho ou linha residual de tabela.
 - `experiments/raw` permanece fora do Git, mas não pode ser descartado. Preservar os dados brutos em armazenamento externo criptografado, com controle de acesso e cópia imutável; versionar no repositório apenas manifesto SHA-256, schema, proveniência, versão e política de retenção sem informações sensíveis.
 - Somente datasets e resultados sintéticos saneados podem ser publicados, após revisão por dois integrantes. Cabeçalhos de autorização, prompts ou respostas com credenciais, dumps do Odoo e documentos reais nunca são publicáveis.
 - O script local é uma barreira mínima, não uma prova absoluta. Antes de tornar o repositório público, executar também um scanner dedicado de segredos e revisar seus achados sem reproduzir valores sensíveis.

@@ -1,6 +1,14 @@
 # Changelog do plano-mestre
 
-Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte e os artefatos gerados.
+Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
+
+## [1.2.2] — 2026-08-31
+
+- adotado o Markdown como único formato editável e corrente do plano-mestre, conforme DEC-012;
+- removido `build_tcc_docx.ps1` e encerrada a geração obrigatória de DOCX/PDF do plano;
+- preservados DOCX, PDF, validador e manifests anteriores apenas como evidência histórica da v1.2.1;
+- mantido o artigo institucional como artefato separado no template FCI, sem mudança no escopo científico ou no experimento;
+- atualizados fluxo de releases, gates e árvore sugerida do repositório para eliminar a dependência do Microsoft Word.
 
 ## [1.2.1] — 2026-08-30
 
