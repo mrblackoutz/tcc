@@ -11,9 +11,9 @@
 **Disciplina/atividade:** Trabalho de Conclusão de Curso II (TCC II)
 **Autores:** Felipe Ujvari Gasparino de Sousa; Gustavo Nascimento Siqueira; Thomaz de Souza Scopel
 **Orientador:** Mario Olimpio de Menezes
-**Versão:** 1.2.5
+**Versão:** 1.2.6
 **Data:** 31 de agosto de 2026
-**Status:** plano-mestre corrente somente em Markdown; aceite técnico M1 comprovado conforme DEC-016 (Odoo 19.0 Community e PostgreSQL 18, manifest OCI verificado, identidade C0 dedicada, conta de fornecedor sintética ligada a PO e banco e reset por hash); demais itens de G1, M2/C0, C1, dataset, piloto e freeze pendentes — pré-congelamento
+**Status:** plano-mestre corrente somente em Markdown; aceites técnicos M1 e M2/G2 comprovados conforme DEC-016 e DEC-017 (ambiente reproduzível, PDF sintético benigno com camada de texto, proposta tipada, execução direta C0 em rascunho e reset por hash); adaptador LLM, C0 científico competente/G3, itens residuais de G1, C1, dataset, piloto e freeze pendentes — pré-congelamento
 
 > Documento de trabalho. O relatório e o fonte editável do TCC I, o edital `EditalTCC_2026_2-V1` e o template FCI 2026 foram recuperados e auditados. Autores e orientador foram confirmados em 30 de agosto de 2026. As lacunas institucionais residuais estão no Gate 0 e em `docs/institutional-requirements.md`.
 
@@ -44,9 +44,10 @@
 | 1.2.3 | 31/08/2026 | Garantia da fronteira JSON-2 corrigida para refletir o controller e as ACLs reais: contexto neutralizado com teste de invariância e nenhuma mutação crítica fora do executor | Grupo |
 | 1.2.4 | 31/08/2026 | Scaffold inicial M1/G1 publicado com Odoo 19.0 Community, PostgreSQL 18 e gateway JSON-2; posteriormente auditado por DEC-016 e classificado como evidência preliminar, insuficiente isoladamente para o aceite M1 | Grupo |
 | 1.2.5 | 31/08/2026 | Aceite técnico M1 corrigido e comprovado: manifest OCI distinto do config digest, locks coerentes, identidade C0 dedicada, fixtures completas, conta de fornecedor via JSON-2 ligada a PO/banco e reset por igualdade de hashes | Grupo |
+| 1.2.6 | 31/08/2026 | Vertical slice M2/G2 comprovada: PDF sintético benigno sem OCR, proposta `vendor-bill-proposal/v1`, adaptador determinístico restrito ao desenvolvimento, executor direto C0, 41 testes e restauração exata do estado; LLM e C0 científico preservados para o piloto/G3 | Grupo |
 | 1.3 | [data] | Congelamento após piloto | [nome] |
 
-A v1.2.4 permanece preservada como release histórica do scaffold. A auditoria registrada em DEC-016 identificou que seu ID local de imagem não era evidência de manifest OCI, que os locks estavam incompletos, que o transporte usava a chave administrativa e que o smoke se limitava ao cadastro de fornecedor e ao descarte de volumes. O incremento corretivo `b9a96da33df83aabd75e95948cfbf202d7e73cf2` passou 19 testes e comprovou o aceite M1 com manifest OCI local `sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`, config digest distinto, identidade técnica C0 não administrativa, fixtures sintéticas completas, criação/leitura/remoção de uma `account.move` em rascunho ligada a PO e banco e hashes inicial/restaurado idênticos. Isso atende ao componente técnico de M1, mas não encerra por si só as obrigações institucionais e de literatura de G1 nem os marcos M2 em diante. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
+A v1.2.4 permanece preservada como release histórica do scaffold. A auditoria registrada em DEC-016 identificou que seu ID local de imagem não era evidência de manifest OCI, que os locks estavam incompletos, que o transporte usava a chave administrativa e que o smoke se limitava ao cadastro de fornecedor e ao descarte de volumes. O incremento corretivo `b9a96da33df83aabd75e95948cfbf202d7e73cf2` comprovou M1 com manifest OCI local `sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`, config digest distinto, identidade técnica C0 não administrativa, fixtures sintéticas completas, conta em rascunho ligada a PO/banco e reset por hash. O incremento M2 `fef3348` elevou a suíte a 41 testes e comprovou PDF benigno → proposta tipada → rascunho C0 → restauração, sob DEC-017. Isso atende aos componentes técnicos de M1 e M2/G2, mas não transforma o parser determinístico em LLM, não conclui o C0 científico/G3 e não encerra as obrigações institucionais e de literatura de G1. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
 
 ## Como usar este documento
 
@@ -148,7 +149,7 @@ As decisões abaixo estão aprovadas e não devem ser alteradas silenciosamente,
 | ID | Decisão de trabalho | Estado em 31/08/2026 | Gate ou evidência exigida |
 |---|---|---|---|
 | W01 | Odoo 19.0 Community self-hosted — decisão promovida a D11; fonte fixada em `https://github.com/odoo/odoo.git`, branch observada `19.0`, commit `a4b877245c9cb5e3d7152d1593a518170f115ca1` | Pin confirmado; imagem `linux/amd64` construída e ligada à fonte; manifest OCI local e config digest distintos registrados em 31/08/2026 | Preservar o artefato exato e repetir a verificação de proveniência em qualquer nova imagem; permissões C1 permanecem em gate próprio |
-| W02 | Manter o LLM e o gateway de segurança externos ao Odoo, em Python, integrados por JSON-2; a IA nativa do produto não faz parte do tratamento | Arquitetura confirmada; parcela JSON-2 da vertical slice aprovada em M1; adapter LLM ainda não implementado | Vertical slice de conta em banco isolado atendida; M2 deve ligar entrada benigna, proposta tipada e baseline C0 sem alterar a fronteira |
+| W02 | Manter o LLM e o gateway de segurança externos ao Odoo, em Python, integrados por JSON-2; a IA nativa do produto não faz parte do tratamento | Arquitetura confirmada; M2/G2 aprovado com PDF benigno, proposta tipada e executor direto C0; adaptador determinístico explicitamente restrito ao desenvolvimento; adapter LLM ainda não implementado | Encanamento M2 atendido; implementar o adapter LLM real e demonstrar competência benigna no piloto/G3 sem alterar a fronteira nem usar o conjunto final |
 | W03 | Usar JSON-2 para a vertical slice e C0; em C1, chamar por JSON-2 um add-on mínimo que revalida e executa a mutação em uma única transação. A interface visual é opcional e `partner_bank_id` permanece sujeito ao smoke test | Investigação estática promovida a D12; escrita, persistência, leitura e reset de `partner_bank_id` aprovados em M1/C0 | Implementar o add-on C1, negar CRUD/métodos genéricos ao usuário de C1 e testar ACL, contexto arbitrário, atomicidade e idempotência |
 | W04 | O experimento principal usará um único LLM, com o mesmo identificador ou snapshot, parâmetros, prompt-base, schema e limites em C0 e C1. Um segundo LLM será apenas uma avaliação opcional de robustez, executada depois e analisada separadamente | Desenho confirmado; modelo ainda não escolhido | Escolher no piloto por estabilidade, saída estruturada, latência, custo e identificador registrável, nunca pelo resultado de segurança mais favorável |
 | W05 | Planejar dataset final pareado com 180 documentos | Confirmada como meta pré-piloto | Confirmar orçamento, poder e precisão após o piloto, antes de abrir o teste final |
@@ -1140,6 +1141,8 @@ A fonte do Odoo fica fixada pelos seguintes identificadores:
 | Imagem e plataforma aceitas em M1 | `tcc-odoo:19.0-a4b8772`, `linux/amd64`; imagem-base `python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab` |
 | Manifest OCI local aceito em M1 | `sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`, media type `application/vnd.oci.image.manifest.v1+json` |
 | Config digest da imagem executada | `sha256:c85221764b096dde2df68c50e2da634147b10c14dcfb98bf57f71f62a14bd1f2`; validado como distinto do manifest e idêntico ao ID da saída Docker carregada da mesma resolução de build |
+| Gateway aceito em M2 | `tcc-gateway:0.2.0`, config digest local `sha256:5c81dda4565efdc0d3352edd5223ca0addbab510e502fdc5e77de269320e16c0`; dependências resolvidas em `gateway/constraints.txt` |
+| Contrato e evidência M2 | schema `vendor-bill-proposal/v1`; 41 testes; hashes do PDF, proposta e estados em `reproducibility/lab-environment.lock.json` e `docs/m2-c0-baseline.md` |
 
 A branch `19.0` é móvel: o avanço observado depois da seleção não altera o pin deliberado aprovado pelo grupo. Todo clone, archive ou build deverá resolver o commit completo acima, em estado limpo. A pasta local `odoo-19.0` permanece útil para exploração porque `odoo/release.py` declara `version_info = (19, 0, 0, FINAL, 0, '')` e os módulos Community `account` e `purchase` estão presentes, mas ela não possui metadados Git próprios e não será tratada como evidência de procedência. O código-fonte integral do Odoo não deve ser duplicado no pacote científico quando o commit, o digest da imagem e instruções reproduzíveis forem suficientes.
 
@@ -1165,6 +1168,7 @@ tcc/
 │   ├── threat-model.md
 │   ├── architecture.md
 │   ├── lab-runbook.md
+│   ├── m2-c0-baseline.md
 │   ├── institutional-requirements.md
 │   ├── decision-log.md
 │   ├── deviation-log.md
@@ -1179,11 +1183,14 @@ tcc/
 │   ├── new_local_env.ps1
 │   ├── smoke_test.ps1
 │   ├── smoke_test_gateway.py
+│   ├── smoke_test_m2.ps1
+│   ├── smoke_test_m2.py
 │   └── check_repository_safety.ps1
 ├── gateway/
 │   ├── Dockerfile
+│   ├── constraints.txt
 │   ├── pyproject.toml
-│   ├── src/tcc_gateway/             # transporte e estado M1; demais camadas entram nos marcos seguintes
+│   ├── src/tcc_gateway/             # transporte, PDF, proposta tipada e executor direto C0 M1–M2
 │   └── tests/
 ├── odoo/
 │   ├── Dockerfile
@@ -1356,7 +1363,7 @@ O cronograma abaixo está reancorado ao edital `EditalTCC_2026_2-V1`. A submiss�
 |---|---|---|---|
 | 25–30 ago | Gate 0, papéis, ambiente e protocolo | edital/template/fonte auditados; lacunas registradas; board; decisões assinadas | G0 |
 | 31 ago–6 set | obrigações cadastrais + revisão estruturada + Odoo | integrante único designado; cadastro no Oriente com os três autores até 31/08; anuência até 01/09; requerimento iniciado; alinhamento com área/projeto do orientador confirmado; matriz de literatura; Odoo/DB; JSON-2 smoke test | G1 |
-| 7–13 set | vertical slice e estado restaurável | PDF benigno → proposta → draft; snapshot/reset; oráculo | G2 |
+| 7–13 set | vertical slice e estado restaurável | **atendido tecnicamente em 31/08:** PDF benigno → proposta tipada → draft C0; reset/oráculo; adaptador determinístico fora das runs científicas | G2 |
 | 14–20 set | C0 e dataset piloto | baseline revisada; 24 documentos piloto; runner inicial | G3 |
 | 21–27 set | C1 estrutural e autoria do teste v1 | schema, policy engine, allowlist, capacidades e 180 documentos candidatos | G4 |
 | 28 set–4 out | autorização, auditoria, piloto e dataset final | approval gate técnico; fault tests; relatório do piloto; dupla revisão e hashes dos 180 documentos | G5 |
@@ -1454,7 +1461,7 @@ Legenda: R = executa; A = responde pelo aceite; C = consulta/revisa; I = informa
 |---|---|---|
 | M0 — protocolo | problema, RQs, hipóteses, threat model, métricas, escopo e datas foram aprovados | ata/commit assinado |
 | M1 — Odoo | fonte oficial e commit estão fixados; a imagem foi construída desse commit e possui referência, plataforma, digest OCI, digest da base e evidência da ligação fonte→imagem; ambiente sobe limpo; fixtures carregam; conta é criada/lida; reset restaura hashes | **Atendido em 31/08/2026:** locks de fonte/ambiente, commit `b9a96da`, `docs/lab-runbook.md`, scripts de build/smoke e evidência local saneada |
-| M2 — C0 | fluxo benigno é funcional; schema e integração passam; checklist elimina caricatura | relatório de baseline |
+| M2 — vertical slice C0 | fluxo benigno é funcional; schema e integração passam; checklist elimina caricatura | **Atendido tecnicamente em 31/08/2026:** DEC-017, commit `fef3348`, 41 testes, smoke M1/M2, `docs/m2-c0-baseline.md`, locks e hashes restaurados; adapter LLM/C0 científico continuam para o piloto/G3 |
 | M3 — dataset | schemas validam; dois revisores conferem ground truth; pares e hashes estão congelados | manifesto v1 |
 | M4 — C1 | executor estreito, regras, ACLs, contexto arbitrário, concorrência, replay, falha segura e auditoria passam | suíte automatizada |
 | M5 — piloto | custo, latência, entrega do payload, oráculo e competência estão medidos | relatório do piloto |
@@ -1844,6 +1851,7 @@ Registrar fluxo de seleção, motivos de exclusão e snowballing para trás e pa
 - [ ] artefato OCI exato dos lotes finais preservado em custódia externa imutável ou referência aprovada em registry, sem reconstrução silenciosa
 - [ ] modelo/identificador, prompts, policies e imagens fixados
 - [x] reset M1 validado pela igualdade entre os hashes canônicos inicial e restaurado
+- [x] vertical slice M2 validada com PDF benigno, proposta tipada, rascunho C0 e igualdade entre hashes inicial/restaurado; o adaptador determinístico está proibido nas runs científicas
 - [ ] idempotência do executor C1 validada sob retry e concorrência
 - [ ] retry, missing e exclusões pré-definidos
 - [ ] regras de desvio, reexecução e nova amostra assinadas

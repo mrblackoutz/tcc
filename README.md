@@ -19,6 +19,7 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 - `docs/releases/v1.2.2.md`: manifesto da transição do plano para Markdown como formato único.
 - `docs/releases/v1.2.3.md` e `docs/releases/v1.2.4.md`: manifests históricos da correção JSON-2 e do scaffold inicial do laboratório.
 - `docs/releases/v1.2.5.md`: manifesto do aceite técnico M1 corrigido conforme DEC-016.
+- `docs/releases/v1.2.6.md`: manifesto do aceite técnico M2/G2 e de seus limites pré-experimentais conforme DEC-017.
 - `reproducibility/odoo-source.lock.json`: lock legível por máquina da fonte Odoo selecionada.
 - `reproducibility/lab-environment.lock.json`: versões, digests e últimos aceites M1/M2 saneados do laboratório.
 - `reproducibility/institutional-sources.lock.json`: hashes, requisitos e anomalias das fontes institucionais locais.

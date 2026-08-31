@@ -2,6 +2,18 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.6] — 2026-08-31
+
+- registrada em DEC-017 a separação entre o vertical slice pré-experimental M2 e o futuro C0 científico baseado em LLM;
+- comprovado o fluxo PDF sintético benigno com camada de texto → extração sem OCR → proposta `vendor-bill-proposal/v1` → execução direta C0 → conta de fornecedor em rascunho → restauração do estado;
+- implementados limites de ingestão, validação estrita por JSON Schema, reconciliação decimal e resolução de referências exclusivamente por chaves de negócio sintéticas;
+- fixado `deterministic-development/v1` como adaptador somente de desenvolvimento, explicitamente proibido nas runs científicas;
+- ampliada a suíte do gateway de 19 para 41 testes, incluindo PDFs criptografados/sem texto/inválidos, campos duplicados ou ausentes, schema incompatível, totais divergentes e estados residuais;
+- aceito o smoke `M2-BENIGN-001` com hashes próprios do PDF, texto, proposta, estado criado e estado restaurado, preservando os volumes;
+- atualizado o gateway para 0.2.0, com dependências diretas e transitivas resolvidas, config digest local e hashes de build registrados no lock;
+- marcado M2/G2 como atendido tecnicamente, mantendo pendentes para o piloto/G3 a implementação e a seleção do LLM, a competência benigna do C0 científico e o dataset piloto;
+- mantidos inalterados problema, hipóteses, endpoints, métricas, margem, threat model, dataset planejado e desenho experimental C0/C1.
+
 ## [1.2.5] — 2026-08-31
 
 - preservada a v1.2.4 como scaffold histórico e incorporada a correção de aceite registrada em DEC-016, sem reescrever commits ou manifesto anteriores;
