@@ -2,6 +2,16 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.5] — 2026-08-31
+
+- preservada a v1.2.4 como scaffold histórico e incorporada a correção de aceite registrada em DEC-016, sem reescrever commits ou manifesto anteriores;
+- comprovado o manifest OCI local da imagem Odoo (`sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`) como objeto distinto do config digest efetivamente carregado;
+- sincronizados os locks de fonte e ambiente com commit, plataforma, imagem-base, manifest, config, labels e evidência interna de revisão;
+- substituído o smoke administrativo de cadastro por identidade C0 dedicada e por fixtures sintéticas de empresa, fornecedor, banco, produto e pedido de compra confirmado;
+- comprovadas via JSON-2 a criação e leitura de uma única conta de fornecedor em rascunho, a persistência do beneficiário, a ligação com a linha de compra e a remoção com restauração exata do hash inicial;
+- classificado como atendido o marco técnico M1, sem declarar concluídas as obrigações não técnicas de G1 ou os marcos M2/C0, C1, dataset, piloto e freeze;
+- mantidos inalterados problema, hipóteses, métricas, margem, dataset planejado e desenho experimental C0/C1.
+
 ## [1.2.4] — 2026-08-31
 
 - implementado o primeiro incremento executável do laboratório M1/G1 conforme DEC-014 e DEC-015;

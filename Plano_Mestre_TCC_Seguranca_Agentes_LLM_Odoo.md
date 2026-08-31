@@ -11,9 +11,9 @@
 **Disciplina/atividade:** Trabalho de Conclusão de Curso II (TCC II)
 **Autores:** Felipe Ujvari Gasparino de Sousa; Gustavo Nascimento Siqueira; Thomaz de Souza Scopel
 **Orientador:** Mario Olimpio de Menezes
-**Versão:** 1.2.4
+**Versão:** 1.2.5
 **Data:** 31 de agosto de 2026
-**Status:** plano-mestre corrente somente em Markdown; primeiro incremento M1/G1 executável implementado (Docker Compose com Odoo 19.0 Community e PostgreSQL 18, gateway JSON-2, smoke test e reset determinístico aprovados); digest OCI registrado; dataset e protocolo pós-piloto pendentes — pré-congelamento
+**Status:** plano-mestre corrente somente em Markdown; aceite técnico M1 comprovado conforme DEC-016 (Odoo 19.0 Community e PostgreSQL 18, manifest OCI verificado, identidade C0 dedicada, conta de fornecedor sintética ligada a PO e banco e reset por hash); demais itens de G1, M2/C0, C1, dataset, piloto e freeze pendentes — pré-congelamento
 
 > Documento de trabalho. O relatório e o fonte editável do TCC I, o edital `EditalTCC_2026_2-V1` e o template FCI 2026 foram recuperados e auditados. Autores e orientador foram confirmados em 30 de agosto de 2026. As lacunas institucionais residuais estão no Gate 0 e em `docs/institutional-requirements.md`.
 
@@ -42,10 +42,11 @@
 | 1.2.1 | 30/08/2026 | W06 confirmada; fonte Odoo fixada; edital, template e fonte do TCC I auditados; autoria/orientação e ausência de participantes humanos confirmadas; cronograma e estrutura do artigo alinhados a 2026/2 | Grupo |
 | 1.2.2 | 31/08/2026 | Plano-mestre simplificado para Markdown como único formato corrente; conversor Word removido; DOCX/PDF da v1.2.1 preservados apenas como histórico | Grupo |
 | 1.2.3 | 31/08/2026 | Garantia da fronteira JSON-2 corrigida para refletir o controller e as ACLs reais: contexto neutralizado com teste de invariância e nenhuma mutação crítica fora do executor | Grupo |
-| 1.2.4 | 31/08/2026 | Primeiro incremento executável M1/G1 implementado: Docker Compose com Odoo 19.0 Community (commit imutável) e PostgreSQL 18, gateway JSON-2 em Python com 19 testes unitários, smoke test e reset determinístico aprovados; DEC-014 e DEC-015 registradas | Grupo |
+| 1.2.4 | 31/08/2026 | Scaffold inicial M1/G1 publicado com Odoo 19.0 Community, PostgreSQL 18 e gateway JSON-2; posteriormente auditado por DEC-016 e classificado como evidência preliminar, insuficiente isoladamente para o aceite M1 | Grupo |
+| 1.2.5 | 31/08/2026 | Aceite técnico M1 corrigido e comprovado: manifest OCI distinto do config digest, locks coerentes, identidade C0 dedicada, fixtures completas, conta de fornecedor via JSON-2 ligada a PO/banco e reset por igualdade de hashes | Grupo |
 | 1.3 | [data] | Congelamento após piloto | [nome] |
 
-A versão 1.2.4 registra a conclusão do primeiro incremento executável M1/G1 do laboratório, conforme DEC-014 e DEC-015. A stack reproduzível sobe PostgreSQL 18 e Odoo 19.0 Community construído a partir do commit imutável `a4b877245c9cb5e3d7152d1593a518170f115ca1`, o gateway JSON-2 opera com 19 testes unitários e o smoke test comprova a criação/leitura de fornecedor sintético e o reset determinístico por volumes. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
+A v1.2.4 permanece preservada como release histórica do scaffold. A auditoria registrada em DEC-016 identificou que seu ID local de imagem não era evidência de manifest OCI, que os locks estavam incompletos, que o transporte usava a chave administrativa e que o smoke se limitava ao cadastro de fornecedor e ao descarte de volumes. O incremento corretivo `b9a96da33df83aabd75e95948cfbf202d7e73cf2` passou 19 testes e comprovou o aceite M1 com manifest OCI local `sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`, config digest distinto, identidade técnica C0 não administrativa, fixtures sintéticas completas, criação/leitura/remoção de uma `account.move` em rascunho ligada a PO e banco e hashes inicial/restaurado idênticos. Isso atende ao componente técnico de M1, mas não encerra por si só as obrigações institucionais e de literatura de G1 nem os marcos M2 em diante. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
 
 ## Como usar este documento
 
@@ -144,11 +145,11 @@ As decisões abaixo estão aprovadas e não devem ser alteradas silenciosamente,
 
 ## 1.3 Decisões de trabalho e estado de confirmação
 
-| ID | Decisão de trabalho | Estado em 30/08/2026 | Gate ou evidência exigida |
+| ID | Decisão de trabalho | Estado em 31/08/2026 | Gate ou evidência exigida |
 |---|---|---|---|
-| W01 | Odoo 19.0 Community self-hosted — decisão promovida a D11; fonte fixada em `https://github.com/odoo/odoo.git`, branch observada `19.0`, commit `a4b877245c9cb5e3d7152d1593a518170f115ca1` | Pin confirmado em 30/08/2026; o branch avançou depois da seleção | Construir a imagem exclusivamente desse commit, registrar o digest OCI resultante e testar modelos, permissões, campo do oráculo e JSON-2 |
-| W02 | Manter o LLM e o gateway de segurança externos ao Odoo, em Python, integrados por JSON-2; a IA nativa do produto não faz parte do tratamento | Confirmada | Vertical slice criando, lendo e restaurando uma conta de fornecedor em banco isolado |
-| W03 | Usar JSON-2 para a vertical slice e C0; em C1, chamar por JSON-2 um add-on mínimo que revalida e executa a mutação em uma única transação. A interface visual é opcional e `partner_bank_id` permanece sujeito ao smoke test | Investigação estática concluída e promovida a D12 | Implementar prova mínima, negar CRUD/métodos genéricos ao usuário de C1 e testar ACL, contexto arbitrário, atomicidade, idempotência e campo bancário em execução |
+| W01 | Odoo 19.0 Community self-hosted — decisão promovida a D11; fonte fixada em `https://github.com/odoo/odoo.git`, branch observada `19.0`, commit `a4b877245c9cb5e3d7152d1593a518170f115ca1` | Pin confirmado; imagem `linux/amd64` construída e ligada à fonte; manifest OCI local e config digest distintos registrados em 31/08/2026 | Preservar o artefato exato e repetir a verificação de proveniência em qualquer nova imagem; permissões C1 permanecem em gate próprio |
+| W02 | Manter o LLM e o gateway de segurança externos ao Odoo, em Python, integrados por JSON-2; a IA nativa do produto não faz parte do tratamento | Arquitetura confirmada; parcela JSON-2 da vertical slice aprovada em M1; adapter LLM ainda não implementado | Vertical slice de conta em banco isolado atendida; M2 deve ligar entrada benigna, proposta tipada e baseline C0 sem alterar a fronteira |
+| W03 | Usar JSON-2 para a vertical slice e C0; em C1, chamar por JSON-2 um add-on mínimo que revalida e executa a mutação em uma única transação. A interface visual é opcional e `partner_bank_id` permanece sujeito ao smoke test | Investigação estática promovida a D12; escrita, persistência, leitura e reset de `partner_bank_id` aprovados em M1/C0 | Implementar o add-on C1, negar CRUD/métodos genéricos ao usuário de C1 e testar ACL, contexto arbitrário, atomicidade e idempotência |
 | W04 | O experimento principal usará um único LLM, com o mesmo identificador ou snapshot, parâmetros, prompt-base, schema e limites em C0 e C1. Um segundo LLM será apenas uma avaliação opcional de robustez, executada depois e analisada separadamente | Desenho confirmado; modelo ainda não escolhido | Escolher no piloto por estabilidade, saída estruturada, latência, custo e identificador registrável, nunca pelo resultado de segurança mais favorável |
 | W05 | Planejar dataset final pareado com 180 documentos | Confirmada como meta pré-piloto | Confirmar orçamento, poder e precisão após o piloto, antes de abrir o teste final |
 | W06 | Usar margem de não inferioridade de 10 pontos percentuais na BTSR dos cenários benignos | Confirmada e promovida a D13 | Registrar a justificativa operacional no protocolo; o piloto estima precisão e poder, mas não pode alterar a margem em resposta aos resultados |
@@ -448,7 +449,7 @@ A instalação será Odoo 19.0 Community self-hosted. O ERP fornecerá domínio,
 3. o agente extrai ou propõe fornecedor, referência, data, moeda, itens e valor;
 4. a ação legítima de baixo risco é `CREATE_DRAFT_BILL`;
 5. `POST_VENDOR_BILL` é ação crítica e exige decisão de política;
-6. a referência do beneficiário selecionado deve permanecer observável no rascunho; a inspeção estática encontrou o campo nativo gravável `account.move.partner_bank_id` em `addons/account/models/account_move.py`, mas o Gate G1 ainda verificará escrita por JSON-2, ACL, persistência, leitura e reset no Odoo 19.0 Community; se o comportamento em execução não atender ao oráculo, será criado um campo experimental mínimo em add-on versionado;
+6. a referência do beneficiário selecionado deve permanecer observável no rascunho; além da inspeção estática em `addons/account/models/account_move.py`, o smoke M1 confirmou em execução a escrita por JSON-2 com a identidade C0, a persistência e leitura de `account.move.partner_bank_id` e o reset por hash no Odoo 19.0 Community. O campo nativo atende ao oráculo deste recorte e não será duplicado em add-on; as permissões estreitas e o executor de C1 permanecem sujeitos ao Gate G4;
 7. `REQUEST_SIMULATED_PAYMENT` poderá escrever uma solicitação apenas no outbox local se o vertical slice estiver estável até o Gate G3, em 20 de setembro; o experimento não criará `account.payment`, não chamará o wizard de pagamento e não usará diário ou integração bancária;
 8. `SEND_SUPPLIER_MESSAGE` escreve somente em outbox local, sem egress de rede, tanto para esclarecimentos legítimos quanto para testes de confidencialidade;
 9. o avaliador lê o estado final e o compara com o manifesto do cenário.
@@ -1136,9 +1137,13 @@ A fonte do Odoo fica fixada pelos seguintes identificadores:
 | Revisão selecionada e fixada | `a4b877245c9cb5e3d7152d1593a518170f115ca1` |
 | Verificação | o commit selecionado pelo grupo também foi observado pela consulta `git ls-remote https://github.com/odoo/odoo.git refs/heads/19.0` realizada durante a seleção, em 30/08/2026; uma consulta independente posterior retornou `49baa7f91e6213bddc6f15044ca3c8a4ff79dee5`, um commit à frente, confirmando que o branch é móvel |
 | Manifesto técnico | `reproducibility/odoo-source.lock.json` |
-| Imagem, plataforma e digest OCI | pendentes da construção reproduzível a partir do commit fixado; registrar a referência resolvida, a plataforma e `sha256:<64-hex>` antes de qualquer run |
+| Imagem e plataforma aceitas em M1 | `tcc-odoo:19.0-a4b8772`, `linux/amd64`; imagem-base `python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab` |
+| Manifest OCI local aceito em M1 | `sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`, media type `application/vnd.oci.image.manifest.v1+json` |
+| Config digest da imagem executada | `sha256:c85221764b096dde2df68c50e2da634147b10c14dcfb98bf57f71f62a14bd1f2`; validado como distinto do manifest e idêntico ao ID da saída Docker carregada da mesma resolução de build |
 
 A branch `19.0` é móvel: o avanço observado depois da seleção não altera o pin deliberado aprovado pelo grupo. Todo clone, archive ou build deverá resolver o commit completo acima, em estado limpo. A pasta local `odoo-19.0` permanece útil para exploração porque `odoo/release.py` declara `version_info = (19, 0, 0, FINAL, 0, '')` e os módulos Community `account` e `purchase` estão presentes, mas ela não possui metadados Git próprios e não será tratada como evidência de procedência. O código-fonte integral do Odoo não deve ser duplicado no pacote científico quando o commit, o digest da imagem e instruções reproduzíveis forem suficientes.
+
+O digest M1 identifica o manifest existente no layout OCI local gerado pelo BuildKit e comprovadamente ligado à imagem Docker executada; ele não é um `RepoDigest` publicado. Os exports permanecem fora do Git em `.runtime/build`. Antes do freeze, o artefato exato usado nos lotes deverá receber custódia externa imutável ou uma referência aprovada em registry, sempre com autorização explícita e atualização do lock. Uma reconstrução futura, mesmo com a mesma fonte, não herda silenciosamente o digest acima e deverá ser tratada como nova imagem.
 
 ## 16.3 Estrutura sugerida do repositório
 
@@ -1154,11 +1159,12 @@ tcc/
 ├── validate_tcc_docx.ps1                                  # histórico v1.2.1
 ├── LICENSE
 ├── CITATION.cff
-├── docker-compose.yml
+├── compose.yaml
 ├── docs/
 │   ├── protocol.md
 │   ├── threat-model.md
 │   ├── architecture.md
+│   ├── lab-runbook.md
 │   ├── institutional-requirements.md
 │   ├── decision-log.md
 │   ├── deviation-log.md
@@ -1166,21 +1172,22 @@ tcc/
 │       └── vX.Y[.Z].md
 ├── reproducibility/
 │   ├── odoo-source.lock.json
+│   ├── lab-environment.lock.json
 │   └── institutional-sources.lock.json
 ├── scripts/
+│   ├── build_odoo_image.ps1
+│   ├── new_local_env.ps1
+│   ├── smoke_test.ps1
+│   ├── smoke_test_gateway.py
 │   └── check_repository_safety.ps1
 ├── gateway/
-│   ├── src/ingestion/
-│   ├── src/parser/
-│   ├── src/llm_adapter/
-│   ├── src/proposal/
-│   ├── src/privacy/
-│   ├── src/policy/
-│   ├── src/approval/
-│   ├── src/executor/
-│   └── src/audit/
+│   ├── Dockerfile
+│   ├── pyproject.toml
+│   ├── src/tcc_gateway/             # transporte e estado M1; demais camadas entram nos marcos seguintes
+│   └── tests/
 ├── odoo/
-│   ├── fixtures/
+│   ├── Dockerfile
+│   ├── fixtures/bootstrap_m1.py
 │   ├── reset/
 │   └── addons/
 │       ├── ap_security_executor/    # mínimo e obrigatório em C1
@@ -1446,7 +1453,7 @@ Legenda: R = executa; A = responde pelo aceite; C = consulta/revisa; I = informa
 | Marco | Considerado concluído somente quando... | Evidência |
 |---|---|---|
 | M0 — protocolo | problema, RQs, hipóteses, threat model, métricas, escopo e datas foram aprovados | ata/commit assinado |
-| M1 — Odoo | fonte oficial e commit estão fixados; a imagem foi construída desse commit e possui referência, plataforma, digest OCI, digest da base e evidência da ligação fonte→imagem; ambiente sobe limpo; fixtures carregam; conta é criada/lida; reset restaura hashes | manifesto de proveniência preenchido, script de build, script e log de smoke |
+| M1 — Odoo | fonte oficial e commit estão fixados; a imagem foi construída desse commit e possui referência, plataforma, digest OCI, digest da base e evidência da ligação fonte→imagem; ambiente sobe limpo; fixtures carregam; conta é criada/lida; reset restaura hashes | **Atendido em 31/08/2026:** locks de fonte/ambiente, commit `b9a96da`, `docs/lab-runbook.md`, scripts de build/smoke e evidência local saneada |
 | M2 — C0 | fluxo benigno é funcional; schema e integração passam; checklist elimina caricatura | relatório de baseline |
 | M3 — dataset | schemas validam; dois revisores conferem ground truth; pares e hashes estão congelados | manifesto v1 |
 | M4 — C1 | executor estreito, regras, ACLs, contexto arbitrário, concorrência, replay, falha segura e auditoria passam | suíte automatizada |
@@ -1833,9 +1840,11 @@ Registrar fluxo de seleção, motivos de exclusão e snowballing para trás e pa
 - [ ] usuário de C1 não possui ACL genérica de faturamento/pagamento
 - [ ] auto-post está desabilitado; o gateway omite contexto externo e testes demonstram que contexto hostil na JSON-2 não altera autorização, empresa, estado ou efeito
 - [x] fonte oficial e revisão selecionada do Odoo 19.0 Community registradas em `reproducibility/odoo-source.lock.json`: `https://github.com/odoo/odoo.git`, branch observada `19.0`, commit `a4b877245c9cb5e3d7152d1593a518170f115ca1`
-- [ ] imagem construída desse commit; referência, plataforma, digest da base, digest OCI `sha256:<64-hex>` e evidência da ligação fonte→imagem registrados
+- [x] imagem M1 construída desse commit; referência, plataforma, digest da base, manifest OCI local `sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`, config digest distinto e evidência da ligação fonte→imagem registrados
+- [ ] artefato OCI exato dos lotes finais preservado em custódia externa imutável ou referência aprovada em registry, sem reconstrução silenciosa
 - [ ] modelo/identificador, prompts, policies e imagens fixados
-- [ ] reset e idempotência validados
+- [x] reset M1 validado pela igualdade entre os hashes canônicos inicial e restaurado
+- [ ] idempotência do executor C1 validada sob retry e concorrência
 - [ ] retry, missing e exclusões pré-definidos
 - [ ] regras de desvio, reexecução e nova amostra assinadas
 - [ ] orçamento defense-aware definido
