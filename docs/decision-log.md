@@ -203,3 +203,16 @@ Substitui ou é substituída por:
 - **Responsável:** grupo.
 - **Afeta:** `compose.yaml`, `reproducibility/lab-environment.lock.json`, smoke test e M1/G1.
 - **Complementa:** DEC-014.
+
+## DEC-016 — Correção do aceite M1 e da semântica do digest da imagem
+
+- **Data:** 31/08/2026
+- **Status:** aceita
+- **Contexto:** a auditoria posterior do commit `610fff7` mostrou que a v1.2.4 implementou um scaffold funcional e um smoke preliminar, mas registrou como `imageDigest` o ID/config digest retornado por `docker inspect`, embora o próprio script reconhecesse que ele não era o digest do manifest OCI. `reproducibility/odoo-source.lock.json` permaneceu com os campos de imagem nulos e `reproducibility/lab-environment.lock.json` manteve as mesmas evidências na lista de pendências. O smoke autenticou como administrador, criou apenas `res.partner`, apagou volumes sem comparar hashes e não criou a conta de fornecedor ligada ao PO exigida por W02, §16.4 e M1.
+- **Alternativas consideradas:** aceitar o CRUD de fornecedor como conclusão de M1; alterar retroativamente o commit/manifesto v1.2.4; preservar a release histórica, classificá-la como scaffold preliminar e produzir um incremento corretivo com evidência executável completa.
+- **Decisão:** preservar o commit v1.2.4 sem reescrita e não utilizá-lo isoladamente como evidência de conclusão de M1. O aceite M1 requer: (1) digest de manifest produzido pelo BuildKit e distinguido do config digest local; (2) atualização coerente dos locks de fonte e ambiente; (3) identidade C0 técnica dedicada, sem uso da chave do administrador no transporte; (4) fixtures sintéticas de empresa, fornecedor, conta bancária, produto e PO confirmado; (5) criação e leitura via JSON-2 de exatamente uma `account.move` com `move_type='in_invoice'`, `state='draft'`, `auto_post='no'`, `partner_bank_id` persistido e linha ligada por `purchase_line_id`; e (6) hash canônico do estado inicial igual ao hash após remover o rascunho, sem depender da exclusão de volumes como oráculo.
+- **Consequências:** scripts, fixtures, locks, documentação e testes serão corrigidos em commits posteriores; a v1.2.4 continua auditável como scaffold, e uma nova versão do plano informará o estado real após os gates passarem. O PostgreSQL 18 fixado por DEC-015 e o commit Odoo fixado por DEC-009 permanecem inalterados. O protocolo continua pré-congelamento, portanto não há desvio experimental nem reexecução de resultados finais.
+- **Evidência:** inspeção de `scripts/build_odoo_image.ps1`, `scripts/smoke_test.ps1`, `scripts/smoke_test_gateway.py`, dos dois locks e do manifesto v1.2.4; futuras saídas saneadas de BuildKit, testes unitários e smoke M1.
+- **Responsável:** grupo.
+- **Afeta:** status de M1/G1, build e proveniência da imagem, identidade C0, fixtures, smoke JSON-2, oráculo de reset, locks, README, changelog e próxima release do plano.
+- **Complementa:** DEC-009, DEC-014 e DEC-015; corrige o critério de aceite atribuído à v1.2.4 sem alterar hipóteses, métricas, margem, dataset ou desenho C0/C1.
