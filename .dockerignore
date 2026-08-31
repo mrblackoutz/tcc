@@ -1,0 +1,7 @@
+# O contexto de build do Odoo deve ser vazio por padrão. O Dockerfile obtém o
+# upstream diretamente do repositório oficial no commit fixado; nenhum snapshot,
+# dado local, segredo ou artefato experimental deve ser enviado ao daemon.
+**
+
+!odoo/
+!odoo/Dockerfile

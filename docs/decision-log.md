@@ -177,3 +177,29 @@ Substitui ou é substituída por:
 - **Responsável:** grupo.
 - **Afeta:** threat model, §§8.4 e 16.5–16.6, critérios de segurança, risco R23, checklist de freeze, desenho do add-on e testes de C1.
 - **Complementa:** DEC-003 e D12; não altera hipóteses, métricas, margem, dataset ou comparação C0/C1.
+
+## DEC-014 — Primeiro incremento executável e ambiente-base do laboratório
+
+- **Data:** 31/08/2026
+- **Status:** aceita
+- **Contexto:** o repositório possuía o plano e os locks institucionais, mas ainda não continha ambiente executável. O host dispõe de Docker/Compose com daemon Linux `amd64`; seu Python é 3.13, enquanto o baseline do plano é Python 3.12. O snapshot local `odoo-19.0` não possui metadados Git e não pode provar procedência.
+- **Alternativas consideradas:** instalar Python/PostgreSQL/Odoo diretamente no Windows; construir a partir do snapshot local ignorado; usar imagens móveis sem digest; adotar laboratório Docker-first com bases por digest e obter o Odoo diretamente da origem oficial no commit fixado.
+- **Decisão:** o primeiro incremento M1/G1 será Docker-first e terá como único objetivo operacional subir PostgreSQL isolado e Odoo 19.0 Community construído da origem oficial em `a4b877245c9cb5e3d7152d1593a518170f115ca1`, inicializar somente módulos Community necessários, carregar fixtures integralmente sintéticas, autenticar via JSON-2, criar/ler exatamente uma conta de fornecedor em rascunho e demonstrar reset determinístico. A plataforma é `linux/amd64`; gateway e scripts Python usam Python 3.12 em contêiner. As bases Python 3.12 slim Bookworm e PostgreSQL 17 Bookworm ficam fixadas pelos manifests `linux/amd64` observados em 31/08/2026 e registradas em lock próprio. O build deve verificar `HEAD` contra o commit aprovado e incluir labels OCI de origem e revisão.
+- **Consequências:** o host precisa somente de Git, PowerShell e Docker Compose; a pasta `odoo-19.0` continua exclusivamente exploratória e nunca entra no contexto de build. Banco não publica porta, Odoo publica apenas em loopback e credenciais/chaves existem somente em `.env` ou diretório local ignorado. O digest da imagem Odoo e a ligação fonte→imagem permanecem pendentes até um build bem-sucedido e não serão preenchidos por suposição.
+- **Evidência:** auditoria local de versões; manifests de registry observados; Dockerfile, Compose, labels e futuros logs saneados de build/smoke/reset; `reproducibility/odoo-source.lock.json` e novo lock do ambiente.
+- **Responsável:** grupo.
+- **Afeta:** scaffold Docker, gateway JSON-2, fixtures, scripts de build/bootstrap/smoke/reset, testes e M1/G1.
+- **Fora deste incremento:** LLM, PDF, OCR, C1, `ap_security_executor`, `action_post`, pagamentos, egress de rede, dataset piloto e qualquer dado real.
+
+## DEC-015 — Adoção de PostgreSQL 18 para o banco do laboratório
+
+- **Data:** 31/08/2026
+- **Status:** aceita
+- **Contexto:** o ambiente-base inicial utilizava PostgreSQL 17 Bookworm. O grupo solicitou a atualização do banco para PostgreSQL 18. A imagem oficial `postgres:18` (`18.6-trixie`) foi inspecionada no registry oficial para a plataforma `linux/amd64`.
+- **Alternativas consideradas:** manter PostgreSQL 17; usar tag flutuante `postgres:18`; fixar a imagem `postgres:18` pelo digest imutável da plataforma `linux/amd64`.
+- **Decisão:** atualizar o serviço de banco para `postgres:18@sha256:7341002d2b8c7c5bdd7542a671a95b36196c0b5b888daf454ae4fc33ba5346d7`. Atualizar `compose.yaml` e `reproducibility/lab-environment.lock.json` com o digest imutável e a versão observada (`18.6-trixie`).
+- **Consequências:** o laboratório opera com a versão mais recente do PostgreSQL disponível na plataforma de destino; o isolamento em rede interna e a ausência de portas expostas fora do Compose permanecem inalterados.
+- **Evidência:** pedido explícito do grupo em 31/08/2026; inspeção de manifest OCI via `docker buildx imagetools inspect`; testes de smoke test e persistência.
+- **Responsável:** grupo.
+- **Afeta:** `compose.yaml`, `reproducibility/lab-environment.lock.json`, smoke test e M1/G1.
+- **Complementa:** DEC-014.

@@ -2,6 +2,16 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.4] — 2026-08-31
+
+- implementado o primeiro incremento executável do laboratório M1/G1 conforme DEC-014 e DEC-015;
+- construída a imagem Docker do Odoo 19.0 Community a partir do commit imutável `a4b877245c9cb5e3d7152d1593a518170f115ca1` com labels OCI e evidência interna verificada;
+- adotado PostgreSQL 18 (`postgres:18@sha256:7341002d2b8c7c5bdd7542a671a95b36196c0b5b888daf454ae4fc33ba5346d7`) com volume configurado para a estrutura de diretórios 18+;
+- implementado o pacote de gateway JSON-2 (`tcc_gateway`) com sanitização de credenciais em logs/erros, serialização canônica UTF-8/SHA-256 e 19 testes unitários aprovados;
+- implementados scripts operacionais de bootstrap (`new_local_env.ps1`), build (`build_odoo_image.ps1`) e smoke test determinístico (`smoke_test.ps1`, `smoke_test_gateway.py`) com ciclo completo de criação/leitura de fornecedor e reset comprovado por volumes;
+- atualizados `reproducibility/lab-environment.lock.json` com os digests e metadados imutáveis;
+- mantidos inalterados problema, hipóteses, métricas, margem, dataset e desenho C0/C1.
+
 ## [1.2.3] — 2026-08-31
 
 - corrigida, conforme DEC-013, a garantia técnica da fronteira JSON-2 antes do início da implementação;

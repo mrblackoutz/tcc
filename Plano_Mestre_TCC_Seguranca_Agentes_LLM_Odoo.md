@@ -11,9 +11,9 @@
 **Disciplina/atividade:** Trabalho de Conclusão de Curso II (TCC II)
 **Autores:** Felipe Ujvari Gasparino de Sousa; Gustavo Nascimento Siqueira; Thomaz de Souza Scopel
 **Orientador:** Mario Olimpio de Menezes
-**Versão:** 1.2.3
+**Versão:** 1.2.4
 **Data:** 31 de agosto de 2026
-**Status:** plano-mestre corrente somente em Markdown; garantia JSON-2 de C1 refinada para invariância e ausência de mutação crítica fora do executor; digest OCI e protocolo pós-piloto ainda pendentes — pré-congelamento
+**Status:** plano-mestre corrente somente em Markdown; primeiro incremento M1/G1 executável implementado (Docker Compose com Odoo 19.0 Community e PostgreSQL 18, gateway JSON-2, smoke test e reset determinístico aprovados); digest OCI registrado; dataset e protocolo pós-piloto pendentes — pré-congelamento
 
 > Documento de trabalho. O relatório e o fonte editável do TCC I, o edital `EditalTCC_2026_2-V1` e o template FCI 2026 foram recuperados e auditados. Autores e orientador foram confirmados em 30 de agosto de 2026. As lacunas institucionais residuais estão no Gate 0 e em `docs/institutional-requirements.md`.
 
@@ -42,9 +42,10 @@
 | 1.2.1 | 30/08/2026 | W06 confirmada; fonte Odoo fixada; edital, template e fonte do TCC I auditados; autoria/orientação e ausência de participantes humanos confirmadas; cronograma e estrutura do artigo alinhados a 2026/2 | Grupo |
 | 1.2.2 | 31/08/2026 | Plano-mestre simplificado para Markdown como único formato corrente; conversor Word removido; DOCX/PDF da v1.2.1 preservados apenas como histórico | Grupo |
 | 1.2.3 | 31/08/2026 | Garantia da fronteira JSON-2 corrigida para refletir o controller e as ACLs reais: contexto neutralizado com teste de invariância e nenhuma mutação crítica fora do executor | Grupo |
+| 1.2.4 | 31/08/2026 | Primeiro incremento executável M1/G1 implementado: Docker Compose com Odoo 19.0 Community (commit imutável) e PostgreSQL 18, gateway JSON-2 em Python com 19 testes unitários, smoke test e reset determinístico aprovados; DEC-014 e DEC-015 registradas | Grupo |
 | 1.3 | [data] | Congelamento após piloto | [nome] |
 
-A versão 1.2.3 corrige uma garantia de implementação antes do primeiro scaffold, sem mudar problema, hipóteses, métricas, margem, dataset ou desenho experimental. Conforme DEC-013, a JSON-2 continua sendo o transporte; contexto externo será omitido pelo gateway, neutralizado no executor e submetido a testes de invariância, enquanto a propriedade de autorização passa a ser nenhuma mutação crítica fora do método estreito. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
+A versão 1.2.4 registra a conclusão do primeiro incremento executável M1/G1 do laboratório, conforme DEC-014 e DEC-015. A stack reproduzível sobe PostgreSQL 18 e Odoo 19.0 Community construído a partir do commit imutável `a4b877245c9cb5e3d7152d1593a518170f115ca1`, o gateway JSON-2 opera com 19 testes unitários e o smoke test comprova a criação/leitura de fornecedor sintético e o reset determinístico por volumes. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
 
 ## Como usar este documento
 

@@ -1,0 +1,100 @@
+name: tcc-odoo-lab
+
+services:
+  db:
+    image: postgres:18@sha256:7341002d2b8c7c5bdd7542a671a95b36196c0b5b888daf454ae4fc33ba5346d7
+    platform: linux/amd64
+    restart: "no"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?defina POSTGRES_DB no arquivo .env}
+      POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no arquivo .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no arquivo .env}
+    expose:
+      - "5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - lab
+
+  odoo:
+    image: tcc-odoo:19.0-a4b8772
+    platform: linux/amd64
+    restart: "no"
+    build:
+      context: .
+      dockerfile: odoo/Dockerfile
+      args:
+        PYTHON_BASE_IMAGE: python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab
+        ODOO_REPOSITORY: https://github.com/odoo/odoo.git
+        ODOO_COMMIT: a4b877245c9cb5e3d7152d1593a518170f115ca1
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      - /opt/odoo/odoo-bin
+      - -c
+      - /etc/odoo/odoo.conf
+    ports:
+      - "127.0.0.1:${ODOO_HTTP_PORT:-8069}:8069"
+    volumes:
+      - type: bind
+        source: ./.runtime/odoo.conf
+        target: /etc/odoo/odoo.conf
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./odoo/addons
+        target: /mnt/extra-addons
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./odoo/fixtures
+        target: /opt/tcc/fixtures
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./.runtime/secrets
+        target: /run/tcc-secrets
+        read_only: false
+        bind:
+          create_host_path: false
+      - odoo_data:/var/lib/odoo
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8069/web/health', timeout=2).read()
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      - lab
+
+networks:
+  lab: {}
+
+volumes:
+  postgres_data:
+  odoo_data:
