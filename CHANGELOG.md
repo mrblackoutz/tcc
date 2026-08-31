@@ -2,6 +2,13 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.3] — 2026-08-31
+
+- corrigida, conforme DEC-013, a garantia técnica da fronteira JSON-2 antes do início da implementação;
+- registrado que o controller consome `context` antes de chamar o método e que o executor deve neutralizar sua influência e comprovar invariância, em vez de alegar rejeição literal;
+- reformulado o menor privilégio de C1 como ausência de mutações críticas fora de `ap.security.executor.execute`, com inventário explícito de eventuais leituras residuais das ACLs básicas;
+- mantidos inalterados problema, hipóteses, métricas, margem, dataset e desenho C0/C1.
+
 ## [1.2.2] — 2026-08-31
 
 - adotado o Markdown como único formato editável e corrente do plano-mestre, conforme DEC-012;

@@ -11,9 +11,9 @@
 **Disciplina/atividade:** Trabalho de Conclusão de Curso II (TCC II)
 **Autores:** Felipe Ujvari Gasparino de Sousa; Gustavo Nascimento Siqueira; Thomaz de Souza Scopel
 **Orientador:** Mario Olimpio de Menezes
-**Versão:** 1.2.2
+**Versão:** 1.2.3
 **Data:** 31 de agosto de 2026
-**Status:** plano-mestre corrente somente em Markdown; W06 confirmada; fonte Odoo fixada em `a4b877245c9cb5e3d7152d1593a518170f115ca1`; digest OCI e protocolo pós-piloto ainda pendentes — pré-congelamento
+**Status:** plano-mestre corrente somente em Markdown; garantia JSON-2 de C1 refinada para invariância e ausência de mutação crítica fora do executor; digest OCI e protocolo pós-piloto ainda pendentes — pré-congelamento
 
 > Documento de trabalho. O relatório e o fonte editável do TCC I, o edital `EditalTCC_2026_2-V1` e o template FCI 2026 foram recuperados e auditados. Autores e orientador foram confirmados em 30 de agosto de 2026. As lacunas institucionais residuais estão no Gate 0 e em `docs/institutional-requirements.md`.
 
@@ -41,9 +41,10 @@
 | 1.2 | 30/08/2026 | Odoo 19.0 Community confirmado; base conceitual, método e limitações do TCC I incorporados; W03, W04, W06 e W07 detalhadas; governança de decisões, segredos e versões instituída | Grupo |
 | 1.2.1 | 30/08/2026 | W06 confirmada; fonte Odoo fixada; edital, template e fonte do TCC I auditados; autoria/orientação e ausência de participantes humanos confirmadas; cronograma e estrutura do artigo alinhados a 2026/2 | Grupo |
 | 1.2.2 | 31/08/2026 | Plano-mestre simplificado para Markdown como único formato corrente; conversor Word removido; DOCX/PDF da v1.2.1 preservados apenas como histórico | Grupo |
+| 1.2.3 | 31/08/2026 | Garantia da fronteira JSON-2 corrigida para refletir o controller e as ACLs reais: contexto neutralizado com teste de invariância e nenhuma mutação crítica fora do executor | Grupo |
 | 1.3 | [data] | Congelamento após piloto | [nome] |
 
-A versão 1.2.2 é uma correção de governança documental, sem mudança no problema, hipóteses ou desenho experimental. Ela substitui o fluxo de três formatos pelo Markdown normativo único, conforme DEC-012. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
+A versão 1.2.3 corrige uma garantia de implementação antes do primeiro scaffold, sem mudar problema, hipóteses, métricas, margem, dataset ou desenho experimental. Conforme DEC-013, a JSON-2 continua sendo o transporte; contexto externo será omitido pelo gateway, neutralizado no executor e submetido a testes de invariância, enquanto a propriedade de autorização passa a ser nenhuma mutação crítica fora do método estreito. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
 
 ## Como usar este documento
 
@@ -553,7 +554,7 @@ Estado final + trilha experimental
 
 C1 adota fail closed: ausência de evidência, schema ambíguo, política indisponível, aprovação expirada ou divergência de parâmetros não resulta em ação crítica.
 
-No Odoo, a chave de C1 pertence a usuário técnico sem os grupos padrão de faturamento ou pagamento e só pode invocar o modelo de serviço do executor seguro. Chamadas diretas a `account.move`, `account.payment`, wizards ou métodos genéricos devem falhar por permissão. O add-on ignora contexto fornecido pelo agente e constrói um contexto interno fixo.
+No Odoo, a chave de C1 pertence a usuário técnico sem os grupos padrão de faturamento, compras ou pagamento. A propriedade exigida é que nenhuma mutação crítica seja possível fora do método estreito do executor; leituras residuais concedidas pelas ACLs básicas devem ser inventariadas, mas não podem autorizar `create`, `write`, `unlink`, `action_post`, pagamentos ou wizards. O gateway não envia `context` e o contrato do executor não aceita esse campo. Como o controller JSON-2 aplica o contexto do cliente antes da chamada, o add-on neutraliza sua influência usando valores confiáveis e contexto interno mínimo; testes diretos devem demonstrar invariância da autorização e do efeito diante de contexto hostil.
 
 ## 9.4 Delta experimental
 
@@ -1229,7 +1230,7 @@ A árvore é o estado-alvo do pacote científico, não uma declaração de que t
 
 O MVP usa JSON-2 conforme a documentação do Odoo 19.0. A primeira vertical slice empregará operações nativas para comprovar autenticação, ACL, criação, leitura e reset. Cada chamada JSON-2 é uma transação independente; portanto, uma sequência externa de “ler estado → validar → escrever” não oferece atomicidade entre a validação e a mutação.
 
-Para C1, a inspeção do código confirmou a necessidade de um método estreito em `ap_security_executor`, chamado por JSON-2. Esse método executará revalidação e efeito na mesma transação, aceitará somente contrato tipado e não exporá `create`, `write`, `unlink`, `action_post`, wizards ou contexto arbitrários. A interface de revisão, diff e auditoria visual continua opcional. Se `partner_bank_id` não atender ao oráculo após teste em execução, o mesmo add-on poderá acrescentar apenas o campo observável necessário.
+Para C1, a inspeção do código confirmou a necessidade de um método estreito em `ap_security_executor`, chamado por JSON-2. Esse método executará revalidação e efeito na mesma transação, aceitará somente contrato tipado e não exporá `create`, `write`, `unlink`, `action_post` ou wizards. O contrato não aceita `context`; o gateway o omite e o executor reconstrói valores confiáveis e um contexto interno mínimo. Como a JSON-2 consome o contexto antes da chamada, a garantia será verificada por invariância diante de contexto hostil, não por uma alegação de rejeição literal dentro do método. A interface de revisão, diff e auditoria visual continua opcional. Se `partner_bank_id` não atender ao oráculo após teste em execução, o mesmo add-on poderá acrescentar apenas o campo observável necessário.
 
 Ordem de integração:
 
@@ -1242,12 +1243,14 @@ Ordem de integração:
 
 A rota JSON-2 aceita `model`, `method`, argumentos e `context` fornecidos pelo cliente e pode executar qualquer método público permitido ao usuário autenticado. Ela bloqueia métodos privados e respeita ACLs, mas não cria, por si só, uma capacidade estreita por operação. As permissões Community do grupo de faturamento concedem CRUD amplo sobre contas, linhas e objetos relacionados; dar esse grupo ao usuário de C1 permitiria contornar o policy engine chamando métodos genéricos. Isso tornaria o controle de menor privilégio apenas nominal.
 
+Operações ORM continuam sujeitas a ACLs e regras de registro, mas a rota não acrescenta automaticamente uma verificação de grupo ao corpo de um método público customizado. Por isso, `execute` verificará explicitamente o grupo customizado e o direito mínimo de leitura sobre o modelo de serviço antes de qualquer elevação localizada de privilégio. A reconstrução do ambiente deverá sobrescrever explicitamente `allowed_company_ids`, empresa, idioma, fuso e defaults relevantes; apenas chamar `with_context({})` não remove todos os valores herdados.
+
 O desenho obrigatório de C1 será:
 
 1. criar usuário técnico dedicado, sem grupos padrão de faturamento, gerência de compras, configurações, validação bancária ou pagamentos;
-2. criar grupo customizado com acesso apenas ao modelo de serviço do executor;
-3. expor um único método público tipado, como `safe.ap.executor.execute(proposal)`;
-4. rejeitar campos extras, modelo/método arbitrários e `context` enviado pelo agente; o add-on constrói internamente um contexto mínimo e fixo;
+2. criar grupo customizado com direito mínimo de leitura sobre o modelo de serviço do executor, sem `create`, `write` ou `unlink` diretos e sem implicar grupos de faturamento, compras, pagamentos ou configuração; inventariar leituras residuais herdadas das ACLs básicas;
+3. expor um único método público tipado, `ap.security.executor.execute(command)`, com verificação explícita de grupo e acesso antes de qualquer `sudo()` localizado;
+4. rejeitar campos extras e modelo/método arbitrários; não aceitar `context` no contrato, omiti-lo no gateway e neutralizar sua influência no add-on por valores confiáveis e contexto interno mínimo;
 5. não conceder ao usuário de API acesso direto a `account.move.create`, `write`, `unlink`, `action_post` ou wizards de pagamento;
 6. elevar privilégio dentro do add-on somente depois das validações, sobre empresa, PO, diário, fornecedor e registros explicitamente allowlisted;
 7. separar os modos `CREATE_DRAFT` e `POST_APPROVED`; o segundo exige autorização vinculada ao hash e aos parâmetros exatos;
@@ -1499,7 +1502,7 @@ O TCC só está concluído quando:
 | R20 | lacuna científica é contradita por estudo equivalente | Média | Médio | revisão encontra fluxo semelhante | enquadrar como replicação, extensão ou avaliação comparativa; retirar claim de ineditismo |
 | R21 | imagem executada não corresponde à revisão Odoo selecionada ou deriva de base diferente da registrada | Média | Alto | commit, rótulo de build, plataforma ou digests não coincidem com o manifesto | construir em árvore limpa no commit fixado; registrar referência, plataforma, digest da base e digest OCI; verificar a ligação fonte→imagem e executar smoke test antes do freeze |
 | R22 | usuário de C1 contorna o executor pela API genérica | Média | Crítico | chave possui grupo de faturamento ou CRUD em `account.move` | usuário/grupo customizado sem ACL ampla; testes negativos por JSON-2; chaves separadas de C0 |
-| R23 | auto-post ou contexto do cliente muda o comportamento | Média | Alto | conta sai de `draft` sem ação autorizada ou flag interna altera validação | desabilitar auto-post; rejeitar contexto externo; assertions no bootstrap e antes de cada lote |
+| R23 | auto-post ou contexto do cliente muda o comportamento | Média | Alto | conta sai de `draft` sem ação autorizada ou flag interna altera validação | desabilitar auto-post; omitir contexto no gateway, neutralizar sua influência no executor e testar invariância; assertions no bootstrap e antes de cada lote |
 | R24 | importação de anexo com commit interno quebra atomicidade/idempotência | Baixa | Alto | duplicação após retry ou estado parcial | criar `ir.attachment` diretamente no executor; fault injection e teste concorrente |
 | R25 | prazo administrativo ou de submissão é perdido | Baixa | Crítico | cadastro, anuência, requerimento ou upload sem recibo no gate interno | dono e substituto por entrega; lembrete no board; concluir antes do último dia; preservar recibo; escalar imediatamente ao orientador |
 
@@ -1827,7 +1830,7 @@ Registrar fluxo de seleção, motivos de exclusão e snowballing para trás e pa
 - [ ] C0 competente e revisado
 - [ ] C1 passa testes de invariantes
 - [ ] usuário de C1 não possui ACL genérica de faturamento/pagamento
-- [ ] auto-post está desabilitado e contexto externo é rejeitado
+- [ ] auto-post está desabilitado; o gateway omite contexto externo e testes demonstram que contexto hostil na JSON-2 não altera autorização, empresa, estado ou efeito
 - [x] fonte oficial e revisão selecionada do Odoo 19.0 Community registradas em `reproducibility/odoo-source.lock.json`: `https://github.com/odoo/odoo.git`, branch observada `19.0`, commit `a4b877245c9cb5e3d7152d1593a518170f115ca1`
 - [ ] imagem construída desse commit; referência, plataforma, digest da base, digest OCI `sha256:<64-hex>` e evidência da ligação fonte→imagem registrados
 - [ ] modelo/identificador, prompts, policies e imagens fixados

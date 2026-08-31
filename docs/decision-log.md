@@ -164,3 +164,16 @@ Substitui ou é substituída por:
 - **Evidência:** decisão explícita do grupo em 31/08/2026 e distinção já fixada por DEC-010 entre plano operacional e artigo institucional.
 - **Responsável:** grupo.
 - **Afeta:** política de releases, `AGENTS.md`, `README.md`, `CHANGELOG.md`, árvore do repositório, artefatos históricos e scripts de geração/validação.
+
+## DEC-013 — Garantia comprovável na fronteira JSON-2 de C1
+
+- **Data:** 31/08/2026
+- **Status:** aceita
+- **Contexto:** a inspeção do controller JSON-2 do Odoo 19.0 mostrou que o transporte retira o campo especial `context` do payload e o aplica ao ambiente antes de chamar o método público. Por isso, o add-on não consegue distinguir entre contexto ausente e contexto já consumido pelo controller. A inspeção das ACLs também mostrou que um usuário interno mínimo pode conservar leituras de modelos básicos, embora não receba as permissões amplas de faturamento ou compras.
+- **Alternativas consideradas:** afirmar rejeição literal do `context` dentro do executor; criar agora um controller customizado que preserve essa informação; usar JSON-2 nativa, não aceitar `context` no contrato de negócio, reconstruir um contexto interno controlado e testar invariância e ausência de mutações críticas por rotas alternativas.
+- **Decisão:** manter JSON-2 como transporte. O gateway não enviará `context`; o contrato tipado do executor não aceitará esse campo; o executor usará valores confiáveis e um contexto interno mínimo para suas decisões. Testes com contexto hostil diretamente na JSON-2 deverão demonstrar que ele não altera autorização, empresa, estado ou efeito. A propriedade de menor privilégio será formulada como **nenhuma mutação crítica fora de `ap.security.executor.execute`**, e não como ausência absoluta de qualquer leitura ou chamada a modelos básicos.
+- **Consequências:** a garantia passa a coincidir com o comportamento observável da plataforma e pode ser testada sem modificar o core. Leituras residuais inevitáveis serão inventariadas; `create`, `write`, `unlink`, `action_post`, pagamentos e demais mutações críticas deverão falhar fora do executor. Um controller customizado só será reconsiderado se o teste dinâmico mostrar que a neutralização é insuficiente.
+- **Evidência:** `addons/rpc/controllers/json2.py` da revisão Odoo fixada; ACLs Community inspecionadas; futuros testes negativos de bypass, contexto e invariância.
+- **Responsável:** grupo.
+- **Afeta:** threat model, §§8.4 e 16.5–16.6, critérios de segurança, risco R23, checklist de freeze, desenho do add-on e testes de C1.
+- **Complementa:** DEC-003 e D12; não altera hipóteses, métricas, margem, dataset ou comparação C0/C1.
