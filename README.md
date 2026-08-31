@@ -13,9 +13,14 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 - `CHANGELOG.md`: histórico das versões publicadas do plano-mestre.
 - `docs/decision-log.md`: decisões surgidas durante a construção.
 - `docs/deviation-log.md`: divergências depois do congelamento experimental.
+- `docs/institutional-requirements.md`: matriz de conformidade com edital, template, calendário e avaliação do TCC II 2026/2.
 - `docs/releases/v1.2.md`: manifesto auditável, hashes e gates da release 1.2.
+- `docs/releases/v1.2.1.md`: manifesto auditável de W06, do pin Odoo e da auditoria institucional de 2026/2.
+- `reproducibility/odoo-source.lock.json`: lock legível por máquina da fonte Odoo selecionada.
+- `reproducibility/institutional-sources.lock.json`: hashes, requisitos e anomalias das fontes institucionais locais.
 - `scripts/check_repository_safety.ps1`: verificação de caminhos proibidos e padrões de credenciais sem exibir o valor suspeito.
-- `odoo-19.0/`: snapshot local ignorado pelo Git e usado somente para exploração; antes do experimento, origem oficial, commit/checksum e digest da imagem devem ser fixados no manifesto de reprodução.
+- `odoo-19.0/`: snapshot local ignorado pelo Git e usado somente para exploração; a reprodução usa o commit oficial fixado `a4b877245c9cb5e3d7152d1593a518170f115ca1`, e o digest OCI será registrado depois da construção da imagem correspondente.
+- `relatorio_tcc_I_fci_pacote/`: pacote local ignorado, usado somente como evidência de continuidade e referência institucional; contém repositório aninhado e dados acadêmicos que não devem ser preparados para commit.
 
 ## Regeneração
 
@@ -46,4 +51,4 @@ Depois de adicionar somente os caminhos pretendidos, executar novamente com `-St
 
 Os dados brutos dos experimentos permanecem fora do Git em armazenamento criptografado e com cópia imutável. O repositório deve conter somente o manifesto saneado de hashes, schema, proveniência e retenção, além dos exports sintéticos aprovados para publicação.
 
-O documento é um plano de execução, não o artigo final. O relatório do TCC I já foi incorporado; calendário oficial, template, regras de submissão e as demais pendências institucionais permanecem no Gate 0.
+O documento é um plano de execução, não o artigo final. O edital e o template de 2026/2 já foram auditados: o produto institucional será um artigo separado de 10–20 páginas, submetido inicialmente no Oriente entre 03 e 09/11/2026. As lacunas residuais estão listadas em `docs/institutional-requirements.md`.

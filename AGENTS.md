@@ -6,11 +6,14 @@ Estas regras valem para todo o repositório. O projeto deve ser tratado como pot
 
 ## Fontes de verdade
 
-1. `Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md` é a fonte normativa do escopo científico, das decisões D01–D12, do protocolo e dos critérios de conclusão.
+1. `Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md` é a fonte normativa do escopo científico, das decisões D01–D15, do protocolo e dos critérios de conclusão.
 2. `docs/decision-log.md` registra decisões surgidas durante a construção.
 3. `docs/deviation-log.md` preserva qualquer divergência depois do congelamento experimental.
 4. `CHANGELOG.md` registra versões publicadas do plano-mestre.
-5. O conteúdo efetivamente desenvolvido no relatório do TCC I orienta a continuidade; seu título anterior não define o escopo atual.
+5. `reproducibility/odoo-source.lock.json` fixa a origem e o commit do Odoo; o digest OCI permanece pendente até a construção da imagem.
+6. `docs/institutional-requirements.md` traduz o edital e o template vigentes em gates do TCC II.
+7. `reproducibility/institutional-sources.lock.json` registra hashes e anomalias das fontes institucionais mantidas fora do Git.
+8. O conteúdo efetivamente desenvolvido no relatório do TCC I orienta a continuidade; seu título anterior não define o escopo atual.
 
 Se implementação e documentação divergirem, não escolher silenciosamente um dos lados: interromper a mudança, registrar a divergência e decidir qual deve ser corrigido.
 
@@ -45,12 +48,12 @@ Depois da mudança:
 - Toda versão publicada do plano deve corresponder a um commit Git dedicado.
 - Atualizar número, data, status, histórico interno e `CHANGELOG.md` no mesmo commit.
 - Incluir no commit o Markdown, DOCX, PDF e scripts que afetem sua geração ou validação.
-- Usar mensagem no padrão `docs(plan): release vX.Y — resumo`.
+- Usar mensagem no padrão `docs(plan): release vX.Y[.Z] — resumo`.
 - Não misturar uma versão do plano com código experimental não relacionado.
 - Não reescrever commit de versão já publicado com amend, squash, rebase ou force-push. Correções posteriores geram nova versão e novo commit.
 - Se uma versão for publicada por processo externo em commits fora do padrão, preservar o histórico, registrar a exceção no decision log e criar um manifesto/commit-âncora auditável; não corrigir o remoto sem autorização explícita.
 - Usar `git add` com caminhos explícitos. É proibido preparar versão com `git add -A`, `git add .` ou globs amplos.
-- Não enviar ao remoto dados sensíveis.
+- Não enviar qualquer commit ao remoto sem pedido explícito do usuário; dados sensíveis nunca podem ser enviados.
 
 ## Registro de decisões e desvios
 
@@ -72,6 +75,7 @@ Nunca versionar, anexar a issues, copiar para logs ou expor em saída de ferrame
 - documentos fiscais reais, dados bancários reais, PII ou dados corporativos;
 - dumps, volumes, filestore, logs brutos, prompts/respostas não saneados ou banco experimental local;
 - o snapshot integral `odoo-19.0`; a reprodução deve usar origem oficial, commit/checksum e digest de imagem.
+- o pacote local `relatorio_tcc_I_fci_pacote`; ele contém repositório aninhado, contatos e identificadores acadêmicos, e sua rastreabilidade pública ocorre somente por manifesto saneado de hashes.
 
 Usar variáveis de ambiente ou gerenciador de segredos. Um `.env.example` pode conter somente nomes de variáveis e valores claramente fictícios. Se um segredo for encontrado, não o reproduzir na conversa ou no log: interromper o commit, remover do índice/histórico ainda não publicado, comunicar o responsável e solicitar rotação/revogação.
 
@@ -101,8 +105,11 @@ Revisar a lista preparada linha por linha. Arquivos binários gerados podem ser 
 
 ## Regras específicas do artefato
 
-- Odoo principal: 19.0 Community self-hosted, fixado por origem/commit e digest antes do experimento.
+- Odoo principal: 19.0 Community self-hosted, repositório `https://github.com/odoo/odoo.git`, commit fixado `a4b877245c9cb5e3d7152d1593a518170f115ca1`; o branch móvel não atualiza o pin automaticamente.
+- A imagem Odoo deve ser construída desse commit; registrar seu digest OCI `sha256:<64-hex>` antes de qualquer run.
 - A pasta local `odoo-19.0` é somente para exploração e permanece ignorada.
 - JSON-2 é transporte; em C1, a fronteira de autorização é o add-on mínimo e o usuário técnico restrito.
 - O LLM propõe; o policy engine autoriza; o executor aplica apenas a decisão autorizada.
 - Pagamentos reais, NF-e válida, OCR, SaaS 19.4, módulos Enterprise e IA nativa do Odoo estão fora do escopo.
+- Não há participantes humanos; o approval gate técnico (gate de revisão simulado) é avaliado por decisões pré-definidas, sem coleta comportamental.
+- O plano-mestre não é o artigo de submissão. O artigo final deve ser criado separadamente sobre cópia saneada do template FCI 2026, com 10–20 páginas incluindo referências e Resumo/Abstract de 150–250 palavras cada.

@@ -32,6 +32,10 @@ pgpass.conf
 # Snapshot local do upstream; usar commit/imagem reproduzível no experimento
 /odoo-19.0/
 
+# Pacote local de referência institucional/TCC I; contém repositório aninhado e PII
+# Versionar somente requisitos saneados e hashes em docs/ e reproducibility/.
+/relatorio_tcc_I_fci_pacote/
+
 # Bancos, volumes e estado local do Odoo/PostgreSQL
 /odoo-data/
 /postgres-data/

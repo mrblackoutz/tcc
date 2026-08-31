@@ -28,7 +28,8 @@ try {
         [pscustomobject]@{ Name = 'credential path'; Pattern = '(?i)(^|/)(secrets?|credentials?)(/|\.|$)'; Allow = '$a' },
         [pscustomobject]@{ Name = 'database or dump'; Pattern = '(?i)\.(dump|backup|sql|sqlite|sqlite3)$'; Allow = '$a' },
         [pscustomobject]@{ Name = 'private/raw data'; Pattern = '(?i)^(data/private|dataset/private|documents/private|sources/private|experiments/raw|experiments/runs|analysis/private|logs|outbox)(/|$)'; Allow = '$a' },
-        [pscustomobject]@{ Name = 'local Odoo snapshot'; Pattern = '(?i)^odoo-19\.0(/|$)'; Allow = '$a' }
+        [pscustomobject]@{ Name = 'local Odoo snapshot'; Pattern = '(?i)^odoo-19\.0(/|$)'; Allow = '$a' },
+        [pscustomobject]@{ Name = 'local institutional/TCC I source package'; Pattern = '(?i)^relatorio_tcc_I_fci_pacote(/|$)'; Allow = '$a' }
     )
 
     foreach ($path in $paths) {
@@ -52,7 +53,10 @@ try {
         [pscustomobject]@{ Name = 'JWT-like token'; Pattern = '\beyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}\b' },
         [pscustomobject]@{ Name = 'database URI with password'; Pattern = '(?i)\b(?:postgres(?:ql)?|mysql|mariadb|mongodb(?:\+srv)?)://[^/\s:@]+:[^@\s/]+@' },
         [pscustomobject]@{ Name = 'Odoo master password assignment'; Pattern = '(?i)\badmin_passwd\b\s*[:=]\s*["'']?[^\s"'']{8,}' },
-        [pscustomobject]@{ Name = 'credential assignment'; Pattern = '(?i)\b(api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password|passwd)\b\s*[:=]\s*["'']?[A-Za-z0-9/+_.=-]{12,}' }
+        [pscustomobject]@{ Name = 'credential assignment'; Pattern = '(?i)\b(api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password|passwd)\b\s*[:=]\s*["'']?[A-Za-z0-9/+_.=-]{12,}' },
+        [pscustomobject]@{ Name = 'email address'; Pattern = '(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b' },
+        [pscustomobject]@{ Name = 'Brazilian CPF-like identifier'; Pattern = '\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b' },
+        [pscustomobject]@{ Name = 'academic identifier'; Pattern = '(?i)\b(?:RA|TIA|matr[ií]cula)\s*[:#-]?\s*\d{6,12}\b' }
     )
     $placeholderPattern = '(?i)(example|placeholder|redacted|change[_-]?me|dummy|synthetic|fictitious|<[^>]+>|\$\{[^}]+\})'
 

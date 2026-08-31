@@ -1,6 +1,6 @@
 # Registro de decisões
 
-Este log complementa as decisões D01–D12 do plano-mestre. Nenhuma decisão material deve permanecer apenas em conversa, memória individual ou código.
+Este log complementa as decisões D01–D15 do plano-mestre. Nenhuma decisão material deve permanecer apenas em conversa, memória individual ou código.
 
 ## Modelo obrigatório
 
@@ -38,9 +38,10 @@ Substitui ou é substituída por:
 - **Alternativas consideradas:** Odoo SaaS 19.4; snapshot `saas-19.4`; Odoo 19.0 Community.
 - **Decisão:** usar Odoo 19.0 Community self-hosted; excluir SaaS 19.4, Enterprise e IA nativa.
 - **Consequências:** ambiente reproduzível e extensível; LLM e controles ficam no gateway externo.
-- **Evidência:** D11, W01–W02 e inspeção do snapshot local; commit/checksum upstream ainda deve ser congelado.
+- **Evidência:** D11, W01–W02 e inspeção do snapshot local; nesta decisão, commit/checksum upstream ainda deveria ser congelado.
 - **Responsável:** grupo.
 - **Afeta:** stack, containers, integração, referências e reprodução.
+- **Complementada por:** DEC-009, em 30/08/2026, que fixa o repositório e a revisão de fonte.
 
 ## DEC-003 — Fronteira de autorização de C1
 
@@ -57,14 +58,15 @@ Substitui ou é substituída por:
 ## DEC-004 — Controle do modelo e utilidade
 
 - **Data:** 29/08/2026
-- **Status:** parcialmente aceita; parâmetros finais dependem do piloto
+- **Status:** aceita
 - **Contexto:** trocar modelo entre C0 e C1 confundiria efeito do modelo com efeito da arquitetura.
 - **Alternativas consideradas:** modelos diferentes por condição; múltiplos modelos no núcleo; um modelo primário fixo e segundo opcional.
 - **Decisão:** usar exatamente o mesmo modelo/configuração em C0 e C1; manter 180 documentos como meta pré-piloto; tratar 10 pontos percentuais de BTSR como margem candidata.
 - **Consequências:** seleção do modelo e justificativa da margem devem ocorrer antes do freeze e sem consultar o teste final.
 - **Evidência:** W04–W06, H3 e §§14–15 do plano 1.2.
-- **Responsável:** grupo e orientador para aprovação da margem.
+- **Responsável:** grupo; na decisão original, a aprovação final da margem ainda era atribuída ao orientador.
 - **Afeta:** piloto, manifesto, poder, custo e análise estatística.
+- **Substituída por:** DEC-008 exclusivamente quanto ao caráter candidato e à aprovação da margem; modelo concreto e tamanho amostral final continuam dependentes do piloto em W04 e W05.
 
 ## DEC-005 — Governança do histórico e dos segredos
 
@@ -101,3 +103,52 @@ Substitui ou é substituída por:
 - **Evidência:** reflog de `origin/main`, commits `81b8191` e `39baf53`, manifesto da release e resultados de validação.
 - **Responsável:** grupo.
 - **Afeta:** histórico Git, changelog, política de releases e publicação remota.
+
+## DEC-008 — Confirmação da margem W06
+
+- **Data:** 30/08/2026
+- **Status:** aceita
+- **Contexto:** na v1.2, a margem de 10 pontos percentuais para a BTSR ainda estava registrada como candidata, embora a hipótese H3 já usasse `−0,10`.
+- **Alternativas consideradas:** manter a margem indefinida até o piloto; escolher uma margem depois de observar resultados; confirmar `−0,10` antes do piloto e preservar o valor.
+- **Decisão:** confirmar `−0,10` como margem de não inferioridade de `BTSR_C1 − BTSR_C0` e promover a decisão a D13.
+- **Consequências:** C1 só será não inferior se o limite inferior do IC95% ficar estritamente acima de `−0,10`; o piloto pode informar precisão, poder e tamanho amostral, mas não alterar a margem com base nos resultados.
+- **Evidência:** confirmação do grupo em 30/08/2026, D13, W06, H3 e §15.3 do plano 1.2.1.
+- **Responsável:** grupo.
+- **Afeta:** hipótese H3, piloto, plano estatístico, freeze, análise e critérios de sucesso.
+- **Substitui:** estado provisório de W06 na versão 1.2.
+
+## DEC-009 — Pin imutável da fonte Odoo 19.0
+
+- **Data:** 30/08/2026
+- **Status:** aceita
+- **Contexto:** a pasta local não possui metadados Git próprios e o branch oficial `19.0` é móvel. O grupo indicou e selecionou `a4b877245c9cb5e3d7152d1593a518170f115ca1`; ele também foi observado na consulta realizada durante a seleção. Uma consulta independente posterior retornou `49baa7f91e6213bddc6f15044ca3c8a4ff79dee5`, um commit à frente.
+- **Alternativas consideradas:** seguir automaticamente o HEAD do branch; escolher o HEAD somente no freeze; fixar o commit aprovado pelo grupo e tratar avanços posteriores como fora do ambiente.
+- **Decisão:** usar `https://github.com/odoo/odoo.git` no commit `a4b877245c9cb5e3d7152d1593a518170f115ca1`; nunca atualizar o pin automaticamente a partir do branch `19.0`.
+- **Consequências:** todo build deve resolver esse commit em estado limpo; o digest OCI será registrado somente após construir a imagem correspondente; mudar a fonte exige nova versão e, depois do freeze, desvio e reexecução afetada.
+- **Evidência:** decisão explícita do grupo, consultas `git ls-remote` em 30/08/2026 e `reproducibility/odoo-source.lock.json`.
+- **Responsável:** grupo.
+- **Afeta:** stack, Dockerfile, imagem Odoo, manifesto experimental, smoke tests, reprodução e runs.
+
+## DEC-010 — Formato institucional do artigo final e separação do plano-mestre
+
+- **Data:** 30/08/2026
+- **Status:** aceita
+- **Contexto:** o edital `EditalTCC_2026_2-V1` e o template `TemplateArtigo_TCC_FCI_2026` foram recuperados. O plano-mestre é um contrato operacional extenso e não atende, nem pretende atender, ao limite institucional do artigo final. O `.tex` do TCC I é histórico e não representa automaticamente o template atualizado de 2026.
+- **Alternativas consideradas:** reutilizar o `.tex` antigo sem adaptação; converter o plano-mestre integral em artigo; manter o plano como fonte operacional e produzir um artigo separado a partir do template vigente.
+- **Decisão:** manter o plano-mestre como artefato interno editável e produzir o artigo científico final em arquivo separado, sobre uma cópia saneada do template institucional de 2026, com 10 a 20 páginas, resumo e abstract de 150 a 250 palavras e os seis títulos literais exigidos pela FCI. Reancorar o cronograma para submissão inicial entre 03 e 09/11/2026.
+- **Consequências:** detalhes de protocolo, schemas e evidências extensas irão para o repositório ou material suplementar; as seções científicas do plano serão mapeadas como subseções da estrutura oficial; o pacote local bruto permanece fora do Git e somente seus hashes e requisitos saneados serão versionados. Um único integrante será designado para cadastro e requerimento, os três autores serão conferidos, e reuniões semanais ou quinzenais de orientação terão presença e encaminhamentos registrados.
+- **Evidência:** edital e template auditados em 30/08/2026, confirmação dos autores e do orientador pelo grupo, `docs/institutional-requirements.md` e `reproducibility/institutional-sources.lock.json`.
+- **Responsável:** grupo; dúvidas de interpretação institucional serão confirmadas com o orientador e no Oriente.
+- **Afeta:** Gate 0, cronograma, estrutura do artigo, checklist editorial, preparação da banca, privacidade e pacote de reprodução.
+
+## DEC-011 — Ausência de participantes humanos
+
+- **Data:** 30/08/2026
+- **Status:** aceita
+- **Contexto:** a arquitetura inclui um gate denominado *human-in-the-loop*, mas o experimento científico não pretende avaliar comportamento, desempenho ou decisão de pessoas. O template apenas exige indicar procedimentos éticos quando houver pesquisa com humanos ou animais.
+- **Alternativas consideradas:** recrutar revisores humanos como participantes; conduzir estudo de usabilidade; simular deterministicamente o resultado de autorização e restringir a avaliação ao mecanismo técnico.
+- **Decisão:** não haverá participantes humanos, recrutamento, entrevista, questionário, observação comportamental nem coleta de dados de participantes ou PII/dados operacionais reais no experimento. O approval gate será testado como controle técnico por tokens de fixture previamente definidos no ground truth. Dados cadastrais dos autores e do orientador ficam restritos ao fonte controlado do artigo. A nomenclatura metodológica permanece DSR com experimento controlado; o estudo será classificado como pesquisa aplicada, de abordagem predominantemente quantitativa, complementada por análise qualitativa de falhas.
+- **Consequências:** métricas não poderão sustentar claims sobre qualidade, tempo, erro ou comportamento de revisores reais; a demanda de revisão é uma propriedade técnica potencial do pipeline, não carga observada de pessoas. O token terá contrato tipado e assinatura gerada em execução, e H4 usará um relógio end-to-end benigno comparável com injeção síncrona da fixture; tempos de disposição e validação do token serão apenas diagnósticos. Eventual inclusão futura de pessoas exige nova decisão, análise ética institucional e, depois do freeze, registro de desvio e novo protocolo.
+- **Evidência:** confirmação explícita do grupo em 30/08/2026, dados integralmente sintéticos e escopo ético do plano.
+- **Responsável:** grupo.
+- **Afeta:** escopo, metodologia, threat model, métricas de revisão, ética, limitações e artigo.

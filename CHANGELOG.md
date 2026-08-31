@@ -2,6 +2,23 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte e os artefatos gerados.
 
+## [1.2.1] — 2026-08-30
+
+- confirmada W06: margem de não inferioridade fixa de 10 pontos percentuais para `BTSR_C1 − BTSR_C0`;
+- promovida a margem confirmatória a D13, antes do piloto e do teste final;
+- fixada a fonte do Odoo em `https://github.com/odoo/odoo.git`, branch observada `19.0`, commit `a4b877245c9cb5e3d7152d1593a518170f115ca1`;
+- registrado que o branch avançou após a seleção e que isso não altera o pin imutável aprovado;
+- separado o commit Git do digest OCI, que será preenchido somente após construir a imagem desse commit;
+- auditados o edital `EditalTCC_2026_2-V1`, o template FCI criado em 15/08/2026 e o fonte editável do TCC I;
+- confirmados os três autores e Mario Olimpio de Menezes como orientador;
+- definido que o plano permanece operacional e o produto institucional será um artigo separado de 10–20 páginas no template 2026, com submissão inicial até 09/11/2026;
+- reancorado o cronograma, mapeadas as seções científicas para a estrutura oficial e acrescentados os gates de Resumo/Abstract, NBR 6023:2018, apresentação e excelência;
+- confirmado que não haverá participantes humanos e que a nomenclatura DSR com experimento controlado permanece;
+- mantido fora do Git o pacote local com repositório aninhado e PII, registrando apenas requisitos saneados e hashes;
+- ampliado o verificador de segurança para bloquear o pacote institucional/TCC I mesmo em preparação forçada e detectar e-mail, CPF e identificadores acadêmicos em arquivos textuais;
+- adicionados locks de procedência e manifesto auditável da release 1.2.1;
+- regenerados e validados Markdown, DOCX e PDF.
+
 ## [1.2] — 2026-08-30
 
 - adotado Odoo 19.0 Community self-hosted; SaaS 19.4, Enterprise e IA nativa ficaram fora do escopo;

@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "odoo",
+  "edition": "Community",
+  "repository": "https://github.com/odoo/odoo.git",
+  "branch_observed": "19.0",
+  "selected_commit": "a4b877245c9cb5e3d7152d1593a518170f115ca1",
+  "selection_status": "fixed",
+  "verified_on": "2026-08-30",
+  "branch_head_observations": [
+    {
+      "sequence": 1,
+      "observed_on": "2026-08-30",
+      "method": "git ls-remote https://github.com/odoo/odoo.git refs/heads/19.0",
+      "commit": "a4b877245c9cb5e3d7152d1593a518170f115ca1",
+      "result": "selected"
+    },
+    {
+      "sequence": 2,
+      "observed_on": "2026-08-30",
+      "method": "git ls-remote https://github.com/odoo/odoo.git refs/heads/19.0",
+      "commit": "49baa7f91e6213bddc6f15044ca3c8a4ff79dee5",
+      "result": "branch_advanced_after_selection"
+    }
+  ],
+  "ancestry_verification": {
+    "observed_on": "2026-08-30",
+    "method": "https://api.github.com/repos/odoo/odoo/compare/a4b877245c9cb5e3d7152d1593a518170f115ca1...49baa7f91e6213bddc6f15044ca3c8a4ff79dee5",
+    "base": "a4b877245c9cb5e3d7152d1593a518170f115ca1",
+    "head": "49baa7f91e6213bddc6f15044ca3c8a4ff79dee5",
+    "status": "ahead",
+    "ahead_by": 1,
+    "behind_by": 0,
+    "total_commits": 1
+  },
+  "image": {
+    "build_source_commit": "a4b877245c9cb5e3d7152d1593a518170f115ca1",
+    "reference": null,
+    "oci_digest": null,
+    "digest_scope": null,
+    "runtime_platform": null,
+    "dockerfile_sha256": null,
+    "base_image_reference": null,
+    "base_image_oci_digest": null,
+    "built_at": null,
+    "source_image_linkage": {
+      "status": "pending_verification",
+      "evidence": null
+    },
+    "status": "pending_reproducible_build",
+    "required_digest_format": "sha256:<64-hex>"
+  },
+  "policy": "The moving branch never updates selected_commit automatically. Any source change requires a documented plan version; any post-freeze change also requires a deviation record and affected reruns."
+}

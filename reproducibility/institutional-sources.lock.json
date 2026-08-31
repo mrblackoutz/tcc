@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "component": "institutional_sources",
+  "captured_on": "2026-08-30",
+  "semester": "2026-2",
+  "institution": "Universidade Presbiteriana Mackenzie - Faculdade de Computacao e Informatica",
+  "distribution_channel": "Oriente, conforme indicado no edital; arquivos fornecidos localmente pelo grupo",
+  "origin_verification": "O canal de download nao foi autenticado de forma independente nesta auditoria",
+  "local_source_root": "relatorio_tcc_I_fci_pacote",
+  "repository_policy": "O pacote bruto permanece ignorado por conter um repositorio Git aninhado, contatos e identificadores academicos. Somente requisitos saneados e hashes sao versionados.",
+  "sources": [
+    {
+      "id": "tcc1_editable_tex",
+      "relative_path": "relatorio_tcc_I_fci_pacote/src/relatorio_tcc_fci.tex",
+      "role": "fonte historica editavel do TCC I; nao e template vigente do TCC II",
+      "bytes": 42233,
+      "sha256": "18cfd743556113fc2f4a350991c171c2d305b538fc6f17918a7a3b59a6b741aa",
+      "nested_repository_head_context": "f6e29d90b6cf48a9597edc72e1fe9c4cd727e1a8",
+      "tracking_status": "untracked_reorganized_worktree",
+      "authentication_note": "O HEAD do repositorio aninhado e apenas contexto historico e nao autentica este arquivo atual; a identidade congelada e o SHA-256 acima."
+    },
+    {
+      "id": "tcc1_bibliography",
+      "relative_path": "relatorio_tcc_I_fci_pacote/src/referencias.bib",
+      "role": "bibliografia historica do TCC I; deve ser reconciliada com as citacoes efetivamente usadas no artigo novo",
+      "bytes": 9029,
+      "sha256": "9838a90609d406d27148a73a5c57d7e86d3c5a9ac507aef0829f5c8d665881b1",
+      "tracking_status": "untracked_reorganized_worktree"
+    },
+    {
+      "id": "tcc1_available_evaluations",
+      "relative_path": "relatorio_tcc_I_fci_pacote/src/AVALIACAO DOS AVALIADORES APÓS APRESENTACO QUE CADASTRARAM NO SISTEMA.txt",
+      "role": "feedback historico disponivel; o conteudo permanece local e somente sua identidade criptografica e versionada",
+      "bytes": 9256,
+      "sha256": "56b91980803912dba299ea855b5d9dcaee0352d74fcc8a456934e9929504edaa",
+      "tracking_status": "untracked_reorganized_worktree",
+      "privacy_note": "Nao copiar contatos, identificadores academicos ou trechos nao saneados para logs ou artefatos publicos."
+    },
+    {
+      "id": "fci_tcc_notice_2026_2_v1",
+      "relative_path": "relatorio_tcc_I_fci_pacote/assets/EditalTCC.pdf",
+      "role": "edital semestral auditado",
+      "bytes": 472055,
+      "pages": 16,
+      "document_title": "EditalTCC_2026_2-V1",
+      "document_created_at": "2026-08-17T17:19:15-03:00",
+      "sha256": "f466dcf3c8f1ee0e546f07bd34f5a7dee5fab2e78cf18eaa7f62a8be8f7e7b7a",
+      "tracking_status": "untracked_in_nested_repository"
+    },
+    {
+      "id": "fci_article_template_2026_doc",
+      "relative_path": "relatorio_tcc_I_fci_pacote/template_tcc2/template_mackenzieFCI_TCC/Word/TemplateArtigo_TCC_FCI_2026.doc",
+      "role": "arquivo-base editavel do artigo TCC II",
+      "bytes": 84992,
+      "pages": 4,
+      "sha256": "56cb33c40e6c3d43ce809ba95999d04700da420db526bbc1e84ec627bb579945",
+      "tracking_status": "untracked_in_nested_repository"
+    },
+    {
+      "id": "fci_article_template_2026_pdf",
+      "relative_path": "relatorio_tcc_I_fci_pacote/template_tcc2/template_mackenzieFCI_TCC/Word/TemplateArtigo_TCC_FCI_2026.pdf",
+      "role": "referencia visual e textual do artigo TCC II",
+      "bytes": 265085,
+      "pages": 4,
+      "document_created_at": "2026-08-15T12:37:26-03:00",
+      "sha256": "18b5802047437639edf0bcd5e2cfbfa15106bf6c9d2bb4ad406e71ad1435074b",
+      "tracking_status": "untracked_in_nested_repository"
+    }
+  ],
+  "requirements_snapshot": {
+    "deliverable": "artigo cientifico estendido",
+    "minimum_pages": 10,
+    "maximum_pages_including_references": 20,
+    "resumo_words": {
+      "minimum": 150,
+      "maximum": 250
+    },
+    "abstract_words": {
+      "minimum": 150,
+      "maximum": 250
+    },
+    "group_registration_window": {
+      "start": "2026-08-18",
+      "end": "2026-08-31",
+      "single_designated_member": true,
+      "all_group_members_must_be_listed": true
+    },
+    "orientation_frequency": "weekly_or_fortnightly_with_attendance",
+    "research_method": "pesquisa aplicada, predominantemente quantitativa, complementada por analise qualitativa de falhas; DSR com experimento controlado",
+    "human_participants": false,
+    "initial_submission_window": {
+      "start": "2026-11-03",
+      "end": "2026-11-09"
+    },
+    "corrected_article_deadline": "2026-12-04",
+    "advisor_final_approval_deadline": "2026-12-07"
+  },
+  "known_anomalies": [
+    "O PDF do template possui titulo de metadado nao relacionado e autoria pessoal herdada; esses metadados nao podem ser propagados.",
+    "O edital associa 16/11 a 27/11 a horarios fora das aulas e avaliadores PPI/PPP, mas outro trecho associa outros horarios e PPA ao intervalo impossivel 31/11 a 01/12; janela, horarios e elegibilidade exigem confirmacao no Oriente.",
+    "O pacote nao contem o Regulamento Geral de TCC nem o Guia Geral de TCC citados pelo edital.",
+    "A pasta Latex do template recebido esta vazia; o arquivo TeX do TCC I nao e template oficial de 2026."
+  ],
+  "open_confirmations": [
+    "extensao de arquivo aceita pela tarefa de TCC II no Oriente",
+    "Regulamento Geral e Guia Geral de TCC vigentes",
+    "politica institucional para uso e declaracao de IA",
+    "janela, horarios e elegibilidade dos avaliadores da banca diante do erro 31/11 e das condicoes PPI/PPP/PPA",
+    "alinhamento do tema com a area ou projeto de pesquisa do orientador",
+    "condicao PPI ou PPP e dados institucionais do orientador"
+  ]
+}
