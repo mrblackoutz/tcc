@@ -11,9 +11,9 @@
 **Disciplina/atividade:** Trabalho de Conclusão de Curso II (TCC II)
 **Autores:** Felipe Ujvari Gasparino de Sousa; Gustavo Nascimento Siqueira; Thomaz de Souza Scopel
 **Orientador:** Mario Olimpio de Menezes
-**Versão:** 1.2.6
+**Versão:** 1.2.7
 **Data:** 31 de agosto de 2026
-**Status:** plano-mestre corrente somente em Markdown; aceites técnicos M1 e M2/G2 comprovados conforme DEC-016 e DEC-017 (ambiente reproduzível, PDF sintético benigno com camada de texto, proposta tipada, execução direta C0 em rascunho e reset por hash); adaptador LLM, C0 científico competente/G3, itens residuais de G1, C1, dataset, piloto e freeze pendentes — pré-congelamento
+**Status:** plano-mestre corrente somente em Markdown; M1 e M2/G2 comprovados; DeepSeek V4 Flash 0731 observado selecionado para o bloco principal e Qwen3 14B Q4_K_M para o bloco separado de robustez conforme DEC-018; artefatos e parâmetros ainda não congelados; adapters, egress mínimo, C0 científico competente/G3, itens residuais de G1, C1, dataset, piloto e freeze pendentes — pré-congelamento
 
 > Documento de trabalho. O relatório e o fonte editável do TCC I, o edital `EditalTCC_2026_2-V1` e o template FCI 2026 foram recuperados e auditados. Autores e orientador foram confirmados em 30 de agosto de 2026. As lacunas institucionais residuais estão no Gate 0 e em `docs/institutional-requirements.md`.
 
@@ -45,9 +45,10 @@
 | 1.2.4 | 31/08/2026 | Scaffold inicial M1/G1 publicado com Odoo 19.0 Community, PostgreSQL 18 e gateway JSON-2; posteriormente auditado por DEC-016 e classificado como evidência preliminar, insuficiente isoladamente para o aceite M1 | Grupo |
 | 1.2.5 | 31/08/2026 | Aceite técnico M1 corrigido e comprovado: manifest OCI distinto do config digest, locks coerentes, identidade C0 dedicada, fixtures completas, conta de fornecedor via JSON-2 ligada a PO/banco e reset por igualdade de hashes | Grupo |
 | 1.2.6 | 31/08/2026 | Vertical slice M2/G2 comprovada: PDF sintético benigno sem OCR, proposta `vendor-bill-proposal/v1`, adaptador determinístico restrito ao desenvolvimento, executor direto C0, 41 testes e restauração exata do estado; LLM e C0 científico preservados para o piloto/G3 | Grupo |
+| 1.2.7 | 31/08/2026 | DeepSeek `deepseek-v4-flash`/backend documentado `DeepSeek-V4-Flash-0731` selecionado para o bloco principal e Ollama `qwen3:14b-q4_K_M` para robustez separada; modo sem *thinking*, amostras, proveniência e gates de viabilidade fixados em DEC-018 | Grupo |
 | 1.3 | [data] | Congelamento após piloto | [nome] |
 
-A v1.2.4 permanece preservada como release histórica do scaffold. A auditoria registrada em DEC-016 identificou que seu ID local de imagem não era evidência de manifest OCI, que os locks estavam incompletos, que o transporte usava a chave administrativa e que o smoke se limitava ao cadastro de fornecedor e ao descarte de volumes. O incremento corretivo `b9a96da33df83aabd75e95948cfbf202d7e73cf2` comprovou M1 com manifest OCI local `sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`, config digest distinto, identidade técnica C0 não administrativa, fixtures sintéticas completas, conta em rascunho ligada a PO/banco e reset por hash. O incremento M2 `fef3348` elevou a suíte a 41 testes e comprovou PDF benigno → proposta tipada → rascunho C0 → restauração, sob DEC-017. Isso atende aos componentes técnicos de M1 e M2/G2, mas não transforma o parser determinístico em LLM, não conclui o C0 científico/G3 e não encerra as obrigações institucionais e de literatura de G1. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
+A v1.2.4 permanece preservada como release histórica do scaffold. A auditoria registrada em DEC-016 identificou que seu ID local de imagem não era evidência de manifest OCI, que os locks estavam incompletos, que o transporte usava a chave administrativa e que o smoke se limitava ao cadastro de fornecedor e ao descarte de volumes. O incremento corretivo `b9a96da33df83aabd75e95948cfbf202d7e73cf2` comprovou M1 com manifest OCI local `sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`, config digest distinto, identidade técnica C0 não administrativa, fixtures sintéticas completas, conta em rascunho ligada a PO/banco e reset por hash. O incremento M2 `fef3348` elevou a suíte a 41 testes e comprovou PDF benigno → proposta tipada → rascunho C0 → restauração, sob DEC-017. A DEC-018, registrada no commit `45b0216`, encerrou a seleção nominal de W04 sem alterar o tamanho amostral: DeepSeek será o modelo principal e Qwen3 o segundo bloco separado. Isso não transforma o parser determinístico em LLM, não fixa os artefatos finais, não conclui o C0 científico/G3 e não encerra as obrigações institucionais e de literatura de G1. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
 
 ## Como usar este documento
 
@@ -151,13 +152,13 @@ As decisões abaixo estão aprovadas e não devem ser alteradas silenciosamente,
 | W01 | Odoo 19.0 Community self-hosted — decisão promovida a D11; fonte fixada em `https://github.com/odoo/odoo.git`, branch observada `19.0`, commit `a4b877245c9cb5e3d7152d1593a518170f115ca1` | Pin confirmado; imagem `linux/amd64` construída e ligada à fonte; manifest OCI local e config digest distintos registrados em 31/08/2026 | Preservar o artefato exato e repetir a verificação de proveniência em qualquer nova imagem; permissões C1 permanecem em gate próprio |
 | W02 | Manter o LLM e o gateway de segurança externos ao Odoo, em Python, integrados por JSON-2; a IA nativa do produto não faz parte do tratamento | Arquitetura confirmada; M2/G2 aprovado com PDF benigno, proposta tipada e executor direto C0; adaptador determinístico explicitamente restrito ao desenvolvimento; adapter LLM ainda não implementado | Encanamento M2 atendido; implementar o adapter LLM real e demonstrar competência benigna no piloto/G3 sem alterar a fronteira nem usar o conjunto final |
 | W03 | Usar JSON-2 para a vertical slice e C0; em C1, chamar por JSON-2 um add-on mínimo que revalida e executa a mutação em uma única transação. A interface visual é opcional e `partner_bank_id` permanece sujeito ao smoke test | Investigação estática promovida a D12; escrita, persistência, leitura e reset de `partner_bank_id` aprovados em M1/C0 | Implementar o add-on C1, negar CRUD/métodos genéricos ao usuário de C1 e testar ACL, contexto arbitrário, atomicidade e idempotência |
-| W04 | O experimento principal usará um único LLM, com o mesmo identificador ou snapshot, parâmetros, prompt-base, schema e limites em C0 e C1. Um segundo LLM será apenas uma avaliação opcional de robustez, executada depois e analisada separadamente | Desenho confirmado; modelo ainda não escolhido | Escolher no piloto por estabilidade, saída estruturada, latência, custo e identificador registrável, nunca pelo resultado de segurança mais favorável |
+| W04 | O experimento principal usará DeepSeek por API com `model=deepseek-v4-flash`, associado pelo provedor em 31/08/2026 a `DeepSeek-V4-Flash-0731`; C0 e C1 preservarão exatamente o mesmo alias observado e configuração. O bloco separado de robustez usará Ollama `qwen3:14b-q4_K_M` nas duas condições | Seleção nominal confirmada em DEC-018; *thinking* desligado no núcleo; artefatos, adapters, parâmetros e egress ainda não congelados | No piloto, validar competência, estabilidade, JSON/tool call, latência, custo e alias retornado do DeepSeek. Antes do bloco Qwen, registrar manifest/blobs e aprovar smoke local; nunca escolher configuração pelo resultado de segurança mais favorável |
 | W05 | Planejar dataset final pareado com 180 documentos | Confirmada como meta pré-piloto | Confirmar orçamento, poder e precisão após o piloto, antes de abrir o teste final |
 | W06 | Usar margem de não inferioridade de 10 pontos percentuais na BTSR dos cenários benignos | Confirmada e promovida a D13 | Registrar a justificativa operacional no protocolo; o piloto estima precisão e poder, mas não pode alterar a margem em resposta aos resultados |
 | W07 | Fixar após o piloto os limites de H4 para `L_e2e_benign`, custo por 100 documentos e demanda potencial de revisão por 100 documentos benignos | Procedimento confirmado | `L_e2e_benign` compara pares com o mesmo estado esperado e fixture síncrona quando exigida; as métricas excluem deliberação humana; depois de observado o teste final, os limites originais permanecem e qualquer novo limite será exploratório ou validado em nova amostra |
 | W08 | Confirmar no Oriente a extensão aceita na submissão, a janela/horários/elegibilidade dos avaliadores da banca diante do erro `31/11/2026` e das condições PPI/PPP/PPA, a política de IA e os dados cadastrais do orientador | Pendente; edital/template auditados e requisitos conhecidos | Preservar resposta ou captura institucional sem dados sensíveis; atualizar `docs/institutional-requirements.md` antes da submissão |
 
-Em W04, a decisão não é escolher agora entre provedores ou famílias de modelos. A decisão metodológica é impedir que C0 use um modelo e C1 use outro, pois isso confundiria o efeito da arquitetura com o efeito do modelo. A escolha concreta ocorrerá no piloto e será fixada no manifesto experimental.
+Em W04, a seleção concreta foi realizada antes do piloto: DeepSeek é o modelo principal e Qwen3 é o segundo modelo de robustez. Isso não altera a regra metodológica de que C0 e C1 usam o mesmo modelo e configuração dentro de cada bloco, pois trocar o modelo entre condições confundiria o efeito da arquitetura com o efeito do modelo. O piloto não escolherá a família com melhor resultado de segurança; ele validará o DeepSeek e fixará os parâmetros operacionais. O Qwen3 será executado somente depois do núcleo, em análise separada e condicionado ao gate de viabilidade local. A proveniência e as pendências estão em `docs/model-selection.md` e `reproducibility/model-selection.lock.json`.
 
 Em W06, os 10 pontos percentuais se referem exclusivamente à **taxa de sucesso em tarefas benignas**. Por exemplo, se C0 concluir corretamente 90% das tarefas benignas e C1 concluir 80%, a diferença observada será de `−10` pontos percentuais. A decisão estatística não usa apenas os percentuais observados: o limite inferior do IC95% de `BTSR_C1 − BTSR_C0` deverá permanecer estritamente acima de `−0,10`. O grupo confirmou essa margem antes do piloto e do teste final como a maior perda absoluta aceitável de utilidade benigna em troca do ganho de segurança; ela não se refere à ASR, à latência ou ao custo e não será recalibrada a partir dos resultados observados.
 
@@ -933,7 +934,7 @@ O gate é uma decisão operacional, não um teste de hipótese. Deve ser validad
 
 ## 14.3 Piloto
 
-O piloto usa 24 documentos fora do conjunto final — 12 pares, com um benigno e um adversarial por par — em C0 e C1, com três repetições. A matriz é `24 × 2 × 3 = 144` execuções, randomizadas e avaliadas pelas mesmas regras do teste final. O piloto responde:
+O piloto usa o modelo principal DeepSeek, solicitado como `deepseek-v4-flash`, com *thinking* explicitamente desligado. Ele contém 24 documentos fora do conjunto final — 12 pares, com um benigno e um adversarial por par — em C0 e C1, com três repetições. A matriz é `24 × 2 × 3 = 144` execuções, randomizadas e avaliadas pelas mesmas regras do teste final. Qwen3 não será misturado a esse cálculo e terá primeiro um smoke técnico próprio. O piloto responde:
 
 - o payload chega ao modelo?
 - o schema e o oráculo classificam corretamente?
@@ -979,7 +980,7 @@ Qualquer mudança posterior gera `docs/deviation-log.md`. Mudanças de implement
 9. executar reset e verificar ausência de resíduo;
 10. avançar somente se a validação técnica passar.
 
-Com 180 documentos, duas condições e três repetições, o experimento principal terá `180 × 2 × 3 = 1.080` execuções. As repetições serão intercaladas para reduzir drift temporal.
+Com o DeepSeek solicitado pelo alias `deepseek-v4-flash`, 180 documentos, duas condições e três repetições, o experimento principal terá `180 × 2 × 3 = 1.080` execuções. O backend documentado na seleção foi `DeepSeek-V4-Flash-0731`, mas o alias é móvel; cada run preservará o valor solicitado, o valor retornado quando houver, request ID saneado, timestamp e mapeamento de versão datado. As repetições serão intercaladas para reduzir drift temporal.
 
 ## 14.6 Falhas e dados ausentes
 
@@ -1023,7 +1024,7 @@ Somando o experimento principal (`1.080`), o bloco de ablação com referência 
 
 ## 14.9 Segundo modelo
 
-Um segundo modelo não é necessário para responder às perguntas confirmatórias. Ele constitui apenas estudo opcional de robustez e transportabilidade, realizado após a conclusão do núcleo experimental, se prazo e orçamento permitirem. Nesse caso, uma amostra pareada de 72 documentos será repetida nas duas condições e em três repetições, acrescentando `72 × 2 × 3 = 432` execuções. O total programado passará a 2.448 execuções incluindo o piloto, ou até 7.344 tentativas no limite extremo de retries. Se precisar cortar algo, o segundo modelo sai antes do experimento principal, do conjunto defense-aware e da análise.
+O segundo modelo selecionado é `qwen3:14b-q4_K_M`, executado localmente via Ollama com *thinking* desligado. Ele não é necessário para responder às perguntas confirmatórias e constitui um estudo planejado, mas condicionado, de robustez e transportabilidade, realizado após a conclusão do núcleo experimental se o smoke local, o prazo e o orçamento permitirem. Uma amostra pareada de 72 documentos será repetida nas duas condições e em três repetições, acrescentando `72 × 2 × 3 = 432` execuções. O total programado passará a 2.448 execuções incluindo o piloto, ou até 7.344 tentativas no limite extremo de retries. Antes do primeiro run, serão registrados o manifest Ollama completo, digests dos blobs, quantização, parâmetros, contexto e hardware. Se precisar cortar algo, o segundo modelo sai antes do experimento principal, do conjunto defense-aware e da análise; sua ausência limita validade externa, mas não invalida as hipóteses confirmatórias.
 
 # 15. Plano de análise estatística
 
@@ -1127,7 +1128,14 @@ Aumentar repetições não substitui criar mais cenários independentes.
 - arquivos de configuração versionados, secrets somente por ambiente;
 - dependências e imagens fixadas por versão e digest no congelamento.
 
-O fornecedor do LLM ficará atrás de um adapter e não dependerá de recurso nativo de IA do Odoo. A seleção deverá privilegiar identificação estável de modelo, saída estruturada, registro de uso e custo compatível. A escolha será baseada nos critérios operacionais do piloto, não em qual modelo produz o resultado de segurança mais favorável. Temperatura zero reduz variação, mas não garante determinismo.
+O fornecedor do LLM ficará atrás de um adapter e não dependerá de recurso nativo de IA do Odoo. Conforme DEC-018, o bloco principal solicita `deepseek-v4-flash` à API DeepSeek; o backend documentado em 31/08/2026 era `DeepSeek-V4-Flash-0731`, sem garantia de snapshot imutável. O bloco separado solicita `qwen3:14b-q4_K_M` ao Ollama e só será considerado reproduzível depois do lock do manifest e dos blobs locais. Ambos usam o contrato semântico `vendor-bill-proposal/v1`, *thinking* desligado e `temperature=0` quando aceita. O piloto fixa os demais parâmetros e valida a competência, mas não escolhe retrospectivamente o modelo com melhor segurança. Temperatura zero reduz variação, mas não garante determinismo.
+
+| Papel | Identificador solicitado | Versão/artefato | Estado pré-freeze |
+|---|---|---|---|
+| Principal | `deepseek-v4-flash` | `DeepSeek-V4-Flash-0731` documentado em 31/08/2026; alias móvel | selecionado; adapter, egress, retorno observado e parâmetros finais pendentes |
+| Robustez | `qwen3:14b-q4_K_M` | Q4_K_M via Ollama; manifest completo e blobs pendentes | selecionado; download autorizado pelo operador e smoke local pendentes |
+
+`docs/model-selection.md` contém o protocolo operacional e `reproducibility/model-selection.lock.json` separa fatos observados de evidências ainda pendentes. JSON e tool calling estruturam a proposta, mas não autorizam ações. Chaves de API e requests/responses brutos permanecem fora do Git; a rede interna do laboratório não será aberta de forma ampla para acomodar a API externa.
 
 A fonte do Odoo fica fixada pelos seguintes identificadores:
 
@@ -1169,6 +1177,7 @@ tcc/
 │   ├── architecture.md
 │   ├── lab-runbook.md
 │   ├── m2-c0-baseline.md
+│   ├── model-selection.md
 │   ├── institutional-requirements.md
 │   ├── decision-log.md
 │   ├── deviation-log.md
@@ -1177,6 +1186,7 @@ tcc/
 ├── reproducibility/
 │   ├── odoo-source.lock.json
 │   ├── lab-environment.lock.json
+│   ├── model-selection.lock.json
 │   └── institutional-sources.lock.json
 ├── scripts/
 │   ├── build_odoo_image.ps1
@@ -1344,6 +1354,7 @@ Itens obrigatórios:
 
 - `README` de início rápido e troubleshooting;
 - manifesto de ambiente e hardware;
+- lock de seleção e, no freeze, evidência do alias/backend DeepSeek observado e do manifest/blobs Ollama efetivamente usados;
 - lockfiles e digests;
 - prompts, schemas, políticas e seeds;
 - dados brutos imutáveis ou pacote saneado equivalente;
@@ -1351,7 +1362,7 @@ Itens obrigatórios:
 - licença, `CITATION.cff` e instruções de citação;
 - limitações conhecidas e desvios do protocolo.
 
-Se o provedor não oferece snapshot imutável do modelo, registrar o identificador retornado, data/hora, request ID e respostas brutas. Essa limitação deve aparecer no artigo.
+Se o provedor não oferece snapshot imutável do modelo, registrar alias solicitado, identificador retornado quando disponível, mapeamento documentado com data/hora, request ID saneado e respostas brutas sob custódia externa. Essa limitação deve aparecer no artigo. Para o modelo local, a tag de catálogo não basta: manifest completo, blobs, quantização, versão do runtime e parâmetros efetivamente usados são obrigatórios.
 
 # 18. Cronograma operacional
 
@@ -1559,7 +1570,7 @@ Conforme D15, nenhuma pessoa será participante da pesquisa. Autores que revisam
 
 ## 22.3 Validade externa
 
-O estudo usa um ERP, idioma, processo PO-backed, parser textual, documentos sintéticos e um modelo primário. Não permite generalizar estatisticamente para todos os ERPs, empresas, idiomas, LLMs, documentos escaneados ou ataques. A generalização será analítica: princípios como menor privilégio, política externa e aprovação vinculada podem ser transferíveis, mas sua eficácia precisa ser reavaliada em cada contexto.
+O estudo usa um ERP, idioma, processo PO-backed, parser textual, documentos sintéticos e um modelo primário servido por API. Não permite generalizar estatisticamente para todos os ERPs, empresas, idiomas, LLMs, documentos escaneados ou ataques. A generalização será analítica: princípios como menor privilégio, política externa e aprovação vinculada podem ser transferíveis, mas sua eficácia precisa ser reavaliada em cada contexto. Se o bloco Qwen3 for concluído, ele fornecerá evidência adicional de transportabilidade entre um serviço comercial e um modelo open-weight local; por ser uma amostra separada de 72 documentos, não transforma o trabalho em comparação exaustiva de modelos nem substitui replicações independentes.
 
 ## 22.4 Validade de conclusão
 
@@ -1849,7 +1860,9 @@ Registrar fluxo de seleção, motivos de exclusão e snowballing para trás e pa
 - [x] fonte oficial e revisão selecionada do Odoo 19.0 Community registradas em `reproducibility/odoo-source.lock.json`: `https://github.com/odoo/odoo.git`, branch observada `19.0`, commit `a4b877245c9cb5e3d7152d1593a518170f115ca1`
 - [x] imagem M1 construída desse commit; referência, plataforma, digest da base, manifest OCI local `sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`, config digest distinto e evidência da ligação fonte→imagem registrados
 - [ ] artefato OCI exato dos lotes finais preservado em custódia externa imutável ou referência aprovada em registry, sem reconstrução silenciosa
+- [x] papéis nominais dos modelos selecionados em DEC-018: DeepSeek `deepseek-v4-flash` no núcleo e Ollama `qwen3:14b-q4_K_M` no bloco separado
 - [ ] modelo/identificador, prompts, policies e imagens fixados
+- [ ] alias/backend retornado do DeepSeek documentado no piloto; manifest e blobs completos do Qwen3 fixados; igualdade C0/C1 comprovada por bloco
 - [x] reset M1 validado pela igualdade entre os hashes canônicos inicial e restaurado
 - [x] vertical slice M2 validada com PDF benigno, proposta tipada, rascunho C0 e igualdade entre hashes inicial/restaurado; o adaptador determinístico está proibido nas runs científicas
 - [ ] idempotência do executor C1 validada sob retry e concorrência

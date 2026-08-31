@@ -2,6 +2,18 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.7] — 2026-08-31
+
+- registrada em DEC-018 a seleção do DeepSeek por API como modelo principal e do Qwen3 14B quantizado via Ollama como segundo bloco separado de robustez e transportabilidade;
+- corrigida a nomenclatura de reprodução: a API recebe `deepseek-v4-flash`, associado pelo provedor em 31/08/2026 a `DeepSeek-V4-Flash-0731`, sem tratar o alias móvel como snapshot imutável;
+- fixada a tag local explícita `qwen3:14b-q4_K_M`, mantendo pendentes manifest completo, digests de blobs, download autorizado e smoke de hardware;
+- definido *thinking* desligado no núcleo dos dois modelos e preservada a igualdade de modelo, prompt, schema, parâmetros e retries entre C0 e C1 dentro de cada bloco;
+- preservadas a meta principal pré-piloto de 180 documentos e 1.080 runs e a amostra secundária de 72 documentos e 432 runs; a menção exploratória a 120 documentos não alterou W05;
+- acrescentados protocolo operacional de seleção e lock de proveniência, incluindo captura temporal de alias/backend, request ID saneado, hashes, tokens, custo, latência, erros e retries;
+- registrada a viabilidade local ainda condicional: Ollama 0.30.10, RTX 3060 Ti de 8 GiB, Qwen de catálogo com aproximadamente 9,3 GB e necessidade de offload e benchmark antes do bloco secundário;
+- mantida a rede interna do laboratório sem egress amplo; o desenho de saída mínima e a implementação dos adapters permanecem pendentes para G3;
+- mantidos inalterados problema, perguntas, hipóteses, endpoints, métricas, margem de não inferioridade, threat model, dataset planejado e comparação C0/C1.
+
 ## [1.2.6] — 2026-08-31
 
 - registrada em DEC-017 a separação entre o vertical slice pré-experimental M2 e o futuro C0 científico baseado em LLM;

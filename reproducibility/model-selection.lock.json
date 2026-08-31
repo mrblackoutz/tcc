@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 1,
+  "decisionId": "DEC-018",
+  "observedOn": "2026-08-31",
+  "status": "models-selected-artifacts-not-frozen",
+  "protocolFrozen": false,
+  "primaryModel": {
+    "role": "confirmatory-primary",
+    "provider": "DeepSeek",
+    "transport": "official-api-openai-compatible",
+    "apiBaseUrl": "https://api.deepseek.com",
+    "requestedModel": "deepseek-v4-flash",
+    "providerDocumentedBackend": "DeepSeek-V4-Flash-0731",
+    "backendMappingObservedOn": "2026-08-31",
+    "versionSemantics": "mobile-api-alias-with-dated-provider-mapping",
+    "immutableSnapshotClaimed": false,
+    "thinking": {
+      "coreSetting": "disabled",
+      "providerDefaultObserved": "enabled-high"
+    },
+    "temperaturePolicy": "zero-if-accepted-otherwise-minimum-accepted-fixed-before-freeze",
+    "structuredOutput": {
+      "jsonOutputDocumented": true,
+      "toolCallsDocumented": true,
+      "semanticContract": "vendor-bill-proposal/v1"
+    },
+    "pricingSnapshotUsdPerMillionTokens": {
+      "observedOn": "2026-08-31",
+      "cacheMissInputOffPeak": 0.22,
+      "cacheMissInputPeak": 0.44,
+      "outputOffPeak": 0.66,
+      "outputPeak": 1.32,
+      "warning": "Pricing is observational and must be re-recorded for each experimental batch."
+    },
+    "artifactDigest": null,
+    "artifactStatus": "provider-hosted-alias"
+  },
+  "secondaryModel": {
+    "role": "robustness-transportability",
+    "provider": "Ollama",
+    "requestedModel": "qwen3:14b-q4_K_M",
+    "catalogTag": "qwen3:14b-q4_K_M",
+    "catalogDigestPrefixObserved": "bdbd181c33f2",
+    "catalogSizeDisplay": "9.3 GB",
+    "catalogContextLengthDisplay": "40K",
+    "quantization": "Q4_K_M",
+    "license": "Apache-2.0",
+    "thinking": {
+      "coreSetting": "disabled"
+    },
+    "temperaturePolicy": "zero-if-accepted-otherwise-minimum-accepted-fixed-before-freeze",
+    "semanticContract": "vendor-bill-proposal/v1",
+    "localManifestDigest": null,
+    "blobDigests": [],
+    "artifactStatus": "not-downloaded-not-frozen",
+    "warning": "The catalog tag and truncated digest are not an immutable local artifact reference."
+  },
+  "experimentalAllocation": {
+    "pilot": {
+      "model": "deepseek-v4-flash",
+      "documents": 24,
+      "conditions": 2,
+      "repetitions": 3,
+      "plannedRuns": 144
+    },
+    "confirmatoryPrimary": {
+      "model": "deepseek-v4-flash",
+      "documentsPrePilotTarget": 180,
+      "conditions": 2,
+      "repetitions": 3,
+      "plannedRuns": 1080
+    },
+    "secondaryRobustness": {
+      "model": "qwen3:14b-q4_K_M",
+      "documents": 72,
+      "conditions": 2,
+      "repetitions": 3,
+      "plannedRuns": 432,
+      "confirmatoryRequired": false,
+      "executionOrder": "after-core"
+    }
+  },
+  "controlledVariablesWithinEachModel": [
+    "model-or-artifact",
+    "prompt-base",
+    "semantic-schema",
+    "thinking-mode",
+    "sampling-parameters",
+    "token-limits",
+    "timeout-and-retry-policy"
+  ],
+  "localReadinessObservation": {
+    "observedOn": "2026-08-31",
+    "ollamaVersion": "0.30.10",
+    "installedModels": [
+      "llama3.1:8b"
+    ],
+    "gpu": "NVIDIA GeForce RTX 3060 Ti",
+    "gpuMemoryMiB": 8192,
+    "gpuDriverVersion": "595.95",
+    "driveFreeGiB": 66.51,
+    "totalSystemMemoryGiB": null,
+    "systemMemoryObservationStatus": "not-observed-os-permission-denied",
+    "qwenFitsEntirelyInObservedVram": false,
+    "qwenDownloadAuthorized": false,
+    "qwenFeasibilitySmokeStatus": "pending"
+  },
+  "security": {
+    "apiSecretInRepository": false,
+    "rawRequestsAndResponsesInGit": false,
+    "rawCustody": "external-encrypted-access-controlled-and-immutable-copy",
+    "runtimeNetworkCurrentlyInternal": true,
+    "externalEgressDesignStatus": "pending-decision-before-first-api-call"
+  },
+  "requiredPerRunProvenance": [
+    "provider",
+    "api-base-and-endpoint",
+    "requested-model-alias",
+    "returned-model-or-version-when-available",
+    "provider-mapping-observation-date",
+    "utc-timestamp",
+    "sanitized-request-id",
+    "thinking-mode",
+    "sampling-and-limit-parameters",
+    "system-prompt-schema-dataset-config-and-git-hashes",
+    "token-usage",
+    "dated-pricing-snapshot",
+    "latency-errors-and-retries"
+  ],
+  "pendingBeforeFreeze": [
+    "DeepSeek adapter implementation and synthetic smoke",
+    "minimal egress boundary decision and negative tests",
+    "Qwen artifact download authorized by operator",
+    "full Ollama manifest and blob digests",
+    "Qwen hardware feasibility smoke",
+    "pilot prompt and final parameter lock",
+    "pilot competence cost latency precision and power report"
+  ],
+  "sources": [
+    {
+      "kind": "official-provider-documentation",
+      "url": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "observedOn": "2026-08-31"
+    },
+    {
+      "kind": "official-provider-update-history",
+      "url": "https://api-docs.deepseek.com/updates/",
+      "observedOn": "2026-08-31"
+    },
+    {
+      "kind": "official-provider-thinking-guide",
+      "url": "https://api-docs.deepseek.com/guides/thinking_mode/",
+      "observedOn": "2026-08-31"
+    },
+    {
+      "kind": "official-ollama-catalog",
+      "url": "https://ollama.com/library/qwen3/tags",
+      "observedOn": "2026-08-31"
+    },
+    {
+      "kind": "official-qwen-model-card",
+      "url": "https://huggingface.co/Qwen/Qwen3-14B",
+      "observedOn": "2026-08-31"
+    }
+  ]
+}

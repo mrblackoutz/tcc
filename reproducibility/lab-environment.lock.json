@@ -71,7 +71,7 @@
                     "completedAt":  "2026-08-31T14:40:48.6270500Z"
                 },
     "pendingEvidence":  [
-                            "LLM adapter and model selection remain pending for pilot/G3 per W04"
+                            "Model roles were selected in DEC-018; adapters, minimal egress, exact artifacts, final parameters and pilot competence remain pending for G3 and freeze"
                         ],
     "m2Smoke":  {
                     "status":  "pass",

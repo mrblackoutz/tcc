@@ -14,14 +14,17 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 - `docs/institutional-requirements.md`: matriz de conformidade com edital, template, calendário e avaliação do TCC II 2026/2.
 - `docs/lab-runbook.md`: procedimento operacional dos marcos M1–M2, evidências, recuperação e limites.
 - `docs/m2-c0-baseline.md`: relatório técnico, interpretação e limites científicos do vertical slice M2/C0.
+- `docs/model-selection.md`: papéis dos modelos, configuração comum, proveniência, segurança e gates de G3 definidos em DEC-018.
 - `docs/releases/v1.2.md`: manifesto auditável, hashes e gates da release 1.2.
 - `docs/releases/v1.2.1.md`: manifesto auditável de W06, do pin Odoo e da auditoria institucional de 2026/2.
 - `docs/releases/v1.2.2.md`: manifesto da transição do plano para Markdown como formato único.
 - `docs/releases/v1.2.3.md` e `docs/releases/v1.2.4.md`: manifests históricos da correção JSON-2 e do scaffold inicial do laboratório.
 - `docs/releases/v1.2.5.md`: manifesto do aceite técnico M1 corrigido conforme DEC-016.
 - `docs/releases/v1.2.6.md`: manifesto do aceite técnico M2/G2 e de seus limites pré-experimentais conforme DEC-017.
+- `docs/releases/v1.2.7.md`: manifesto da seleção DeepSeek/Qwen3, do desenho por blocos e das pendências de G3 conforme DEC-018.
 - `reproducibility/odoo-source.lock.json`: lock legível por máquina da fonte Odoo selecionada.
 - `reproducibility/lab-environment.lock.json`: versões, digests e últimos aceites M1/M2 saneados do laboratório.
+- `reproducibility/model-selection.lock.json`: seleção datada do DeepSeek e Qwen3, fatos observados e evidências ainda pendentes para o freeze.
 - `reproducibility/institutional-sources.lock.json`: hashes, requisitos e anomalias das fontes institucionais locais.
 - `scripts/check_repository_safety.ps1`: verificação de caminhos proibidos e padrões de credenciais sem exibir o valor suspeito.
 - `odoo-19.0/`: snapshot local ignorado pelo Git e usado somente para exploração; o build usa a origem oficial no commit fixado `a4b877245c9cb5e3d7152d1593a518170f115ca1`, e o manifest OCI aceito está registrado nos locks.
@@ -34,6 +37,10 @@ O marco M1 foi validado em 31/08/2026, ainda antes do congelamento experimental.
 O marco M2 também foi validado em 31/08/2026. Ele gera localmente um PDF sintético benigno com camada de texto, extrai o conteúdo sem OCR, produz uma proposta tipada validada por JSON Schema, resolve as referências por chaves de negócio e cria o mesmo rascunho via executor direto C0. Foram aprovados 41 testes e o hash após a remoção voltou ao estado inicial.
 
 M2 é uma baseline de desenvolvimento do encanamento, não o C0 científico: o adaptador `deterministic-development/v1` não usa LLM e está proibido nas runs experimentais. Os aceites ainda não incluem modelo LLM, prompt injection, C1, add-on de autorização, postagem ou pagamento. O manifesto OCI é local e não foi publicado em registry. O estado verificável corrente está em `reproducibility/lab-environment.lock.json`; PDF, credenciais e evidências detalhadas permanecem em `.runtime`, fora do Git.
+
+Os modelos de G3 foram selecionados em DEC-018. O bloco principal usará a API DeepSeek com `model=deepseek-v4-flash`; na data da seleção, o provedor documentava o backend `DeepSeek-V4-Flash-0731`, mas o alias continua móvel. O bloco posterior de robustez usará `qwen3:14b-q4_K_M` via Ollama. Os dois blocos preservam C0/C1 com o mesmo modelo e configuração e usam *thinking* desligado no núcleo. Essa seleção ainda não significa que adapters, egress, artefato Qwen, parâmetros ou competência do C0 científico estejam aprovados.
+
+O host observado possui Ollama 0.30.10 e RTX 3060 Ti com 8 GiB de VRAM. Como o Qwen quantizado ocupa aproximadamente 9,3 GB, sua inclusão depende de smoke com offload parcial e manifest completo registrado. O modelo não foi baixado por esta release. A rede do laboratório permanece interna e nenhuma chave DeepSeek foi criada, lida ou versionada.
 
 ## Execução local de M1 e M2
 
