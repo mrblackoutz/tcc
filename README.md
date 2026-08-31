@@ -15,6 +15,7 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 - `docs/lab-runbook.md`: procedimento operacional dos marcos M1–M2, evidências, recuperação e limites.
 - `docs/m2-c0-baseline.md`: relatório técnico, interpretação e limites científicos do vertical slice M2/C0.
 - `docs/model-selection.md`: papéis dos modelos, configuração comum, proveniência, segurança e gates de G3 definidos em DEC-018.
+- `paper/`: fonte LaTeX editável, referências, validação e PDF pré-experimental do artigo institucional do TCC II, conforme DEC-019.
 - `docs/releases/v1.2.md`: manifesto auditável, hashes e gates da release 1.2.
 - `docs/releases/v1.2.1.md`: manifesto auditável de W06, do pin Odoo e da auditoria institucional de 2026/2.
 - `docs/releases/v1.2.2.md`: manifesto da transição do plano para Markdown como formato único.
@@ -55,9 +56,13 @@ O primeiro comando gera credenciais locais aleatórias sem exibi-las. O segundo 
 
 Não use `new_local_env.ps1 -Force` com um banco existente sem planejar a rotação conjunta do volume. A opção `smoke_test.ps1 -RecreateVolumes` remove somente os volumes rotulados do projeto, mas é destrutiva e exige autorização explícita do operador. O procedimento completo e os critérios de diagnóstico estão em `docs/lab-runbook.md`.
 
+## Artigo institucional do TCC II
+
+O artigo separado já está disponível em `paper/`. A compilação corrente tem 17 páginas e passou pelos gates de extensão, contagem de Resumo/Abstract, estrutura, reconciliação de 20 citações com 20 referências, metadados e inspeção visual. Ela registra somente os resultados técnicos comprovados de M1/M2; C1, piloto, freeze e resultados confirmatórios ainda estão pendentes. Portanto, é uma versão profissional para revisão com o orientador, não o arquivo final de submissão.
+
 ## Edição do plano
 
-O plano-mestre é mantido somente em Markdown. Não há etapa de conversão para Word ou PDF. O artigo institucional será produzido separadamente sobre uma cópia saneada do template FCI vigente.
+O plano-mestre é mantido somente em Markdown. Não há etapa de conversão para Word ou PDF. O artigo institucional é produzido separadamente em `paper/`, com fonte e validação próprias.
 
 ## Segurança e publicação de versões
 

@@ -1,0 +1,81 @@
+{
+  "schema_version": "paper-validation/v1",
+  "validated_on": "2026-08-31",
+  "decision": "DEC-019",
+  "artifact": {
+    "path": "paper/relatorio_tcc_ii.pdf",
+    "sha256": "a6a1ffcac63bb538b6f62a3575329b18afdfb632b86c1eabd535597270638988",
+    "bytes": 240094,
+    "pages": 17,
+    "page_size": "A4",
+    "status": "pre-experimental"
+  },
+  "automated_checks": {
+    "status": "PASS",
+    "resumo_words": 217,
+    "abstract_words": 205,
+    "citation_keys": 20,
+    "bibliography_entries": 20,
+    "undefined_citations_or_references": 0,
+    "overfull_boxes": 0,
+    "underfull_boxes": 0,
+    "required_main_headings": 6,
+    "forbidden_placeholders": 0,
+    "email_addresses_in_versioned_sources": 0,
+    "encrypted": false,
+    "javascript": false,
+    "inherited_template_metadata": false
+  },
+  "visual_inspection": {
+    "status": "PASS",
+    "pages_inspected": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+    "cover_and_summaries": "PASS",
+    "dense_tables": "PASS",
+    "section_transitions": "PASS",
+    "conclusion_and_references": "PASS",
+    "intermediate_header_only_pages": 0,
+    "residual_table_line_pages": 0
+  },
+  "metadata": {
+    "title": "Desenvolvimento e implementacao de uma arquitetura de protecao na integracao de LLMs em ERPs: estudo de caso com Odoo e Contas a Pagar",
+    "creator": "Universidade Presbiteriana Mackenzie - Faculdade de Computacao e Informatica",
+    "encrypted": false,
+    "javascript": false
+  },
+  "institutional_sources": {
+    "template_doc_sha256": "56cb33c40e6c3d43ce809ba95999d04700da420db526bbc1e84ec627bb579945",
+    "template_reference_pdf_sha256": "18b5802047437639edf0bcd5e2cfbfa15106bf6c9d2bb4ad406e71ad1435074b",
+    "traceability": "reproducibility/institutional-sources.lock.json"
+  },
+  "toolchain": {
+    "pdflatex": "MiKTeX-pdfTeX 4.23 (MiKTeX 25.12)",
+    "bibtex": "MiKTeX-BibTeX 4.2 (MiKTeX 25.12)",
+    "pdfinfo": "Poppler 24.04.0",
+    "bibliography_style": "abntex2-alf 1.9.7",
+    "notice": "MiKTeX reported that its repository update check had not yet been run; the document build and all artifact gates passed."
+  },
+  "scientific_boundary": {
+    "verified": [
+      "M1 laboratory and reversible synthetic vendor-bill smoke",
+      "M2 PDF-to-typed-proposal-to-draft vertical slice",
+      "41 automated gateway tests",
+      "exact post-run state restoration"
+    ],
+    "not_yet_measured": [
+      "C1 efficacy",
+      "ASR-state",
+      "BTSR",
+      "UACR",
+      "SDR",
+      "latency",
+      "cost"
+    ]
+  },
+  "submission_blockers": [
+    "validate the DeepSeek adapter and scientific C0 in the pilot",
+    "implement and test C1",
+    "freeze and execute the confirmatory dataset",
+    "replace not-executed result states with observed effects and confidence intervals",
+    "confirm contacts, accepted file extension, AI disclosure policy and advisor approval in Oriente"
+  ]
+}

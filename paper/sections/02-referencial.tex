@@ -1,0 +1,60 @@
+\subsection{Agentes LLM, ferramentas e fronteiras de confiança}
+
+Um agente LLM combina um modelo de linguagem, memória ou contexto, lógica de orquestração e ferramentas que observam ou alteram um ambiente. O modelo não precisa possuir credenciais diretamente: basta que sua saída determine qual ferramenta será chamada e com quais argumentos. Essa composição amplia a utilidade do modelo, mas cria uma cadeia causal entre texto não confiável e efeitos autorizados pela aplicação. A segurança do conjunto não pode ser inferida apenas da qualidade do modelo ou do prompt.
+
+O perfil de IA generativa do NIST enquadra o risco ao longo do ciclo de vida e recomenda governar, mapear, medir e gerir propriedades do sistema, não apenas do modelo \cite{nist2024genai}. Para aplicações com ferramentas, isso implica inventariar dados, permissões, dependências, monitoramento e respostas a falhas. No mesmo sentido, o OWASP distingue prompt injection de autonomia excessiva: a primeira altera o comportamento esperado; a segunda permite que saídas inesperadas, ambíguas ou manipuladas produzam ações danosas devido ao excesso de funcionalidade, permissão ou autonomia \cite{owasp2025prompt,owasp2025agency}.
+
+Há três autoridades que precisam ser separadas. A autoridade epistêmica diz respeito ao que o modelo consegue inferir do documento. A autoridade de decisão define se determinada ação é compatível com a política e o estado confiável. A autoridade de execução corresponde à credencial e ao método capazes de produzir o efeito. Um modelo pode ser útil na primeira sem receber as duas últimas. Quando a mesma saída interpreta, autoriza e executa, um erro de linguagem atravessa todas as fronteiras sem uma verificação independente.
+
+\subsection{Prompt injection indireta}
+
+Prompts e dados são serializados como linguagem e o modelo não oferece, por padrão, uma separação formal equivalente à distinção entre código e dados de sistemas tradicionais. Na injeção direta, o atacante controla o canal de entrada do usuário; na indireta, controla um artefato recuperado ou recebido por uma aplicação. Greshake et al. mostraram que conteúdo remoto pode manipular aplicações integradas e influenciar chamadas de API, divulgação de informação e persistência de instruções \cite{greshake2023indirect}. A ameaça é particularmente relevante quando o documento tem aparência legítima e o atacante não precisa acessar o agente ou o ERP.
+
+InjecAgent operacionalizou esse problema em 1.054 casos, 17 ferramentas do usuário e 62 ferramentas do atacante, distinguindo dano direto e exfiltração \cite{zhan2024injecagent}. BIPIA investigou tarefas de processamento de texto e identificou como causas a dificuldade de separar contexto informacional de instrução acionável e a baixa consciência do modelo sobre a origem do conteúdo \cite{yi2025bipia}. AgentDojo, por sua vez, combinou tarefas legítimas e casos de segurança em um ambiente extensível de agentes com ferramentas, evidenciando que avaliar apenas ataque é insuficiente, pois modelos também falham na tarefa benigna \cite{debenedetti2024agentdojo}.
+
+Esses trabalhos justificam duas escolhas deste TCC. Primeiro, o ataque deve ser incorporado ao conteúdo que o pipeline realmente entrega ao modelo; casos em que o payload se perde na extração precisam ser medidos, não descartados. Segundo, sucesso do ataque deve ser definido por um invariante externo. Uma proposta maliciosa bloqueada revela comprometimento do modelo, mas não equivale a alteração do ERP. O encadeamento entre entrega, proposta, autorização e estado permite localizar a fronteira em que o ataque foi interrompido.
+
+\subsection{Defesas e seus limites}
+
+Defesas de prompt podem reforçar instruções, delimitar conteúdo, classificar entradas ou pedir ao próprio modelo que detecte manipulação. Elas são úteis como sinais, mas continuam apoiadas no componente suscetível. Yi et al. propõem consciência de fronteira e lembretes explícitos para reduzir ataques em tarefas textuais \cite{yi2025bipia}. StruQ avança na separação entre instruções e dados mediante formato estruturado e treinamento específico, obtendo resistência com pequena perda de utilidade no contexto avaliado \cite{chen2025struq}. Essa abordagem trata a raiz linguística do problema, embora dependa do modelo e do regime de treinamento usados.
+
+Outra linha controla ações no tempo de execução. Task Shield verifica se instruções e chamadas de ferramenta contribuem para o objetivo do usuário e demonstrou redução de ataques mantendo utilidade no AgentDojo \cite{jia2025taskshield}. DRIFT combina planejamento mínimo, validação dinâmica e isolamento de instruções no fluxo de memória, aproximando a defesa do nível do sistema \cite{li2025drift}. Esses mecanismos reforçam que segurança agentiva não precisa depender de reconhecer toda frase maliciosa: é possível verificar a compatibilidade entre objetivo, trajetória, capacidade e parâmetros.
+
+Resultados positivos, entretanto, não autorizam generalização irrestrita. Zhan et al. adaptaram ataques ao conhecimento de oito defesas e contornaram todas, obtendo taxas superiores a 50\% no cenário do estudo \cite{zhan2025adaptive}. O achado não implica que toda defesa falhará da mesma forma, mas mostra que avaliação estática tende a superestimar robustez. Por isso, este trabalho separa o conjunto confirmatório, congelado antes da coleta, de um conjunto defense-aware elaborado depois que a arquitetura de C1 estiver conhecida, sem permitir que C1 seja reajustada a partir desses casos.
+
+O desenho adotado combina controles em camadas. Proveniência e separação de estágios reduzem a confusão de origem; schema e canonicalização restringem a forma da proposta; política determinística confronta argumentos com fontes internas; menor privilégio limita efeitos; aprovação vinculada impede reutilizar uma autorização em ação modificada; idempotência controla repetição; e auditoria preserva a explicação operacional. Um detector de prompt injection pode elevar risco, mas nunca conceder permissão. A avaliação principal estima o pacote completo, não atribui causalidade a uma camada isolada.
+
+\subsection{Contas a Pagar e Odoo como testbed}
+
+Contas a Pagar recebe documentos de uma parte externa e os relaciona a cadastros e compromissos internos. Em um fluxo apoiado por pedido de compra, valor, moeda, fornecedor, itens e beneficiário não precisam ser aceitos como verdade apenas porque aparecem na conta. Eles podem ser reconciliados com o pedido confirmado e com a conta bancária previamente aprovada. Essa estrutura cria regras determinísticas que independem da interpretação do LLM.
+
+No Odoo, contas de fornecedor podem ser criadas manual ou automaticamente e permanecem em rascunho até a confirmação; depois da confirmação, o sistema produz lançamento contábil e restringe alterações \cite{odoo2026vendorbills}. O testbed usa essa diferença para separar uma ação reversível de uma ação crítica. A criação automática termina, no máximo, em rascunho. Contabilização requer decisão de política e autorização vinculada. Pagamento real fica fora do escopo, e qualquer solicitação experimental adicional termina em outbox sem egress.
+
+O Odoo 19 introduziu a API externa JSON-2, na qual métodos de modelos são acessados por rotas HTTP específicas \cite{odoo2026json2}. A generalidade do transporte não equivale a uma fronteira de autorização. Em C1, a chamada externa chega a um add-on mínimo, transacional e idempotente; a identidade técnica não recebe grupos genéricos de faturamento ou pagamento. O objetivo não é demonstrar vulnerabilidade do Odoo, mas usar seu modelo de estado, permissões e regras de negócio para observar efeitos que um simulador textual não oferece.
+
+\subsection{Síntese dos trabalhos relacionados}
+
+A Tabela~\ref{tab:related-work} posiciona o estudo em relação às referências centrais. A coluna “estado empresarial” diferencia a observação de resposta ou ferramenta da verificação de mutações em um ERP. Nenhum dos trabalhos é reduzido a uma única característica; a comparação identifica apenas o recorte que motiva o artefato proposto.
+
+\begin{table}[H]
+\centering
+\caption{Síntese dos trabalhos relacionados e lacuna explorada.}
+\label{tab:related-work}
+\footnotesize
+\begin{tabularx}{\textwidth}{L{2.45cm} Y C{1.45cm} C{1.55cm} Y}
+\toprule
+\textbf{Trabalho} & \textbf{Foco principal} & \textbf{Utilidade} & \textbf{Estado empresarial} & \textbf{Contribuição para este estudo} \\
+\midrule
+Greshake et al. \cite{greshake2023indirect} & Vetores e impactos de IPI em aplicações integradas & parcial & não & Fundamenta ator remoto e confusão dado--instrução \\
+InjecAgent \cite{zhan2024injecagent} & Benchmark de agentes e ferramentas & sim & ambiente de ferramentas & Orienta famílias de dano e proposta maliciosa \\
+AgentDojo \cite{debenedetti2024agentdojo} & Tarefas, ataques e defesas em ambiente dinâmico & sim & estado simulado & Reforça medição conjunta de segurança e competência \\
+BIPIA \cite{yi2025bipia} & IPI em tarefas textuais e defesas de fronteira & sim & não & Apoia separação de contexto e entrega do payload \\
+StruQ \cite{chen2025struq} & Consulta estruturada e modelo treinado & sim & não & Demonstra separação de canais como camada possível \\
+Task Shield \cite{jia2025taskshield} & Alinhamento de instruções e tool calls à tarefa & sim & ambiente de ferramentas & Motiva verificação externa da ação proposta \\
+Ataques adaptativos \cite{zhan2025adaptive} & Bypass de defesas conhecidas & sim & ambiente de ferramentas & Justifica bloco defense-aware pós-freeze \\
+Este trabalho & Defesa em profundidade no fluxo de Contas a Pagar & sim & Odoo e outbox & Mede efeito end-to-end, utilidade, custo e fronteiras \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A lacuna específica não é a ausência de listas de controles. NIST e OWASP já oferecem taxonomias úteis, e a literatura propõe mecanismos promissores. O problema é instanciar uma arquitetura no limite entre documento financeiro, LLM e ERP e avaliá-la com pares contrafactuais, fontes de verdade internas, autorização por ação e oráculo de estado. Esse é o elo entre a revisão e a metodologia descrita a seguir.

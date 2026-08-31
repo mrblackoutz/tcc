@@ -119,7 +119,7 @@ Para conceito Excelente ou Muito Bom, o termo de autorização do Adelpha deve s
 - [ ] atribuir papéis P1/P2/P3 e disponibilidade dos autores;
 - [ ] designar um único integrante para cadastro e requerimento, conferir os três autores e registrar os recibos;
 - [ ] manter orientação semanal ou quinzenal com presença, pauta e encaminhamentos registrados;
-- [ ] criar o fonte do artigo a partir de cópia saneada do template, sem carregar metadados herdados.
+- [x] criar fonte separada e editável do artigo, reconstruída e comparada visualmente com o template conforme DEC-019, sem carregar metadados herdados.
 
 ## 10. Definition of Done institucional
 

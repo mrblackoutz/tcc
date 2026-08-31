@@ -1,0 +1,72 @@
+\subsection{Estado técnico do artefato}
+
+Até 31 de agosto de 2026, foram concluídos dois marcos de engenharia anteriores ao experimento. M1 estabeleceu o laboratório reproduzível. A imagem do Odoo 19.0 Community foi construída a partir do commit fixado, com manifest OCI local registrado separadamente do config digest. PostgreSQL 18 permaneceu sem porta publicada; Odoo foi exposto somente em loopback; e uma identidade técnica C0, distinta da chave administrativa, realizou o fluxo JSON-2.
+
+As fixtures sintéticas incluem empresa, fornecedor, conta bancária, produto e pedido de compra confirmado. O smoke M1 criou uma única \texttt{account.move} do tipo \texttt{in\_invoice}, em \texttt{draft}, com \texttt{auto\_post='no'}, beneficiário persistido e linha vinculada ao pedido. Uma leitura independente verificou o efeito; em seguida, o rascunho foi removido. O hash canônico após a remoção coincidiu com o estado inicial, demonstrando que o testbed consegue produzir e desfazer a mutação observada sem apagar os volumes.
+
+M2 ligou uma entrada documental ao mesmo efeito. O pipeline gera localmente um PDF sintético, marcado como sem valor fiscal e contendo camada de texto; valida tipo, tamanho, número de páginas e limite de caracteres; extrai o texto sem OCR; produz uma proposta \texttt{vendor-bill-proposal/v1}; valida propriedades, tipos, formatos e total por aritmética decimal; resolve referências por chaves de negócio; e chama o executor direto C0. PDFs criptografados, inválidos, sem texto ou fora dos limites são recusados.
+
+Para isolar o encanamento antes da seleção do LLM, M2 usou um adaptador determinístico de desenvolvimento, versão 1. Esse adaptador lê somente os campos declarados da fixture e é proibido em runs científicas. Sua função foi demonstrar que PDF, contrato, executor, Odoo e oráculo concordam, não simular inteligência ou resistência a ataque.
+
+\begin{table}[H]
+\centering
+\caption{Evidências técnicas disponíveis antes do piloto.}
+\label{tab:current-evidence}
+\footnotesize
+\begin{tabularx}{\textwidth}{L{2.10cm} Y L{3.05cm}}
+\toprule
+\textbf{Evidência} & \textbf{Resultado observado} & \textbf{Limite do resultado} \\
+\midrule
+Fonte Odoo & Community 19.0 no commit \texttt{a4b877245c9cb5e3d7152d1593a518170f115ca1} & Não representa todo Odoo 19 futuro \\
+Manifest de imagem & OCI local \texttt{sha256:3e0bcf8e7968\ldots} ligado à fonte & Ainda não publicado em registry \\
+Identidade C0 & Conta técnica não administrativa cria e lê o rascunho & C1 e menor privilégio por capacidade pendentes \\
+Contrato & \texttt{vendor-bill-proposal/v1}, fechado e versionado & Não é policy engine \\
+Testes & 41 testes aprovados no gateway 0.2.0 & Não incluem LLM ou prompt injection \\
+Smoke M2 & PDF $\rightarrow$ proposta $\rightarrow$ rascunho $\rightarrow$ remoção & Usa adaptador determinístico de desenvolvimento \\
+Estado & hash inicial e restaurado \texttt{224448b68946\ldots}; estado criado distinto & Um cenário benigno de engenharia \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A suíte cobre PDF criptografado ou sem texto, estrutura inválida, campo duplicado ou ausente, propriedade extra, versão de schema incompatível, data e valor malformados, total divergente, referência inexistente, duplicidade e resíduo no Odoo. O smoke final passou com 41 testes, criou exatamente um rascunho e restaurou o hash inicial. PDF, texto, proposta e estados receberam SHA-256; credenciais e evidências detalhadas ficaram fora do Git.
+
+\subsection{O que os resultados atuais demonstram}
+
+Os resultados demonstram quatro propriedades necessárias ao futuro experimento. Primeiro, o estado de negócio pode ser observado independentemente da saída do modelo. Segundo, a proposta pode ser validada e canonicalizada antes da mutação. Terceiro, as condições podem começar da mesma fixture e terminar sem resíduo detectável. Quarto, os identificadores internos do ERP não precisam ser aceitos do documento: fornecedor, pedido e conta são resolvidos por chaves sintéticas declaradas.
+
+Essas propriedades reduzem ameaças de instrumentação. Sem um oráculo externo, uma ferramenta chamada poderia ser contada como ataque bem-sucedido mesmo se a transação falhasse; sem reset, uma condição poderia herdar o efeito anterior; sem contrato comum, C1 poderia parecer superior apenas porque rejeita JSON inválido que C0 aceita. M1/M2 antecipam esses problemas e mantêm a validação estrutural nos dois braços.
+
+O trabalho também responde ao feedback de que a continuidade do TCC I precisava tornar-se aplicada e definir segmento-alvo. O artefato executa um fluxo de Contas a Pagar em um ERP real de laboratório, e não apenas uma arquitetura conceitual. Ainda assim, implementação não substitui avaliação. O resultado atual é evidência de viabilidade e controle experimental, não de eficácia da defesa.
+
+\subsection{Resultados confirmatórios ainda não disponíveis}
+
+Na data desta versão, o adapter DeepSeek, o smoke Qwen3, C1, o conjunto piloto, o dataset final e o protocolo congelado permanecem pendentes. Por consequência, nenhuma run adversarial C0--C1 foi contabilizada. A Tabela~\ref{tab:pending-results} registra explicitamente o estado das respostas às perguntas de pesquisa; “não executado” não representa zero ocorrência.
+
+\begin{table}[H]
+\centering
+\caption{Estado dos resultados científicos em 31 de agosto de 2026.}
+\label{tab:pending-results}
+\small
+\begin{tabularx}{\textwidth}{C{0.80cm} L{3.25cm} Y}
+\toprule
+\textbf{RQ} & \textbf{Estimadores previstos} & \textbf{Estado} \\
+\midrule
+RQ1 & ASR-proposal, ASR-policy, ASR-state e UACR por C0/C1 & Não executado antes do piloto e do freeze; nenhum percentual é reportável \\
+RQ2 & BTSR, falsos bloqueios, STP, escalonamento, latência e custo & Não executado; a perda de utilidade e o overhead são desconhecidos \\
+RQ3 & Efeitos por A1, A2, A3a e A3b & Não executado; subgrupos permanecem secundários \\
+RQ4 & Diferenças das ablações em relação ao C1 contemporâneo & C1 e ablações ainda não implementados/executados \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Não é possível afirmar que C1 reduz prompt injection, mantém BTSR ou possui custo aceitável. Tampouco é possível comparar DeepSeek e Qwen3: ambos foram selecionados, mas ainda não produziram dados científicos no testbed. O resumo e a conclusão desta versão preservam essa ausência para impedir que números exemplificativos do plano sejam confundidos com observações.
+
+\subsection{Discussão e próximos gates}
+
+A literatura sugere que separar instruções e dados, alinhar ferramentas à tarefa e impor regras em tempo de execução pode reduzir ataques \cite{chen2025struq,jia2025taskshield,li2025drift}. O artefato segue essa direção, mas desloca a autoridade crítica para política e executor determinísticos. Essa escolha procura reduzir a dependência de reconhecer todas as formulações de ataque: mesmo que o LLM proponha outra conta bancária, o estado confiável deve impedir a autorização. O experimento dirá se essa composição reduz violações sem bloquear o processo em excesso.
+
+Antes do piloto, ainda são necessários: egress mínimo para o cliente DeepSeek sem liberar Odoo ou banco; adapters DeepSeek e Ollama atrás da mesma interface; testes de resposta válida, múltipla, truncada, timeout, rate limit e sanitização; manifest completo do Qwen3; implementação do add-on C1; fixtures de aprovação; e autoria/revisão dos 24 documentos piloto. O gate de competência de C0 precede qualquer comparação de segurança.
+
+Depois do piloto, o grupo deverá documentar discordâncias pareadas, poder, precisão, latência, custo e completude de logs. Somente então poderá confirmar 180 documentos ou ajustar a amostra antes do freeze. O artigo final substituirá a Tabela~\ref{tab:pending-results} por resultados com numeradores, denominadores, missing, diferenças, riscos relativos, intervalos e análises de sensibilidade; acrescentará ablações apenas como mecanismo exploratório.
+
+O principal risco editorial desta etapa é a falsa sensação de completude produzida por um PDF formatado. O formato institucional já pode ser validado, mas o conteúdo confirmatório não. Por isso, este relatório deve orientar a implementação e a revisão com o orientador, não ser tratado como a submissão final de novembro.
