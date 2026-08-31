@@ -6,7 +6,7 @@ FROM ${PYTHON_BASE_IMAGE}
 ARG PYTHON_BASE_IMAGE
 
 LABEL org.opencontainers.image.title="TCC JSON-2 gateway laboratory" \
-      org.opencontainers.image.version="0.1.0" \
+      org.opencontainers.image.version="0.2.0" \
       org.opencontainers.image.base.name="${PYTHON_BASE_IMAGE}" \
       br.edu.fci.tcc.platform="linux/amd64"
 
@@ -16,13 +16,14 @@ ENV HOME=/tmp \
 
 WORKDIR /opt/tcc/gateway
 
-COPY pyproject.toml ./
+COPY pyproject.toml constraints.txt ./
 COPY src ./src
 COPY tests ./tests
 
 RUN python -m pip install \
         --disable-pip-version-check \
         --no-cache-dir \
+        --constraint constraints.txt \
         ".[test]" \
     && useradd --create-home --uid 10002 --shell /usr/sbin/nologin gateway
 

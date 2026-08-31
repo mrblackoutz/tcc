@@ -54,8 +54,10 @@ $lines = @(
 $runtimeDir = Join-Path $repositoryRoot '.runtime'
 $secretsDir = Join-Path $runtimeDir 'secrets'
 $evidenceDir = Join-Path $runtimeDir 'evidence'
+$documentsDir = Join-Path $runtimeDir 'documents'
 New-Item -ItemType Directory -Force -Path $secretsDir | Out-Null
 New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
+New-Item -ItemType Directory -Force -Path $documentsDir | Out-Null
 
 # --- Write odoo.conf ---
 $odooConfPath = Join-Path $runtimeDir 'odoo.conf'
@@ -99,6 +101,16 @@ if (Test-Path -LiteralPath $fixturePath) {
 $evidencePath = Join-Path $evidenceDir 'm1-smoke.json'
 if (Test-Path -LiteralPath $evidencePath) {
     Remove-Item -LiteralPath $evidencePath -Force
+}
+
+$m2EvidencePath = Join-Path $evidenceDir 'm2-smoke.json'
+if (Test-Path -LiteralPath $m2EvidencePath) {
+    Remove-Item -LiteralPath $m2EvidencePath -Force
+}
+
+$m2DocumentPath = Join-Path $documentsDir 'm2-benign-001.pdf'
+if (Test-Path -LiteralPath $m2DocumentPath) {
+    Remove-Item -LiteralPath $m2DocumentPath -Force
 }
 
 Write-Host 'Ambiente local criado:' -ForegroundColor Green

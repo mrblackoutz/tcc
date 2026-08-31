@@ -57,6 +57,7 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $runtimeDirectory = Join-Path $repositoryRoot '.runtime'
 $secretsDirectory = Join-Path $runtimeDirectory 'secrets'
 $evidenceDirectory = Join-Path $runtimeDirectory 'evidence'
+$documentsDirectory = Join-Path $runtimeDirectory 'documents'
 $evidencePath = Join-Path $evidenceDirectory 'm1-smoke.json'
 $labLockPath = Join-Path $repositoryRoot 'reproducibility\lab-environment.lock.json'
 $sourceLockPath = Join-Path $repositoryRoot 'reproducibility\odoo-source.lock.json'
@@ -74,6 +75,7 @@ try {
     }
     New-Item -ItemType Directory -Force -Path $secretsDirectory | Out-Null
     New-Item -ItemType Directory -Force -Path $evidenceDirectory | Out-Null
+    New-Item -ItemType Directory -Force -Path $documentsDirectory | Out-Null
     if (Test-Path -LiteralPath $evidencePath) {
         Remove-Item -LiteralPath $evidencePath -Force
     }
@@ -107,7 +109,7 @@ try {
     Write-Host '=== Building and unit-testing the Python 3.12 gateway ===' -ForegroundColor Cyan
     & docker compose build gateway
     if ($LASTEXITCODE -ne 0) { throw 'gateway image build failed' }
-    & docker run --rm --entrypoint python tcc-gateway:0.1.0 -m pytest -q -p no:cacheprovider /opt/tcc/gateway/tests
+    & docker run --rm --entrypoint python tcc-gateway:0.2.0 -m pytest -q -p no:cacheprovider /opt/tcc/gateway/tests
     if ($LASTEXITCODE -ne 0) { throw 'gateway unit tests failed' }
 
     Write-Host '=== Starting PostgreSQL 18 ===' -ForegroundColor Cyan

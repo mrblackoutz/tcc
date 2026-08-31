@@ -12,14 +12,15 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 - `docs/decision-log.md`: decisões surgidas durante a construção.
 - `docs/deviation-log.md`: divergências depois do congelamento experimental.
 - `docs/institutional-requirements.md`: matriz de conformidade com edital, template, calendário e avaliação do TCC II 2026/2.
-- `docs/lab-runbook.md`: procedimento operacional do laboratório M1, evidências, recuperação e limites.
+- `docs/lab-runbook.md`: procedimento operacional dos marcos M1–M2, evidências, recuperação e limites.
+- `docs/m2-c0-baseline.md`: relatório técnico, interpretação e limites científicos do vertical slice M2/C0.
 - `docs/releases/v1.2.md`: manifesto auditável, hashes e gates da release 1.2.
 - `docs/releases/v1.2.1.md`: manifesto auditável de W06, do pin Odoo e da auditoria institucional de 2026/2.
 - `docs/releases/v1.2.2.md`: manifesto da transição do plano para Markdown como formato único.
 - `docs/releases/v1.2.3.md` e `docs/releases/v1.2.4.md`: manifests históricos da correção JSON-2 e do scaffold inicial do laboratório.
 - `docs/releases/v1.2.5.md`: manifesto do aceite técnico M1 corrigido conforme DEC-016.
 - `reproducibility/odoo-source.lock.json`: lock legível por máquina da fonte Odoo selecionada.
-- `reproducibility/lab-environment.lock.json`: versões, digests e último aceite M1 saneado do laboratório.
+- `reproducibility/lab-environment.lock.json`: versões, digests e últimos aceites M1/M2 saneados do laboratório.
 - `reproducibility/institutional-sources.lock.json`: hashes, requisitos e anomalias das fontes institucionais locais.
 - `scripts/check_repository_safety.ps1`: verificação de caminhos proibidos e padrões de credenciais sem exibir o valor suspeito.
 - `odoo-19.0/`: snapshot local ignorado pelo Git e usado somente para exploração; o build usa a origem oficial no commit fixado `a4b877245c9cb5e3d7152d1593a518170f115ca1`, e o manifest OCI aceito está registrado nos locks.
@@ -29,18 +30,20 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 
 O marco M1 foi validado em 31/08/2026, ainda antes do congelamento experimental. O laboratório constrói Odoo 19.0 Community a partir do commit fixado, sobe PostgreSQL 18 em rede interna, usa uma identidade C0 dedicada e executa por JSON-2 a criação e a remoção de exatamente uma conta de fornecedor sintética em rascunho. A conta mantém a referência bancária e a ligação com a linha de um pedido de compra confirmado; o hash canônico após a remoção coincide com o estado inicial.
 
-Esse aceite não inclui LLM, ingestão de PDF, C1, add-on de autorização, postagem da conta ou pagamento. O manifesto OCI é local e não foi publicado em registry. O estado verificável corrente está em `reproducibility/lab-environment.lock.json`; a evidência detalhada de execução permanece em `.runtime/evidence`, fora do Git.
+O marco M2 também foi validado em 31/08/2026. Ele gera localmente um PDF sintético benigno com camada de texto, extrai o conteúdo sem OCR, produz uma proposta tipada validada por JSON Schema, resolve as referências por chaves de negócio e cria o mesmo rascunho via executor direto C0. Foram aprovados 41 testes e o hash após a remoção voltou ao estado inicial.
 
-## Execução local do M1
+M2 é uma baseline de desenvolvimento do encanamento, não o C0 científico: o adaptador `deterministic-development/v1` não usa LLM e está proibido nas runs experimentais. Os aceites ainda não incluem modelo LLM, prompt injection, C1, add-on de autorização, postagem ou pagamento. O manifesto OCI é local e não foi publicado em registry. O estado verificável corrente está em `reproducibility/lab-environment.lock.json`; PDF, credenciais e evidências detalhadas permanecem em `.runtime`, fora do Git.
+
+## Execução local de M1 e M2
 
 Pré-requisitos: PowerShell, Git, Docker Desktop em modo Linux/AMD64, Docker Compose e acesso de rede no primeiro build.
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\new_local_env.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test_m2.ps1
 ```
 
-O primeiro comando gera credenciais locais aleatórias sem exibi-las. O segundo cria um builder isolado, exporta a mesma resolução em formatos OCI e Docker, verifica manifest, config, labels e commit interno, executa 19 testes do gateway, carrega as fixtures sintéticas e roda o smoke JSON-2. Ao terminar, os contêineres são encerrados e os volumes são preservados.
+O primeiro comando gera credenciais locais aleatórias sem exibi-las. O segundo revalida M1, cria um builder isolado, exporta a mesma resolução em formatos OCI e Docker, verifica manifest, config, labels e commit interno, executa 41 testes, carrega as fixtures sintéticas e roda os smokes M1/M2. Ao terminar, os contêineres são encerrados e os volumes são preservados. Para executar somente M1, use `scripts/smoke_test.ps1`.
 
 Não use `new_local_env.ps1 -Force` com um banco existente sem planejar a rotação conjunta do volume. A opção `smoke_test.ps1 -RecreateVolumes` remove somente os volumes rotulados do projeto, mas é destrutiva e exige autorização explícita do operador. O procedimento completo e os critérios de diagnóstico estão em `docs/lab-runbook.md`.
 

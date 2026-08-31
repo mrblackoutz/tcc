@@ -2,7 +2,7 @@
     "$schema":  "https://json-schema.org/draft/2020-12/schema",
     "schemaVersion":  2,
     "observedOn":  "2026-08-31",
-    "status":  "m1-smoke-passed-pre-freeze",
+    "status":  "m2-smoke-passed-pre-freeze",
     "platform":  "linux/amd64",
     "components":  {
                        "python":  {
@@ -33,17 +33,22 @@
                                     "buildStatus":  "built-and-source-verified",
                                     "buildPlatform":  "linux/amd64",
                                     "dockerfileSha256":  "76649dc11669dc39ca1f12f169c33ceef7afee8b74767a165b3db57752e3ea09",
-                                    "builtAt":  "2026-08-31T10:02:25.2783887Z",
+                                    "builtAt":  "2026-08-31T14:40:13.5255264Z",
                                     "sourceCommitEvidencePath":  "/opt/odoo/.tcc-source-commit",
                                     "manifestMediaType":  "application/vnd.oci.image.manifest.v1+json",
                                     "digestScope":  "local_buildkit_oci_layout_manifest",
                                     "buildxBuilderDriver":  "docker-container"
                                 },
                        "gateway":  {
-                                       "version":  "0.1.0",
-                                       "localImageTag":  "tcc-gateway:0.1.0",
+                                       "version":  "0.2.0",
+                                       "localImageTag":  "tcc-gateway:0.2.0",
+                                       "localConfigDigest":  "sha256:5c81dda4565efdc0d3352edd5223ca0addbab510e502fdc5e77de269320e16c0",
+                                       "buildStatus":  "built-and-tested",
                                        "runtime":  "Python 3.12",
-                                       "baseImageReference":  "python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab"
+                                       "baseImageReference":  "python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab",
+                                       "dockerfileSha256":  "5d79cad0e57360e777378b61310088993284235ee045be855b5a9416b37a1a45",
+                                       "pyprojectSha256":  "bb8b105fc61a9c4c195233261308fef5827458ab64ebab2b5c1df72efc6f5a57",
+                                       "constraintsSha256":  "f6d0c0d269b259736af84f6070ab638d5df035c1d060c9d39a40ebf06c517d1b"
                                    }
                    },
     "controls":  {
@@ -63,9 +68,24 @@
                     "initialStateSha256":  "59f35a642fb61228f64fa2c0c016dafccec157a5eb7b338dd3ed360722398653",
                     "createdStateSha256":  "4af857529f31c027965d4beb8937e0861b19ae7737595a93c1067954965b1986",
                     "restoredStateSha256":  "59f35a642fb61228f64fa2c0c016dafccec157a5eb7b338dd3ed360722398653",
-                    "completedAt":  "2026-08-31T10:03:09.7555502Z"
+                    "completedAt":  "2026-08-31T14:40:48.6270500Z"
                 },
     "pendingEvidence":  [
-
-                        ]
+                            "LLM adapter and model selection remain pending for pilot/G3 per W04"
+                        ],
+    "m2Smoke":  {
+                    "status":  "pass",
+                    "scenarioId":  "M2-BENIGN-001",
+                    "adapterId":  "deterministic-development/v1",
+                    "scientificBaseline":  false,
+                    "unitTestsPassed":  41,
+                    "proposalSchemaSha256":  "03e429f9ca34181f5a3546fc49e19c0ba86f7c72df4614ebd983dec0f2d70db5",
+                    "documentSha256":  "e36e2ca0107f728389ed947794d71e4402610a5ae096542f0035ef346f71d90a",
+                    "textSha256":  "402823e62cdb43dd6753153309d4c612f23825299281b7b06d5083789b9c8699",
+                    "proposalSha256":  "a517e4e80e5ea712968d9a3f447165d3c964f4904a86db87b7b5157f0addb2e4",
+                    "initialStateSha256":  "224448b689468e1abc66b6556a0c7ebae686914ad1bef9ca11cdde53993aea0f",
+                    "createdStateSha256":  "ba07916cc8eb2d37a46033e37187b2385a41daff804911dbe287b0bdad714806",
+                    "restoredStateSha256":  "224448b689468e1abc66b6556a0c7ebae686914ad1bef9ca11cdde53993aea0f",
+                    "completedAt":  "2026-08-31T14:40:54.5332750Z"
+                }
 }

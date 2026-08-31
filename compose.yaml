@@ -93,7 +93,7 @@ services:
       - lab
 
   gateway:
-    image: tcc-gateway:0.1.0
+    image: tcc-gateway:0.2.0
     platform: linux/amd64
     restart: "no"
     build:
@@ -110,6 +110,8 @@ services:
       ODOO_API_TOKEN_FILE: /run/tcc-secrets/odoo_api_key
       TCC_M1_FIXTURE_FILE: /run/tcc-secrets/m1_fixture.json
       TCC_M1_EVIDENCE_FILE: /run/tcc-evidence/m1-smoke.json
+      TCC_M2_DOCUMENT_FILE: /run/tcc-documents/m2-benign-001.pdf
+      TCC_M2_EVIDENCE_FILE: /run/tcc-evidence/m2-smoke.json
     command:
       - python
       - /opt/tcc/scripts/smoke_test_gateway.py
@@ -123,6 +125,12 @@ services:
       - type: bind
         source: ./.runtime/evidence
         target: /run/tcc-evidence
+        read_only: false
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./.runtime/documents
+        target: /run/tcc-documents
         read_only: false
         bind:
           create_host_path: false

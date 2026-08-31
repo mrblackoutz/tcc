@@ -23,6 +23,7 @@ PRODUCT_CODE = "TCC-M1-SERVICE"
 PRODUCT_NAME = "Serviço Sintético M1 - SEM VALOR FISCAL"
 PURCHASE_ORDER_REF = "TCC-M1-PO-001"
 DOCUMENT_REF = "TCC-M1-NF-001-SEM-VALOR-FISCAL"
+M2_DOCUMENT_REF = "TCC-M2-NF-001-SEM-VALOR-FISCAL"
 C0_LOGIN = "tcc_c0_api"
 API_KEY_NAME = "tcc-m1-c0-json2"
 AMOUNT = 125.50
@@ -164,6 +165,19 @@ stale_bill_count = len(stale_bills)
 if stale_bills:
     stale_bills.unlink()
 
+m2_stale_bills = env["account.move"].with_company(company).search(
+    [
+        ("move_type", "=", "in_invoice"),
+        ("ref", "=", M2_DOCUMENT_REF),
+        ("company_id", "=", company.id),
+    ]
+)
+if m2_stale_bills.filtered(lambda move: move.state != "draft"):
+    raise RuntimeError("ha conta sintetica M2 nao rascunho; reset automatico recusado")
+m2_stale_bill_count = len(m2_stale_bills)
+if m2_stale_bills:
+    m2_stale_bills.unlink()
+
 required_groups = env["res.groups"].browse(
     [
         env.ref("base.group_user").id,
@@ -234,10 +248,12 @@ fixture = {
     "currency_id": company.currency_id.id,
     "currency_name": company.currency_id.name,
     "document_ref": DOCUMENT_REF,
+    "m2_document_ref": M2_DOCUMENT_REF,
     "invoice_date": FIXED_DATE,
     "amount": f"{AMOUNT:.2f}",
     "c0_login": c0_user.login,
     "bootstrap_removed_draft_bills": stale_bill_count,
+    "m2_bootstrap_removed_draft_bills": m2_stale_bill_count,
 }
 (SECRETS_DIRECTORY / "m1_fixture.json").write_text(
     json.dumps(fixture, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
