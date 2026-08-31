@@ -92,8 +92,59 @@ services:
     networks:
       - lab
 
+  gateway:
+    image: tcc-gateway:0.1.0
+    platform: linux/amd64
+    restart: "no"
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+      args:
+        PYTHON_BASE_IMAGE: python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab
+    depends_on:
+      odoo:
+        condition: service_healthy
+    environment:
+      ODOO_BASE_URL: http://odoo:8069
+      ODOO_DATABASE: ${ODOO_DATABASE:?defina ODOO_DATABASE no arquivo .env}
+      ODOO_API_TOKEN_FILE: /run/tcc-secrets/odoo_api_key
+      TCC_M1_FIXTURE_FILE: /run/tcc-secrets/m1_fixture.json
+      TCC_M1_EVIDENCE_FILE: /run/tcc-evidence/m1-smoke.json
+    command:
+      - python
+      - /opt/tcc/scripts/smoke_test_gateway.py
+    volumes:
+      - type: bind
+        source: ./.runtime/secrets
+        target: /run/tcc-secrets
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./.runtime/evidence
+        target: /run/tcc-evidence
+        read_only: false
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./scripts
+        target: /opt/tcc/scripts
+        read_only: true
+        bind:
+          create_host_path: false
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - lab
+
 networks:
-  lab: {}
+  lab:
+    internal: true
 
 volumes:
   postgres_data:

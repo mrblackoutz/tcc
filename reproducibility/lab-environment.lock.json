@@ -1,12 +1,12 @@
 {
     "$schema":  "https://json-schema.org/draft/2020-12/schema",
-    "schemaVersion":  1,
+    "schemaVersion":  2,
     "observedOn":  "2026-08-31",
-    "status":  "images-locked",
+    "status":  "m1-smoke-passed-pre-freeze",
     "platform":  "linux/amd64",
     "components":  {
                        "python":  {
-                                      "purpose":  "Odoo build/runtime and Python 3.12 laboratory baseline",
+                                      "purpose":  "Odoo and gateway Python 3.12 laboratory baseline",
                                       "tag":  "python:3.12-slim-bookworm",
                                       "observedVersion":  "3.12.14-slim-bookworm",
                                       "indexDigest":  "sha256:0f5b26b9518d002b6173fd61daad821fa340635ebfec5bba471013f9ca114579",
@@ -27,25 +27,45 @@
                                     "repository":  "https://github.com/odoo/odoo.git",
                                     "commit":  "a4b877245c9cb5e3d7152d1593a518170f115ca1",
                                     "localImageTag":  "tcc-odoo:19.0-a4b8772",
-                                    "imageDigest":  "sha256:c3b2e22efb01135d192b67036af99991ce2c9e4ae8563cbaacbb6a2cd21aa4f8",
-                                    "buildStatus":  "built-locally",
+                                    "imageDigest":  "sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392",
+                                    "imageDigestKind":  "oci_manifest",
+                                    "localConfigDigest":  "sha256:c85221764b096dde2df68c50e2da634147b10c14dcfb98bf57f71f62a14bd1f2",
+                                    "buildStatus":  "built-and-source-verified",
                                     "buildPlatform":  "linux/amd64",
-                                    "sourceCommitEvidencePath":  "/opt/odoo/.tcc-source-commit"
-                                }
+                                    "dockerfileSha256":  "76649dc11669dc39ca1f12f169c33ceef7afee8b74767a165b3db57752e3ea09",
+                                    "builtAt":  "2026-08-31T10:02:25.2783887Z",
+                                    "sourceCommitEvidencePath":  "/opt/odoo/.tcc-source-commit",
+                                    "manifestMediaType":  "application/vnd.oci.image.manifest.v1+json",
+                                    "digestScope":  "local_buildkit_oci_layout_manifest",
+                                    "buildxBuilderDriver":  "docker-container"
+                                },
+                       "gateway":  {
+                                       "version":  "0.1.0",
+                                       "localImageTag":  "tcc-gateway:0.1.0",
+                                       "runtime":  "Python 3.12",
+                                       "baseImageReference":  "python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab"
+                                   }
                    },
     "controls":  {
                      "localSnapshotIsBuildInput":  false,
                      "postgresPortPublished":  false,
                      "odooPublishedAddress":  "127.0.0.1",
+                     "runtimeNetworkInternal":  true,
                      "odooConfigSource":  ".runtime/odoo.conf",
                      "runtimeSecretsDirectory":  ".runtime/secrets",
                      "apiTokenFile":  ".runtime/secrets/odoo_api_key",
                      "localAddonsReadOnly":  true,
                      "syntheticDataOnly":  true
                  },
+    "m1Smoke":  {
+                    "status":  "pass",
+                    "scenarioId":  "M1-SYNTHETIC-001",
+                    "initialStateSha256":  "59f35a642fb61228f64fa2c0c016dafccec157a5eb7b338dd3ed360722398653",
+                    "createdStateSha256":  "4af857529f31c027965d4beb8937e0861b19ae7737595a93c1067954965b1986",
+                    "restoredStateSha256":  "59f35a642fb61228f64fa2c0c016dafccec157a5eb7b338dd3ed360722398653",
+                    "completedAt":  "2026-08-31T10:03:09.7555502Z"
+                },
     "pendingEvidence":  [
-                            "Digest OCI da imagem tcc-odoo:19.0-a4b8772 construída localmente.",
-                            "Confirmação das labels OCI de origem, revisão, base e plataforma.",
-                            "Registro saneado do smoke test e do reset determinístico."
+
                         ]
 }

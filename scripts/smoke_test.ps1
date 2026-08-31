@@ -1,151 +1,208 @@
+param(
+    [switch]$RecreateVolumes,
+    [switch]$KeepRunning
+)
+
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$repositoryRoot = Split-Path -Parent $PSScriptRoot
-Push-Location $repositoryRoot
+function Get-ComposeService {
+    param([Parameter(Mandatory = $true)][string]$Service)
 
+    $jsonLines = @(& docker compose ps --format json 2>$null)
+    if ($LASTEXITCODE -ne 0) { return $null }
+    $services = @(
+        $jsonLines |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+            ForEach-Object { $_ | ConvertFrom-Json }
+    )
+    return $services | Where-Object { $_.Service -eq $Service } | Select-Object -First 1
+}
+
+function Wait-ComposeHealth {
+    param(
+        [Parameter(Mandatory = $true)][string]$Service,
+        [Parameter(Mandatory = $true)][int]$TimeoutSeconds,
+        [int]$PollSeconds = 2
+    )
+
+    $elapsed = 0
+    while ($elapsed -lt $TimeoutSeconds) {
+        $status = Get-ComposeService -Service $Service
+        if ($status -and $status.Health -eq 'healthy') {
+            Write-Host "  $Service healthy after ${elapsed}s" -ForegroundColor Green
+            return
+        }
+        Start-Sleep -Seconds $PollSeconds
+        $elapsed += $PollSeconds
+    }
+    throw "$Service did not become healthy within ${TimeoutSeconds}s"
+}
+
+function Write-JsonFile {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)]$Value
+    )
+
+    $json = $Value | ConvertTo-Json -Depth 20
+    [System.IO.File]::WriteAllText(
+        $Path,
+        $json + [Environment]::NewLine,
+        [System.Text.UTF8Encoding]::new($false)
+    )
+}
+
+$repositoryRoot = Split-Path -Parent $PSScriptRoot
+$runtimeDirectory = Join-Path $repositoryRoot '.runtime'
+$secretsDirectory = Join-Path $runtimeDirectory 'secrets'
+$evidenceDirectory = Join-Path $runtimeDirectory 'evidence'
+$evidencePath = Join-Path $evidenceDirectory 'm1-smoke.json'
+$labLockPath = Join-Path $repositoryRoot 'reproducibility\lab-environment.lock.json'
+$sourceLockPath = Join-Path $repositoryRoot 'reproducibility\odoo-source.lock.json'
+$completed = $false
+
+Push-Location $repositoryRoot
 try {
-    # ---------------------------------------------------------------
-    # 1. Ensure local environment exists
-    # ---------------------------------------------------------------
     if (-not (Test-Path -LiteralPath '.env')) {
         Write-Host '=== Generating local environment ===' -ForegroundColor Cyan
         & powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\new_local_env.ps1
         if ($LASTEXITCODE -ne 0) { throw 'new_local_env.ps1 failed' }
     }
-
-    # ---------------------------------------------------------------
-    # 2. Ensure image is built
-    # ---------------------------------------------------------------
-    $imageExists = docker image inspect tcc-odoo:19.0-a4b8772 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host '=== Image not found, building... ===' -ForegroundColor Yellow
-        & powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_odoo_image.ps1
-        if ($LASTEXITCODE -ne 0) { throw 'build_odoo_image.ps1 failed' }
+    if (-not (Test-Path -LiteralPath (Join-Path $runtimeDirectory 'odoo.conf'))) {
+        throw 'Missing .runtime/odoo.conf; rotate the local environment intentionally with new_local_env.ps1 -Force'
     }
-    else {
-        Write-Host '=== Image verified (tcc-odoo:19.0-a4b8772) ===' -ForegroundColor Green
+    New-Item -ItemType Directory -Force -Path $secretsDirectory | Out-Null
+    New-Item -ItemType Directory -Force -Path $evidenceDirectory | Out-Null
+    if (Test-Path -LiteralPath $evidencePath) {
+        Remove-Item -LiteralPath $evidencePath -Force
     }
 
-    # ---------------------------------------------------------------
-    # 3. Start database service and wait for readiness
-    # ---------------------------------------------------------------
-    Write-Host '=== Starting PostgreSQL 18 service ===' -ForegroundColor Cyan
+    if ($RecreateVolumes) {
+        Write-Host '=== Recreating only the tcc-odoo-lab synthetic volumes ===' -ForegroundColor Cyan
+        $unexpectedVolumes = @(
+            docker volume ls `
+                --filter 'label=com.docker.compose.project=tcc-odoo-lab' `
+                --format '{{.Name}}' 2>$null |
+                Where-Object { $_ -and $_ -notlike 'tcc-odoo-lab_*' }
+        )
+        if ($unexpectedVolumes.Count -gt 0) {
+            throw 'A volume with the project label is outside the expected tcc-odoo-lab_* namespace'
+        }
+        & docker compose down --volumes --remove-orphans
+        if ($LASTEXITCODE -ne 0) { throw 'docker compose down --volumes failed' }
+    }
+
+    & powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_odoo_image.ps1
+    if ($LASTEXITCODE -ne 0) { throw 'build_odoo_image.ps1 failed' }
+
+    $sourceLock = Get-Content -Raw -Encoding utf8 -LiteralPath $sourceLockPath | ConvertFrom-Json
+    if ($sourceLock.image.status -ne 'built-and-source-verified') {
+        throw 'Odoo source lock is not verified; refusing to start a run'
+    }
+    if ([string]$sourceLock.image.oci_digest -notmatch '^sha256:[0-9a-f]{64}$') {
+        throw 'Odoo manifest digest is absent or malformed; refusing to start a run'
+    }
+
+    Write-Host '=== Building and unit-testing the Python 3.12 gateway ===' -ForegroundColor Cyan
+    & docker compose build gateway
+    if ($LASTEXITCODE -ne 0) { throw 'gateway image build failed' }
+    & docker run --rm --entrypoint python tcc-gateway:0.1.0 -m pytest -q -p no:cacheprovider /opt/tcc/gateway/tests
+    if ($LASTEXITCODE -ne 0) { throw 'gateway unit tests failed' }
+
+    Write-Host '=== Starting PostgreSQL 18 ===' -ForegroundColor Cyan
     & docker compose up -d db
     if ($LASTEXITCODE -ne 0) { throw 'docker compose up db failed' }
+    Wait-ComposeHealth -Service 'db' -TimeoutSeconds 90
 
-    $maxWait = 60
-    $elapsed = 0
-    while ($elapsed -lt $maxWait) {
-        $health = docker compose ps --format json 2>$null | ConvertFrom-Json | Where-Object { $_.Service -eq 'db' }
-        if ($health -and $health.Health -eq 'healthy') {
-            Write-Host "  PostgreSQL 18 healthy after ${elapsed}s" -ForegroundColor Green
-            break
-        }
-        Start-Sleep -Seconds 2
-        $elapsed += 2
-    }
-    if ($elapsed -ge $maxWait) { throw "PostgreSQL did not become healthy within ${maxWait}s" }
-
-    # ---------------------------------------------------------------
-    # 4. Initialize database with required modules
-    # ---------------------------------------------------------------
-    Write-Host '=== Initializing database modules (base, l10n_generic_coa, account, purchase) ===' -ForegroundColor Cyan
+    Write-Host '=== Initializing Odoo Community modules ===' -ForegroundColor Cyan
     & docker compose run --rm -T odoo python /opt/odoo/odoo-bin `
         -c /etc/odoo/odoo.conf `
         -d tcc_ap_lab `
-        -i base,l10n_generic_coa,account,purchase `
+        -i base,web,rpc,account,purchase `
+        --without-demo=True `
         --stop-after-init `
         --no-http
-    if ($LASTEXITCODE -ne 0) { throw 'Module initialization failed' }
-    Write-Host '  Modules initialized successfully' -ForegroundColor Green
+    if ($LASTEXITCODE -ne 0) { throw 'Odoo module initialization failed' }
 
-    # ---------------------------------------------------------------
-    # 5. Start Odoo web server and wait for healthcheck
-    # ---------------------------------------------------------------
-    Write-Host '=== Starting Odoo 19.0 web service ===' -ForegroundColor Cyan
+    Write-Host '=== Loading deterministic M1 fixtures and C0 identity ===' -ForegroundColor Cyan
+    $bootstrapSource = Get-Content -Raw -Encoding utf8 -LiteralPath .\odoo\fixtures\bootstrap_m1.py
+    $bootstrapSource | & docker compose run --rm -T odoo python /opt/odoo/odoo-bin `
+        shell `
+        -c /etc/odoo/odoo.conf `
+        -d tcc_ap_lab `
+        --no-http
+    if ($LASTEXITCODE -ne 0) { throw 'M1 fixture bootstrap failed' }
+    if (-not (Test-Path -LiteralPath (Join-Path $secretsDirectory 'odoo_api_key'))) {
+        throw 'C0 API key was not written to the ignored runtime secret path'
+    }
+    if (-not (Test-Path -LiteralPath (Join-Path $secretsDirectory 'm1_fixture.json'))) {
+        throw 'M1 fixture manifest was not written to the ignored runtime path'
+    }
+
+    Write-Host '=== Starting Odoo 19.0 ===' -ForegroundColor Cyan
     & docker compose up -d odoo
     if ($LASTEXITCODE -ne 0) { throw 'docker compose up odoo failed' }
+    Wait-ComposeHealth -Service 'odoo' -TimeoutSeconds 180 -PollSeconds 3
 
-    $maxWait = 120
-    $elapsed = 0
-    while ($elapsed -lt $maxWait) {
-        $health = docker compose ps --format json 2>$null | ConvertFrom-Json | Where-Object { $_.Service -eq 'odoo' }
-        if ($health -and $health.Health -eq 'healthy') {
-            Write-Host "  Odoo 19.0 healthy after ${elapsed}s" -ForegroundColor Green
-            break
-        }
-        Start-Sleep -Seconds 3
-        $elapsed += 3
+    Write-Host '=== Running M1 JSON-2 draft vendor bill smoke ===' -ForegroundColor Cyan
+    & docker compose run --rm gateway
+    if ($LASTEXITCODE -ne 0) { throw 'M1 JSON-2 gateway smoke failed' }
+    if (-not (Test-Path -LiteralPath $evidencePath -PathType Leaf)) {
+        throw 'M1 smoke did not produce its local evidence file'
     }
-    if ($elapsed -ge $maxWait) { throw "Odoo did not become healthy within ${maxWait}s" }
 
-    # ---------------------------------------------------------------
-    # 6. Verify /web/health HTTP endpoint
-    # ---------------------------------------------------------------
-    Write-Host '=== Testing /web/health HTTP endpoint ===' -ForegroundColor Cyan
-    $healthResponse = Invoke-RestMethod -Uri 'http://127.0.0.1:8069/web/health' -Method Get
-    if ($healthResponse.status -ne 'pass') {
-        throw "Health check failed: $($healthResponse | ConvertTo-Json)"
+    $evidence = Get-Content -Raw -Encoding utf8 -LiteralPath $evidencePath | ConvertFrom-Json
+    if ($evidence.status -ne 'pass') { throw 'M1 evidence status is not pass' }
+    if ($evidence.synthetic_data -ne $true -or $evidence.fiscal_value -ne $false) {
+        throw 'M1 evidence is not marked as synthetic and without fiscal value'
     }
-    Write-Host '  /web/health: PASS (status=pass)' -ForegroundColor Green
-
-    # ---------------------------------------------------------------
-    # 7. Generate API key for admin user inside container
-    # ---------------------------------------------------------------
-    Write-Host '=== Generating RPC API key for admin ===' -ForegroundColor Cyan
-    & docker compose exec -T odoo python -c "
-import odoo
-from odoo.tools import config
-from odoo.modules.registry import Registry
-from odoo import api, SUPERUSER_ID
-config.parse_config(['-c', '/etc/odoo/odoo.conf', '-d', 'tcc_ap_lab'])
-reg = Registry('tcc_ap_lab')
-with reg.cursor() as cr:
-    env = api.Environment(cr, SUPERUSER_ID, {})
-    admin = env.ref('base.user_admin')
-    key = env['res.users.apikeys'].with_user(admin)._generate(scope='rpc', name='tcc-smoke-test', expiration_date=None)
-    cr.commit()
-    with open('/run/tcc-secrets/odoo_api_key', 'w', encoding='utf-8') as f:
-        f.write(key)
-"
-    if ($LASTEXITCODE -ne 0) { throw 'API key generation failed' }
-    Write-Host '  API key generated and mounted into secrets' -ForegroundColor Green
-
-    # ---------------------------------------------------------------
-    # 8. Test JSON-2 client (search_read, create, read back)
-    # ---------------------------------------------------------------
-    Write-Host '=== Testing JSON-2 transport with tcc_gateway client ===' -ForegroundColor Cyan
-    & python .\scripts\smoke_test_gateway.py
-    if ($LASTEXITCODE -ne 0) { throw 'JSON-2 client smoke test failed' }
-
-    Write-Host "`n=== Smoke test PASSED ===" -ForegroundColor Green
-
-    # ---------------------------------------------------------------
-    # 9. Tear down and verify deterministic reset
-    # ---------------------------------------------------------------
-    Write-Host '=== Tearing down (deterministic reset test) ===' -ForegroundColor Cyan
-    & docker compose down -v
-    if ($LASTEXITCODE -ne 0) { throw 'docker compose down -v failed' }
-
-    # Verify volumes are gone
-    $volumes = docker volume ls --format '{{.Name}}' 2>$null | Where-Object { $_ -like 'tcc-odoo-lab*' }
-    if ($volumes) {
-        throw "Volumes still exist after reset: $($volumes -join ', ')"
+    if ($evidence.initial_state_sha256 -ne $evidence.restored_state_sha256) {
+        throw 'M1 reset hash differs from the initial hash'
     }
-    Write-Host '  All volumes removed: PASS' -ForegroundColor Green
+    if ($evidence.created_state_sha256 -eq $evidence.initial_state_sha256) {
+        throw 'M1 created-state hash did not change after creating the draft bill'
+    }
 
-    Write-Host "`n=== Full smoke test cycle complete ===" -ForegroundColor Green
-    Write-Host 'Services started (PG18 + Odoo 19), DB initialized, /web/health validated, API key generated, JSON-2 CRUD verified, and environment fully reset.'
+    $labLock = Get-Content -Raw -Encoding utf8 -LiteralPath $labLockPath | ConvertFrom-Json
+    $labLock.status = 'm1-smoke-passed-pre-freeze'
+    $labLock.m1Smoke.status = 'pass'
+    $labLock.m1Smoke.initialStateSha256 = $evidence.initial_state_sha256
+    $labLock.m1Smoke.createdStateSha256 = $evidence.created_state_sha256
+    $labLock.m1Smoke.restoredStateSha256 = $evidence.restored_state_sha256
+    $labLock.m1Smoke.completedAt = (Get-Date).ToUniversalTime().ToString('o')
+    $labLock.pendingEvidence = @()
+    Write-JsonFile $labLockPath $labLock
+
+    $completed = $true
+    Write-Host '=== M1 smoke PASSED ===' -ForegroundColor Green
+    Write-Host "Initial/restored state: $($evidence.initial_state_sha256)"
+    Write-Host "Created state:          $($evidence.created_state_sha256)"
 }
 catch {
-    Write-Host "=== SMOKE TEST FAILED ===" -ForegroundColor Red
+    Write-Host '=== M1 smoke FAILED ===' -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
-
-    # Best-effort cleanup
-    try { docker compose down -v 2>$null } catch {}
     throw
 }
 finally {
+    if (-not $KeepRunning) {
+        $previousPreference = $ErrorActionPreference
+        $shutdownExitCode = 1
+        try {
+            $ErrorActionPreference = 'SilentlyContinue'
+            & docker compose down --remove-orphans *> $null
+            $shutdownExitCode = $LASTEXITCODE
+        }
+        finally {
+            $ErrorActionPreference = $previousPreference
+        }
+        if ($shutdownExitCode -ne 0) {
+            Write-Warning 'Best-effort container shutdown failed; inspect docker compose ps.'
+        }
+    }
     Pop-Location
+}
+
+if (-not $completed) {
+    exit 1
 }

@@ -30,7 +30,6 @@ if ((Test-Path -LiteralPath $environmentPath) -and -not $Force) {
 # --- Generate secrets ---
 $postgresPassword = New-HexSecret
 $odooAdminPassword = New-HexSecret
-$odooApiKey = New-HexSecret
 
 # --- Write .env ---
 $lines = @(
@@ -54,7 +53,9 @@ $lines = @(
 # --- Create .runtime directory tree ---
 $runtimeDir = Join-Path $repositoryRoot '.runtime'
 $secretsDir = Join-Path $runtimeDir 'secrets'
+$evidenceDir = Join-Path $runtimeDir 'evidence'
 New-Item -ItemType Directory -Force -Path $secretsDir | Out-Null
+New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
 
 # --- Write odoo.conf ---
 $odooConfPath = Join-Path $runtimeDir 'odoo.conf'
@@ -66,12 +67,14 @@ $odooConf = @(
     ('db_user = tcc_ap_lab'),
     ('db_password = ' + $postgresPassword),
     ('db_name = tcc_ap_lab'),
-    'addons_path = /opt/odoo/addons,/mnt/extra-addons',
+    # O diretório de add-ons locais só entra no caminho quando houver um módulo
+    # versionado; uma pasta vazia é rejeitada pelo validador do Odoo 19.
+    'addons_path = /opt/odoo/addons',
     'data_dir = /var/lib/odoo',
     'proxy_mode = False',
     'list_db = False',
     'log_level = info',
-    'without_demo = all',
+    'without_demo = True',
     'server_wide_modules = base,web,rpc'
 )
 
@@ -81,16 +84,26 @@ $odooConf = @(
     [System.Text.UTF8Encoding]::new($false)
 )
 
-# --- Write API key seed ---
+# A chave RPC só pode ser criada pelo bootstrap para a identidade C0 dedicada.
+# Ao rotacionar o ambiente, remova qualquer chave local anterior sem exibi-la.
 $apiKeyPath = Join-Path $secretsDir 'odoo_api_key'
-[System.IO.File]::WriteAllText(
-    $apiKeyPath,
-    $odooApiKey,
-    [System.Text.UTF8Encoding]::new($false)
-)
+if (Test-Path -LiteralPath $apiKeyPath) {
+    Remove-Item -LiteralPath $apiKeyPath -Force
+}
+
+$fixturePath = Join-Path $secretsDir 'm1_fixture.json'
+if (Test-Path -LiteralPath $fixturePath) {
+    Remove-Item -LiteralPath $fixturePath -Force
+}
+
+$evidencePath = Join-Path $evidenceDir 'm1-smoke.json'
+if (Test-Path -LiteralPath $evidencePath) {
+    Remove-Item -LiteralPath $evidencePath -Force
+}
 
 Write-Host 'Ambiente local criado:' -ForegroundColor Green
 Write-Host "  .env                          (credenciais locais)" -ForegroundColor Gray
 Write-Host "  .runtime/odoo.conf            (configuração Odoo)" -ForegroundColor Gray
-Write-Host "  .runtime/secrets/odoo_api_key (chave API seed)" -ForegroundColor Gray
+Write-Host "  .runtime/secrets              (vazio até o bootstrap C0)" -ForegroundColor Gray
+Write-Host "  .runtime/evidence             (evidência local ignorada)" -ForegroundColor Gray
 Write-Host 'Nenhum valor sensível foi exibido.' -ForegroundColor Green
