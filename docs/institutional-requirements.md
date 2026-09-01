@@ -36,7 +36,7 @@ O Regulamento Geral de TCC e o Guia Geral de TCC, embora citados pelo edital, n�
 
 O grupo de três autores atende à regra de dois a quatro estudantes para Ciência da Computação. Permanecem fora do repositório público os contatos e identificadores acadêmicos. Condição PPI/PPP, endereço institucional e demais dados cadastrais do orientador devem ser confirmados diretamente no Oriente antes da submissão.
 
-O cadastro do grupo no Oriente e o requerimento no Portal do Aluno devem ser realizados por **um único integrante designado**, conforme o edital. A designação nominal permanece pendente na divisão P1/P2/P3; o integrante escolhido deverá conferir que os três autores constam corretamente e preservar os recibos. O grupo também deverá confirmar com o orientador que o tema está alinhado à sua área ou projeto de pesquisa.
+O cadastro do grupo no Oriente e o requerimento no Portal do Aluno devem ser realizados por **um único integrante designado**, conforme o edital. Conforme DEC-021 e `docs/task-backlog.md`, Gustavo (P3) é o owner operacional de conferir o cadastro/requerimento e preservar os recibos; essa atribuição não significa que a ação externa já tenha sido concluída. O grupo também deverá confirmar com o orientador que o tema está alinhado à sua área ou projeto de pesquisa.
 
 ## 4. Requisitos obrigatórios do artigo
 
@@ -116,8 +116,9 @@ Para conceito Excelente ou Muito Bom, o termo de autorização do Adelpha deve s
 - [ ] confirmar janela, horários e elegibilidade dos avaliadores da banca diante do erro `31/11/2026` e das condições PPI/PPP/PPA;
 - [ ] confirmar condição PPI/PPP e dados institucionais do orientador;
 - [ ] confirmar formalmente o alinhamento do tema à área ou projeto de pesquisa do orientador;
-- [ ] atribuir papéis P1/P2/P3 e disponibilidade dos autores;
-- [ ] designar um único integrante para cadastro e requerimento, conferir os três autores e registrar os recibos;
+- [x] atribuir papéis P1/P2/P3 nominalmente conforme DEC-021; disponibilidade será revista nos checkpoints semanais;
+- [x] designar Gustavo/P3 como único owner operacional do cadastro e requerimento;
+- [ ] conferir a conclusão externa do cadastro/requerimento, os três autores e preservar os recibos;
 - [ ] manter orientação semanal ou quinzenal com presença, pauta e encaminhamentos registrados;
 - [x] criar fonte separada e editável do artigo, reconstruída e comparada visualmente com o template conforme DEC-019, sem carregar metadados herdados.
 
