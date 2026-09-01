@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tcc-odoo-gateway"
-version = "0.2.0"
-description = "Gateway experimental tipado para o laboratorio C0 via Odoo JSON-2"
+version = "0.3.0"
+description = "Gateway tipado com adapters LLM isolados para o laboratorio Odoo C0/C1"
 requires-python = ">=3.12,<3.14"
 dependencies = [
     "httpx==0.28.1",

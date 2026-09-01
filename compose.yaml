@@ -93,7 +93,7 @@ services:
       - lab
 
   gateway:
-    image: tcc-gateway:0.2.0
+    image: tcc-gateway:0.3.0
     platform: linux/amd64
     restart: "no"
     build:

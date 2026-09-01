@@ -5,8 +5,8 @@ FROM ${PYTHON_BASE_IMAGE}
 
 ARG PYTHON_BASE_IMAGE
 
-LABEL org.opencontainers.image.title="TCC JSON-2 gateway laboratory" \
-      org.opencontainers.image.version="0.2.0" \
+LABEL org.opencontainers.image.title="TCC Odoo and LLM gateway laboratory" \
+      org.opencontainers.image.version="0.3.0" \
       org.opencontainers.image.base.name="${PYTHON_BASE_IMAGE}" \
       br.edu.fci.tcc.platform="linux/amd64"
 
