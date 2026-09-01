@@ -111,7 +111,10 @@
     "rawRequestsAndResponsesInGit": false,
     "rawCustody": "external-encrypted-access-controlled-and-immutable-copy",
     "runtimeNetworkCurrentlyInternal": true,
-    "externalEgressDesignStatus": "pending-decision-before-first-api-call"
+    "externalEgressDesignStatus": "decided-in-DEC-020-not-yet-implemented-or-smoked",
+    "deepSeekAllowedDestination": "api.deepseek.com:443",
+    "gatewayOdooDatabaseEgress": "denied-by-design",
+    "realApiCallAuthorized": false
   },
   "requiredPerRunProvenance": [
     "provider",
