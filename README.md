@@ -28,6 +28,7 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 - `docs/releases/v1.2.6.md`: manifesto do aceite técnico M2/G2 e de seus limites pré-experimentais conforme DEC-017.
 - `docs/releases/v1.2.7.md`: manifesto da seleção DeepSeek/Qwen3, do desenho por blocos e das pendências de G3 conforme DEC-018.
 - `docs/releases/v1.2.8.md`: manifesto da fronteira de egress, do aceite G3a e da distribuição integral do trabalho pendente.
+- `docs/releases/v1.2.9.md`: manifesto do isolamento executável e dos testes negativos offline de G3b.
 - `reproducibility/odoo-source.lock.json`: lock legível por máquina da fonte Odoo selecionada.
 - `reproducibility/lab-environment.lock.json`: versões, digests e últimos aceites M1/M2 saneados do laboratório.
 - `reproducibility/model-selection.lock.json`: seleção datada do DeepSeek e Qwen3, fatos observados e evidências ainda pendentes para o freeze.

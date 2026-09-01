@@ -2,6 +2,17 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.9] — 2026-09-01
+
+- materializado em G3b o processo `llm-client` separado, sem credenciais do ERP/DeepSeek no profile offline e com API interna fechada `llm-client-request/v1`;
+- separadas as redes internas `lab`, `llm_control` e `llm_egress`; somente o proxy participa de `proxy_external`, enquanto gateway, Odoo e PostgreSQL permanecem sem rede externa;
+- implementado proxy HTTP CONNECT de passagem com destino fixo `api.deepseek.com:443`, negação de host, IP literal e porta alternativos e recusa de resolução DNS não pública;
+- aprovados 91 testes do gateway/cliente, 6 do proxy, validação do Compose resolvido, probe runtime offline e varredura de logs;
+- registrados os IDs locais das imagens `tcc-gateway:0.4.0` e `tcc-egress-proxy:0.1.0` sem apresentá-los como digests de manifest OCI;
+- concluídas no backlog as tarefas G3-01–G3-04 e preservada G3-05 como dependência externa de autorização;
+- nenhuma chamada DeepSeek/Ollama, tentativa de túnel nominal, leitura de chave ou download de modelo integrou o gate;
+- mantidos inalterados problema, perguntas, hipóteses, endpoints, métricas, margem, threat model, amostras e comparação C0/C1; G3c, C0 científico, C1, dataset, piloto e freeze permanecem pendentes.
+
 ## [1.2.8] — 2026-09-01
 
 - fixada em DEC-020 a fronteira mínima de egress: Odoo, banco e gateway permanecem sem saída externa; um `llm-client` dedicado acessará o DeepSeek somente por proxy TLS com destino permitido e o Ollama somente pela rede interna;
