@@ -4,7 +4,7 @@
 
 **Data da seleção:** 31/08/2026
 
-**Estado:** modelos e papéis selecionados; artefatos, adaptadores e parâmetros finais ainda não congelados
+**Estado:** modelos e papéis selecionados; adapters G3a implementados e aprovados somente com mocks; egress executável, smokes, artefatos e parâmetros finais ainda não congelados
 
 ## Decisão operacional
 
@@ -115,9 +115,9 @@ O Qwen3 não cabe integralmente na VRAM observada e deverá usar offload parcial
 - [x] modo sem *thinking* definido para o núcleo;
 - [x] contrato comum já existe em M2;
 - [x] decisão de egress mínimo registrada em DEC-020, com chamadas reais bloqueadas até a implantação e os testes negativos;
-- [ ] arquivo de exemplo lista apenas nomes de variáveis, sem valores reais;
-- [ ] adapters DeepSeek e Ollama desenhados sob uma interface comum;
-- [ ] mocks cobrem JSON/tool call válido, inválido, truncado, múltiplo, timeout, rate limit e sanitização;
+- [x] arquivo de exemplo lista somente nomes e valores não sensíveis/fictícios, sem chave;
+- [x] adapters DeepSeek e Ollama implementados sob interface comum no commit `b2deec8`;
+- [x] mocks cobrem JSON válido/inválido, schema, truncamento, escolha/tool call único ou múltiplo, timeout, rate limit, erro de provedor, drift e sanitização; 82 testes passaram sem rede;
 - [ ] Qwen3 baixado com autorização, manifest completo fixado e smoke de hardware aprovado;
 - [ ] DeepSeek validado com chamada sintética mínima, sem segredo em log;
 - [ ] parâmetros e prompts do piloto versionados e hasheados.

@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "decisionId": "DEC-018",
   "observedOn": "2026-08-31",
-  "status": "models-selected-artifacts-not-frozen",
+  "status": "models-selected-adapters-mock-tested-artifacts-not-frozen",
   "protocolFrozen": false,
   "primaryModel": {
     "role": "confirmatory-primary",
@@ -34,7 +34,8 @@
       "warning": "Pricing is observational and must be re-recorded for each experimental batch."
     },
     "artifactDigest": null,
-    "artifactStatus": "provider-hosted-alias"
+    "artifactStatus": "provider-hosted-alias",
+    "adapterStatus": "implemented-and-mock-tested-no-real-call"
   },
   "secondaryModel": {
     "role": "robustness-transportability",
@@ -54,6 +55,7 @@
     "localManifestDigest": null,
     "blobDigests": [],
     "artifactStatus": "not-downloaded-not-frozen",
+    "adapterStatus": "implemented-and-mock-tested-no-local-model-call",
     "warning": "The catalog tag and truncated digest are not an immutable local artifact reference."
   },
   "experimentalAllocation": {
@@ -116,6 +118,38 @@
     "gatewayOdooDatabaseEgress": "denied-by-design",
     "realApiCallAuthorized": false
   },
+  "g3aAdapterEvidence": {
+    "decisionId": "DEC-020",
+    "implementedOn": "2026-08-31",
+    "implementationCommit": "b2deec89fedb34e42e93c079999100b98c5bf1a0",
+    "gatewayPackageVersion": "0.3.0",
+    "localImage": "tcc-gateway:0.3.0",
+    "localDockerImageId": "sha256:ead78dcf1f486e604dc8c034ab9e3677b8139619d4ed2a5aee97fda4d0555a59",
+    "localImageIdSemantics": "local-docker-image-config-id-not-repodigest-or-published-oci-manifest",
+    "platform": "linux/amd64",
+    "testCommandNetwork": "none",
+    "testFilesystem": "read-only-with-ephemeral-tmpfs",
+    "testsPassed": 82,
+    "testsFailed": 0,
+    "realDeepSeekCalls": 0,
+    "realOllamaCalls": 0,
+    "modelDownloads": 0,
+    "secretReadOrCreated": false,
+    "fileSha256": {
+      "gateway/src/tcc_gateway/llm_adapters.py": "c101b7290f2621b2cb31164367adfd5b0ff7713c194e53c3c7f286324c5924e9",
+      "gateway/src/tcc_gateway/llm_config.py": "83ae8788d6bae0871f92f46ad7a4fd15f18fda36f71ef78fd786a0b6dc6d665f",
+      "gateway/src/tcc_gateway/model_output.py": "39b762dd10f3be54384e9bbe76a42398da3e12869127ae61ea2d16f3c1aafeef",
+      "gateway/src/tcc_gateway/schemas/vendor_bill_model_output_v1.schema.json": "9af59c5835068128158e572b7fad6debf80d7c8ebd163cd81cc46738f5165125",
+      "gateway/tests/test_llm_adapters.py": "251ef3f64ec439a9c85ac88af4cf8ee73aebf6e34eb01f58966c69cd3acf7d34",
+      "gateway/tests/test_llm_config.py": "dac144e4c07639fa355c0df39eba95ce36f9d9f639679e5495719a5f079a5083",
+      "gateway/tests/test_model_output.py": "08521f140e060ff8a89d107618dfec724db6d613d32e37759c9fb05b7945e3bb"
+    },
+    "limitations": [
+      "No provider or local model was called.",
+      "The separate llm-client and destination-enforcing proxy are not yet deployed.",
+      "The Qwen artifact and final DeepSeek runtime behavior remain unobserved."
+    ]
+  },
   "requiredPerRunProvenance": [
     "provider",
     "api-base-and-endpoint",
@@ -132,8 +166,8 @@
     "latency-errors-and-retries"
   ],
   "pendingBeforeFreeze": [
-    "DeepSeek adapter implementation and synthetic smoke",
-    "minimal egress boundary decision and negative tests",
+    "DeepSeek synthetic smoke under the enforced egress boundary",
+    "egress topology implementation and negative network tests",
     "Qwen artifact download authorized by operator",
     "full Ollama manifest and blob digests",
     "Qwen hardware feasibility smoke",
