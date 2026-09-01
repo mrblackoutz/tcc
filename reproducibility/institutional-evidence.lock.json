@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 1,
+  "updatedOn": "2026-09-01",
+  "evidence": [
+    {
+      "evidenceId": "ADM-07-2026-09-01-01",
+      "taskId": "ADM-07",
+      "sourceKind": "user-supplied-oriente-screenshot",
+      "localPath": ".runtime/evidence/institutional/adm-07-oriente-group-status-2026-09-01.png",
+      "sha256": "25409512914270b38faca309580a83ddee3e55a49b087e1d2c65cc715e08a945",
+      "byteCount": 261772,
+      "containsAcademicIdentifiers": true,
+      "trackedByGit": false,
+      "publishable": false,
+      "observation": {
+        "groupRegistrationVisible": true,
+        "expectedAuthorsVisible": 3,
+        "confirmedAuthorsVisible": 2,
+        "pendingAuthorsVisible": 1,
+        "receiptVisible": false,
+        "advisorAcceptanceVisibleAsPending": true
+      },
+      "conclusion": "partial-evidence-task-remains-external-until-all-authors-confirmed-and-receipt-preserved"
+    }
+  ]
+}

@@ -91,7 +91,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | ADM-04 | P0 | Felipe | Gustavo | — | confirmar dados institucionais e alinhamento do tema à área/projeto do orientador | EXTERNAL |
 | ADM-05 | P0 | Felipe | Thomaz | — | instituir registro semanal/quinzenal de orientação com pauta, presença, decisões e próximos passos | READY |
 | ADM-06 | P0 | Felipe | Gustavo | — | coletar anuência do orientador no Oriente até 01/09 e preservar recibo fora do Git | EXTERNAL |
-| ADM-07 | P0 | Gustavo | Felipe | — | verificar cadastro do grupo, três autores e recibo; não marcar concluído sem evidência | EXTERNAL |
+| ADM-07 | P0 | Gustavo | Felipe | — | verificar cadastro do grupo, três autores e recibo; evidência parcial de 01/09 registra 3 visíveis, 2 confirmados, 1 pendente e nenhum recibo; não concluir até satisfazer todo o DoD | EXTERNAL |
 | ADM-08 | P0 | Gustavo | Felipe | ADM-07 | protocolar requerimento no Portal até 07/09, conferir autores e preservar recibo | EXTERNAL |
 | ADM-09 | P1 | Gustavo | Felipe | ADM-02 | manter calendário de submissão, avaliadores, banca, correção e anuência final | READY |
 | ADM-10 | P0 | Felipe | Thomaz | DEC-021 | atualizar requisitos institucionais com papéis nominais; disponibilidade revista semanalmente | DONE |
