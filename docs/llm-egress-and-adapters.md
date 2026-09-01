@@ -2,13 +2,13 @@
 
 **Decisão:** DEC-020
 
-**Estado:** desenho aceito; adapters simulados, topologia executável e smokes ainda pendentes
+**Estado:** desenho aceito; G3a e G3b offline comprovados; smoke DeepSeek G3c, artefato/smoke Qwen3 e piloto ainda pendentes
 
 **Data:** 31/08/2026
 
 ## 1. Objetivo e limite desta etapa
 
-Este documento transforma a seleção de modelos da DEC-018 em um desenho implementável sem abrir a rede do laboratório nem antecipar o piloto. A etapa corrente pode criar código, schema, mocks e testes locais. Ela não autoriza baixar Qwen3, fazer chamada DeepSeek, inserir chave, liberar egress ou tratar adapters simulados como C0 científico competente.
+Este documento transforma a seleção de modelos da DEC-018 em um desenho implementável sem abrir a rede do laboratório nem antecipar o piloto. G3a implementou adapters, schema, mocks e saneamento; G3b materializou `llm-client`, redes e proxy e aprovou os testes offline em 01/09/2026. Esses gates não autorizam baixar Qwen3, fazer chamada DeepSeek, inserir chave ou tratar transporte simulado como C0 científico competente.
 
 ## 2. Trust boundaries
 
@@ -120,7 +120,7 @@ O Git recebe hashes e metadados saneados. Requests/responses brutos pertencem ao
 ## 9. Gates
 
 - **G3a — código isolado:** adapters, schema e mocks passam; nenhuma rede real é usada.
-- **G3b — egress executável:** topologia e testes negativos passam; ainda sem chamada paga.
+- **G3b — egress executável:** **atendido offline em 01/09/2026**; topologia, API mock, política e testes negativos passaram sem contato externo, conforme `docs/g3b-egress-topology.md`.
 - **G3c — smoke DeepSeek:** autorizado pelo operador, documento sintético mínimo, segredo fora dos logs, alias/modelo retornado registrado.
 - **G3d — smoke Qwen3:** download autorizado, manifest/blobs fixados e hardware aprovado sem OOM.
 - **G3e — piloto:** prompts, parâmetros, retry, competência, custo e latência aprovados antes do freeze.

@@ -115,10 +115,10 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| G3-01 | P0 | Gustavo | Thomaz | DEC-020, G3a | criar processo/serviço `llm-client` sem credencial Odoo e API interna tipada | READY |
-| G3-02 | P0 | Gustavo | Thomaz | G3-01 | materializar redes separadas e proxy TLS pass-through com allowlist `api.deepseek.com:443` | WAIT |
-| G3-03 | P0 | Gustavo | Thomaz | G3-02 | testes negativos: gateway/Odoo/db sem Internet; cliente sem ERP/Internet direta; proxy nega host/IP/porta alternativos | WAIT |
-| G3-04 | P0 | Gustavo | Felipe | G3-01 | harness de smoke sintético, manifest saneado e varredura de logs, ainda com transporte mock | READY |
+| G3-01 | P0 | Gustavo | Thomaz | DEC-020, G3a | criar processo/serviço `llm-client` sem credencial Odoo e API interna tipada | DONE |
+| G3-02 | P0 | Gustavo | Thomaz | G3-01 | materializar redes separadas e proxy TLS pass-through com allowlist `api.deepseek.com:443` | DONE |
+| G3-03 | P0 | Gustavo | Thomaz | G3-02 | testes negativos: gateway/Odoo/db sem Internet; cliente sem ERP/Internet direta; proxy nega host/IP/porta alternativos | DONE |
+| G3-04 | P0 | Gustavo | Felipe | G3-01 | harness de smoke sintético, manifest saneado e varredura de logs, ainda com transporte mock | DONE |
 | G3-05 | P0 | Gustavo | Thomaz | G3-03, G3-04, autorização | uma chamada DeepSeek sintética mínima; registrar alias/ID/uso/latência/hashes sem segredo/raw no Git | EXTERNAL |
 | G3-06 | P1 | Gustavo | Felipe | G3-05 | observar defaults/limites, propor timeout/backoff/max tokens e fechar parâmetros candidatos do piloto | WAIT |
 | G3-07 | P2 | Gustavo | Thomaz | núcleo protegido, autorização | baixar Qwen3, registrar manifest/blobs/Ollama/Modelfile sem expor dados | CONDITIONAL |

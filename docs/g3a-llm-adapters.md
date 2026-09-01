@@ -119,12 +119,12 @@ O ID acima é o ID/configuração da imagem local, não um `RepoDigest` nem um m
 - [x] mocks sem rede cobrem sucesso e falhas requeridas;
 - [x] imagem 0.3.0 construída e testada em rede `none`;
 - [x] segurança do repositório aprovada;
-- [ ] serviço `llm-client` separado e proxy allowlisted implantados;
-- [ ] testes negativos de rede de G3b;
+- [x] serviço `llm-client` separado e proxy allowlisted implantados em G3b;
+- [x] testes negativos offline de rede de G3b;
 - [ ] smoke DeepSeek de G3c;
 - [ ] download/lock/smoke Qwen3 de G3d;
 - [ ] prompts, parâmetros e competência fixados no piloto G3e.
 
-## 10. Próxima etapa autorizável
+## 10. Continuidade após G3a
 
-G3b deve materializar a topologia da DEC-020 sem chamar provedores: redes internas separadas, processo cliente sem credencial Odoo, proxy de passagem com allowlist exata e testes negativos. Somente depois desse gate o grupo deve fornecer a chave localmente e autorizar um único smoke sintético DeepSeek. O download do Qwen3 continua sendo decisão operacional separada.
+G3b materializou a topologia da DEC-020 sem chamar provedores no commit `f2d7f5f`, conforme `docs/g3b-egress-topology.md`. O próximo gate é G3c: somente após autorização operacional o grupo poderá fornecer a chave localmente e executar um único smoke sintético DeepSeek. O download do Qwen3 continua sendo decisão operacional separada.

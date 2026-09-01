@@ -4,7 +4,7 @@
 
 **Data da seleção:** 31/08/2026
 
-**Estado:** modelos e papéis selecionados; adapters G3a implementados e aprovados somente com mocks; egress executável, smokes, artefatos e parâmetros finais ainda não congelados
+**Estado:** modelos e papéis selecionados; adapters G3a e isolamento offline G3b aprovados; smokes reais, artefatos e parâmetros finais ainda não congelados
 
 ## Decisão operacional
 
@@ -92,7 +92,7 @@ Para Qwen3, o lock final deverá incluir versão do Ollama, nome exato, manifest
 
 A chave DeepSeek nunca entra em Git, Compose, argumento de linha de comando, log, fixture ou evidência saneada. O adapter deverá lê-la de arquivo de segredo ou variável de ambiente local e remover cabeçalhos e payloads sensíveis de erros.
 
-A rede atual do laboratório é interna. Selecionar um provedor externo não autoriza liberar egress para Odoo, PostgreSQL ou para toda a rede de execução. Antes da primeira chamada real, G3 deverá definir uma fronteira explícita na qual somente o cliente LLM tenha saída para o host aprovado, enquanto ERP, banco, executor e outbox permanecem sem egress. Essa mudança será registrada antes da implementação e coberta por testes negativos.
+A topologia G3b mantém `lab`, `llm_control` e `llm_egress` internas. Somente o proxy participa de uma rede externa; gateway, Odoo e PostgreSQL não participam dela, e o cliente não participa de `lab` nem recebe credenciais do ERP. O profile corrente aceita apenas transporte mock e os testes negativos offline estão registrados em `docs/g3b-egress-topology.md`. A conectividade nominal com o DeepSeek e qualquer chave continuam bloqueadas até G3c autorizado.
 
 Requests e responses brutos, ainda que sintéticos, permanecem em armazenamento externo criptografado e com acesso controlado. O Git recebe somente hashes, metadados saneados e exports sintéticos aprovados por dois integrantes.
 
@@ -118,6 +118,7 @@ O Qwen3 não cabe integralmente na VRAM observada e deverá usar offload parcial
 - [x] arquivo de exemplo lista somente nomes e valores não sensíveis/fictícios, sem chave;
 - [x] adapters DeepSeek e Ollama implementados sob interface comum no commit `b2deec8`;
 - [x] mocks cobrem JSON válido/inválido, schema, truncamento, escolha/tool call único ou múltiplo, timeout, rate limit, erro de provedor, drift e sanitização; 82 testes passaram sem rede;
+- [x] `llm-client`, API interna, redes separadas, proxy allowlisted e testes negativos offline aprovados em G3b; 91 testes do gateway/cliente e 6 do proxy passaram sem chamada externa;
 - [ ] Qwen3 baixado com autorização, manifest completo fixado e smoke de hardware aprovado;
 - [ ] DeepSeek validado com chamada sintética mínima, sem segredo em log;
 - [ ] parâmetros e prompts do piloto versionados e hasheados.
