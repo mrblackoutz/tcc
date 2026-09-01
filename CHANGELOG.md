@@ -2,6 +2,17 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.8] — 2026-09-01
+
+- fixada em DEC-020 a fronteira mínima de egress: Odoo, banco e gateway permanecem sem saída externa; um `llm-client` dedicado acessará o DeepSeek somente por proxy TLS com destino permitido e o Ollama somente pela rede interna;
+- implementados no gateway 0.3.0 os adapters DeepSeek/Ollama, configuração segura, schema auxiliar de saída do modelo, injeção de proveniência confiável pelo adapter e sanitização de erros e metadados;
+- aprovados 82 testes em contêiner `--network none` e somente leitura, sem chamada a API, download de modelo, leitura ou criação de chave; o ID local da imagem foi registrado sem tratá-lo como digest de manifest OCI;
+- atribuídos em DEC-021 os workstreams: Felipe em ciência/dados, Thomaz em arquitetura/segurança e Gustavo em Odoo/experimentação, com revisão cruzada e fronteiras de integração explícitas;
+- publicado `docs/task-backlog.md` com 116 tarefas identificadas, prioridade, proprietário, revisor, dependências, entregável, Definition of Done, estado e ondas W0–W7 para execução paralela;
+- atualizado o controle institucional com os papéis e o proprietário operacional do cadastro/requerimento, preservando como pendentes a confirmação externa e o recibo;
+- mantidos inalterados problema, perguntas, hipóteses, endpoints, métricas, margem de não inferioridade, threat model, amostras e comparação pareada C0/C1;
+- permanecem pendentes G3b (topologia e testes negativos de egress), G3c (smokes reais autorizados), competência do C0 científico, C1, dataset, piloto, freeze e resultados.
+
 ## [1.2.7] — 2026-08-31
 
 - registrada em DEC-018 a seleção do DeepSeek por API como modelo principal e do Qwen3 14B quantizado via Ollama como segundo bloco separado de robustez e transportabilidade;

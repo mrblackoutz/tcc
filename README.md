@@ -15,6 +15,9 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 - `docs/lab-runbook.md`: procedimento operacional dos marcos M1–M2, evidências, recuperação e limites.
 - `docs/m2-c0-baseline.md`: relatório técnico, interpretação e limites científicos do vertical slice M2/C0.
 - `docs/model-selection.md`: papéis dos modelos, configuração comum, proveniência, segurança e gates de G3 definidos em DEC-018.
+- `docs/llm-egress-and-adapters.md`: fronteira mínima de rede, ameaças, contrato comum e gates dos adapters definidos em DEC-020.
+- `docs/g3a-llm-adapters.md`: evidência técnica saneada da implementação simulada e dos 82 testes de G3a.
+- `docs/task-backlog.md`: inventário operacional de 116 tarefas, dependências, revisões, DoD e ondas paralelas dos três integrantes conforme DEC-021.
 - `paper/`: fonte LaTeX editável, referências, validação e PDF pré-experimental do artigo institucional do TCC II, conforme DEC-019.
 - `docs/releases/v1.2.md`: manifesto auditável, hashes e gates da release 1.2.
 - `docs/releases/v1.2.1.md`: manifesto auditável de W06, do pin Odoo e da auditoria institucional de 2026/2.
@@ -23,6 +26,7 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 - `docs/releases/v1.2.5.md`: manifesto do aceite técnico M1 corrigido conforme DEC-016.
 - `docs/releases/v1.2.6.md`: manifesto do aceite técnico M2/G2 e de seus limites pré-experimentais conforme DEC-017.
 - `docs/releases/v1.2.7.md`: manifesto da seleção DeepSeek/Qwen3, do desenho por blocos e das pendências de G3 conforme DEC-018.
+- `docs/releases/v1.2.8.md`: manifesto da fronteira de egress, do aceite G3a e da distribuição integral do trabalho pendente.
 - `reproducibility/odoo-source.lock.json`: lock legível por máquina da fonte Odoo selecionada.
 - `reproducibility/lab-environment.lock.json`: versões, digests e últimos aceites M1/M2 saneados do laboratório.
 - `reproducibility/model-selection.lock.json`: seleção datada do DeepSeek e Qwen3, fatos observados e evidências ainda pendentes para o freeze.
@@ -39,9 +43,11 @@ O marco M2 também foi validado em 31/08/2026. Ele gera localmente um PDF sinté
 
 M2 é uma baseline de desenvolvimento do encanamento, não o C0 científico: o adaptador `deterministic-development/v1` não usa LLM e está proibido nas runs experimentais. Os aceites ainda não incluem modelo LLM, prompt injection, C1, add-on de autorização, postagem ou pagamento. O manifesto OCI é local e não foi publicado em registry. O estado verificável corrente está em `reproducibility/lab-environment.lock.json`; PDF, credenciais e evidências detalhadas permanecem em `.runtime`, fora do Git.
 
-Os modelos de G3 foram selecionados em DEC-018. O bloco principal usará a API DeepSeek com `model=deepseek-v4-flash`; na data da seleção, o provedor documentava o backend `DeepSeek-V4-Flash-0731`, mas o alias continua móvel. O bloco posterior de robustez usará `qwen3:14b-q4_K_M` via Ollama. Os dois blocos preservam C0/C1 com o mesmo modelo e configuração e usam *thinking* desligado no núcleo. Essa seleção ainda não significa que adapters, egress, artefato Qwen, parâmetros ou competência do C0 científico estejam aprovados.
+Os modelos de G3 foram selecionados em DEC-018. O bloco principal usará a API DeepSeek com `model=deepseek-v4-flash`; na data da seleção, o provedor documentava o backend `DeepSeek-V4-Flash-0731`, mas o alias continua móvel. O bloco posterior de robustez usará `qwen3:14b-q4_K_M` via Ollama. Os dois blocos preservam C0/C1 com o mesmo modelo e configuração e usam *thinking* desligado no núcleo. Conforme DEC-020, os adapters e o contrato auxiliar já foram implementados, saneados e aprovados em G3a com mocks e 82 testes em contêiner sem rede. O egress executável, chamadas reais autorizadas, artefato Qwen, parâmetros e competência do C0 científico continuam pendentes.
 
 O host observado possui Ollama 0.30.10 e RTX 3060 Ti com 8 GiB de VRAM. Como o Qwen quantizado ocupa aproximadamente 9,3 GB, sua inclusão depende de smoke com offload parcial e manifest completo registrado. O modelo não foi baixado por esta release. A rede do laboratório permanece interna e nenhuma chave DeepSeek foi criada, lida ou versionada.
+
+Os três workstreams foram atribuídos em DEC-021: Felipe lidera ciência e dados, Thomaz lidera arquitetura e segurança, e Gustavo lidera Odoo e experimentação. Todas as pendências conhecidas estão identificadas em `docs/task-backlog.md`, com responsáveis, revisores, dependências e critérios objetivos de conclusão para permitir execução paralela sem perder os pontos de integração.
 
 ## Execução local de M1 e M2
 
