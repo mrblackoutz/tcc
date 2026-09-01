@@ -21,7 +21,29 @@
         "receiptVisible": false,
         "advisorAcceptanceVisibleAsPending": true
       },
-      "conclusion": "partial-evidence-task-remains-external-until-all-authors-confirmed-and-receipt-preserved"
+      "conclusion": "partial-evidence-task-remains-external-until-all-authors-confirmed-and-receipt-preserved",
+      "supersededBy": "ADM-07-2026-09-01-02"
+    },
+    {
+      "evidenceId": "ADM-07-2026-09-01-02",
+      "taskId": "ADM-07",
+      "sourceKind": "user-supplied-oriente-confirmed-project-page-screenshot",
+      "localPath": ".runtime/evidence/institutional/adm-07-oriente-all-authors-confirmed-2026-09-01.png",
+      "sha256": "59044c1464de5b73889b159448ecf08210f51d186f32384170363db6cd44a1de",
+      "byteCount": 114142,
+      "containsAcademicIdentifiers": true,
+      "trackedByGit": false,
+      "publishable": false,
+      "supersedes": "ADM-07-2026-09-01-01",
+      "observation": {
+        "projectIdentificationVisible": true,
+        "groupRegistrationVisible": true,
+        "expectedAuthorsVisible": 3,
+        "confirmedAuthorsVisible": 3,
+        "pendingAuthorsVisible": 0,
+        "registrationEvidenceKind": "confirmed-project-page-screenshot"
+      },
+      "conclusion": "adm-07-complete-all-three-authors-confirmed-and-registration-evidence-preserved"
     }
   ]
 }

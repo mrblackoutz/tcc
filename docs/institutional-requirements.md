@@ -118,7 +118,8 @@ Para conceito Excelente ou Muito Bom, o termo de autorização do Adelpha deve s
 - [ ] confirmar formalmente o alinhamento do tema à área ou projeto de pesquisa do orientador;
 - [x] atribuir papéis P1/P2/P3 nominalmente conforme DEC-021; disponibilidade será revista nos checkpoints semanais;
 - [x] designar Gustavo/P3 como único owner operacional do cadastro e requerimento;
-- [ ] conferir a conclusão externa do cadastro/requerimento, os três autores e preservar os recibos — evidência parcial de 01/09/2026 mostra o grupo e os três integrantes, com duas confirmações, uma pendência e nenhum recibo visível; captura com identificadores permanece fora do Git e somente seu hash consta em `reproducibility/institutional-evidence.lock.json`;
+- [x] conferir a conclusão externa do cadastro no Oriente e os três autores — evidência de 01/09/2026 mostra o projeto e os três integrantes confirmados; a captura com identificadores permanece fora do Git e somente seu hash e conclusão saneada constam em `reproducibility/institutional-evidence.lock.json`;
+- [ ] concluir o requerimento no Portal do Aluno, conferir os autores e preservar o recibo correspondente, conforme ADM-08;
 - [ ] manter orientação semanal ou quinzenal com presença, pauta e encaminhamentos registrados;
 - [x] criar fonte separada e editável do artigo, reconstruída e comparada visualmente com o template conforme DEC-019, sem carregar metadados herdados.
 
