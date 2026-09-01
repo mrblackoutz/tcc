@@ -93,7 +93,7 @@ services:
       - lab
 
   gateway:
-    image: tcc-gateway:0.3.0
+    image: tcc-gateway:0.4.0
     platform: linux/amd64
     restart: "no"
     build:
@@ -149,10 +149,106 @@ services:
       - ALL
     networks:
       - lab
+      - llm_control
+
+  llm-client:
+    profiles:
+      - g3b
+    image: tcc-gateway:0.4.0
+    platform: linux/amd64
+    restart: "no"
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+      args:
+        PYTHON_BASE_IMAGE: python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab
+    depends_on:
+      egress-proxy:
+        condition: service_healthy
+    environment:
+      TCC_LLM_CLIENT_MODE: mock
+      TCC_LLM_CLIENT_BIND_HOST: 0.0.0.0
+      TCC_LLM_CLIENT_PORT: "8080"
+      HTTPS_PROXY: http://egress-proxy:8888
+      HTTP_PROXY: http://egress-proxy:8888
+      NO_PROXY: 127.0.0.1,localhost
+    command:
+      - python
+      - -m
+      - tcc_gateway.llm_client_service
+    expose:
+      - "8080"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=2).read()
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    networks:
+      - llm_control
+      - llm_egress
+
+  egress-proxy:
+    profiles:
+      - g3b
+    image: tcc-egress-proxy:0.1.0
+    platform: linux/amd64
+    restart: "no"
+    build:
+      context: ./infra/egress-proxy
+      dockerfile: Dockerfile
+      args:
+        PYTHON_BASE_IMAGE: python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab
+    environment:
+      TCC_PROXY_BIND_HOST: 0.0.0.0
+      TCC_PROXY_PORT: "8888"
+    expose:
+      - "8888"
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import socket;
+          connection=socket.create_connection(('127.0.0.1', 8888), timeout=2);
+          connection.close()
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    networks:
+      - llm_egress
+      - proxy_external
 
 networks:
   lab:
     internal: true
+  llm_control:
+    internal: true
+  llm_egress:
+    internal: true
+  proxy_external:
 
 volumes:
   postgres_data:

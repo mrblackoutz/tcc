@@ -1,0 +1,5 @@
+**
+!proxy.py
+!tests/
+!tests/**
+!Dockerfile
