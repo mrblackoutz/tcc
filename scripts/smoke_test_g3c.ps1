@@ -99,10 +99,41 @@ try {
     Write-JsonFile -Path $attemptPath -Value $attempt
     $attemptStarted = $true
 
-    $runnerOutput = (& docker @composePrefix run --rm --no-deps `
-        -e "TCC_GIT_COMMIT=$gitCommit" g3c-runner 2>&1) -join "`n"
-    $runnerExitCode = $LASTEXITCODE
+    # Docker Compose escreve progresso normal em stderr. Com ErrorActionPreference
+    # Stop, o Windows PowerShell 5.1 pode promover essa linha a erro terminante e
+    # interromper um container que acabou de iniciar. Capture com Continue e use
+    # exclusivamente o exit code nativo para decidir o resultado.
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $runnerOutput = (& docker @composePrefix run --rm --no-deps `
+            -e "TCC_GIT_COMMIT=$gitCommit" g3c-runner 2>&1) -join "`n"
+        $runnerExitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousPreference
+    }
     if ($runnerExitCode -ne 0) {
+        $proxyLogsAfterFailure = (& docker @composePrefix logs --no-color egress-proxy 2>&1) -join "`n"
+        $attempt.runner_exit_code = $runnerExitCode
+        $attempt.proxy_allow_events = [regex]::Matches(
+            $proxyLogsAfterFailure,
+            'proxy_event=allow'
+        ).Count
+        foreach ($line in ($runnerOutput -split "`r?`n")) {
+            if ($line.TrimStart().StartsWith('{')) {
+                try {
+                    $runnerStatus = $line | ConvertFrom-Json
+                    if ($runnerStatus.status -eq 'error' -and `
+                        $runnerStatus.category -match '^[a-z0-9_]+$') {
+                        $attempt.runner_error_category = [string]$runnerStatus.category
+                    }
+                }
+                catch {
+                    # Linhas de progresso nao JSON nao alteram a evidencia saneada.
+                }
+            }
+        }
         $attempt.status = 'failed-or-call-outcome-uncertain-no-automatic-retry'
         $attempt.completed_at_utc = (Get-Date).ToUniversalTime().ToString('o')
         Write-JsonFile -Path $attemptPath -Value $attempt

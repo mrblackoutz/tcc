@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "decisionId": "DEC-018",
   "observedOn": "2026-08-31",
-  "status": "models-selected-g3b-offline-passed-artifacts-not-frozen",
+  "status": "models-selected-g3c-attempt-inconclusive-artifacts-not-frozen",
   "protocolFrozen": false,
   "primaryModel": {
     "role": "confirmatory-primary",
@@ -35,7 +35,7 @@
     },
     "artifactDigest": null,
     "artifactStatus": "provider-hosted-alias",
-    "adapterStatus": "implemented-and-mock-tested-no-real-call"
+    "adapterStatus": "implemented-and-mock-tested-g3c-attempt-inconclusive"
   },
   "secondaryModel": {
     "role": "robustness-transportability",
@@ -117,8 +117,8 @@
     "deepSeekAllowedDestination": "api.deepseek.com:443",
     "gatewayOdooDatabaseEgress": "denied-by-design",
     "llmClientMode": "mock-real-transport-disabled-until-g3c",
-    "allowedDestinationUpstreamConnectivityObserved": false,
-    "realApiCallAuthorized": false
+    "allowedDestinationUpstreamConnectivityObserved": "unknown-after-inconclusive-g3c-attempt",
+    "realApiCallAuthorized": true
   },
   "g3aAdapterEvidence": {
     "decisionId": "DEC-020",
@@ -202,6 +202,35 @@
       "No provider or local model was called.",
       "The allowed external tunnel, TLS handshake and provider availability were not observed.",
       "The Qwen artifact and final DeepSeek runtime behavior remain unobserved."
+    ]
+  },
+  "g3cAttemptEvidence": {
+    "decisionId": "DEC-020",
+    "taskId": "G3-05",
+    "attemptedOn": "2026-09-02",
+    "implementationCommit": "0fc66ce8981259e7dd0f675d9e21263f247c8bcb",
+    "status": "failed-or-call-outcome-uncertain-no-automatic-retry",
+    "operatorAuthorization": true,
+    "secretFilePresentAndIgnored": true,
+    "runnerContainerStarted": true,
+    "runnerExitCode": 1,
+    "successEvidenceWritten": false,
+    "realDeepSeekCallsMinimum": 0,
+    "realDeepSeekCallsMaximum": 1,
+    "automaticRetriesPerformed": 0,
+    "orchestrationFailureCategory": "powershell-native-stderr-progress-promoted-to-terminating-error",
+    "dockerEventObservation": "runner-started-then-died-exit-1-after-approximately-two-seconds-services-removed",
+    "localAttemptMarkerPath": ".runtime/evidence/g3c-deepseek-smoke.attempt.json",
+    "localAttemptMarkerSha256": "7d11fb1648ec782b26ecaa352a58f16b4c765182ffefedb6d43f0e45c8c4a6d3",
+    "localAttemptMarkerByteCount": 665,
+    "rawRequestOrResponsePersisted": false,
+    "secretExposureStatus": "not-observed-but-complete-log-scan-unavailable-after-orchestrator-abort",
+    "retryAuthorizationRequired": true,
+    "limitations": [
+      "No successful provider response or sanitised success manifest was produced.",
+      "The destroyed runner and services prevented post-failure log preservation.",
+      "The evidence cannot prove whether the provider received zero or one request.",
+      "G3-05 remains incomplete and no automatic retry is permitted."
     ]
   },
   "requiredPerRunProvenance": [
