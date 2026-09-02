@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "decisionId": "DEC-018",
   "observedOn": "2026-08-31",
-  "status": "models-selected-g3c-attempt-inconclusive-artifacts-not-frozen",
+  "status": "models-selected-g3c-provider-http-402-artifacts-not-frozen",
   "protocolFrozen": false,
   "primaryModel": {
     "role": "confirmatory-primary",
@@ -35,7 +35,7 @@
     },
     "artifactDigest": null,
     "artifactStatus": "provider-hosted-alias",
-    "adapterStatus": "implemented-and-mock-tested-g3c-attempt-inconclusive"
+    "adapterStatus": "implemented-and-offline-tested-provider-endpoint-reached-inference-blocked-http-402"
   },
   "secondaryModel": {
     "role": "robustness-transportability",
@@ -113,11 +113,11 @@
     "rawRequestsAndResponsesInGit": false,
     "rawCustody": "external-encrypted-access-controlled-and-immutable-copy",
     "runtimeNetworkCurrentlyInternal": "lab-control-and-client-networks-internal-only-proxy-has-external-network",
-    "externalEgressDesignStatus": "implemented-and-offline-negative-tested-no-allowed-upstream-dial",
+    "externalEgressDesignStatus": "implemented-offline-negative-tested-and-allowed-upstream-observed-provider-http-402",
     "deepSeekAllowedDestination": "api.deepseek.com:443",
     "gatewayOdooDatabaseEgress": "denied-by-design",
-    "llmClientMode": "mock-real-transport-disabled-until-g3c",
-    "allowedDestinationUpstreamConnectivityObserved": "unknown-after-inconclusive-g3c-attempt",
+    "llmClientMode": "mock-in-g3b-explicit-deepseek-smoke-in-g3c",
+    "allowedDestinationUpstreamConnectivityObserved": "yes-provider-response-http-402-no-inference",
     "realApiCallAuthorized": true
   },
   "g3aAdapterEvidence": {
@@ -233,6 +233,44 @@
       "G3-05 remains incomplete and no automatic retry is permitted."
     ]
   },
+  "g3cFollowupAttemptEvidence": [
+    {
+      "attemptNumber": 2,
+      "attemptedOn": "2026-09-02",
+      "implementationCommit": "ffa155d636da64f8f84c2ffcfb1f38af56adfbfd",
+      "operatorAuthorization": true,
+      "status": "failed-no-success-manifest-no-automatic-retry",
+      "runnerExitCode": 1,
+      "runnerErrorCategory": "llm_client_http_502",
+      "allowedTunnelCount": 1,
+      "providerHttpStatusObserved": null,
+      "successEvidenceWritten": false,
+      "automaticRetriesPerformed": 0,
+      "localAttemptMarkerPath": ".runtime/evidence/archive/g3c-deepseek-smoke.attempt-02-http-502.json",
+      "localAttemptMarkerSha256": "921d81fd47c7bdb8c700ecb502175cb551906784948706b3304a1290eaddd2a3",
+      "localAttemptMarkerByteCount": 500,
+      "rawRequestOrResponsePersisted": false
+    },
+    {
+      "attemptNumber": 3,
+      "attemptedOn": "2026-09-02",
+      "implementationCommit": "ef956d2014e08967882aa8d79b7f9307504617e0",
+      "operatorAuthorization": true,
+      "status": "provider-request-rejected-http-402-no-inference-no-automatic-retry",
+      "runnerExitCode": 1,
+      "runnerErrorCategory": "llm_client_request_rejected_provider_http_402",
+      "allowedTunnelCount": 1,
+      "providerHttpStatusObserved": 402,
+      "successEvidenceWritten": false,
+      "successfulInferences": 0,
+      "automaticRetriesPerformed": 0,
+      "localAttemptMarkerPath": ".runtime/evidence/g3c-deepseek-smoke.attempt.json",
+      "localAttemptMarkerSha256": "df6ca79a99d816ee585d82d9d157f7d8487b365dd59c2299fc45234bce2c1b7a",
+      "localAttemptMarkerByteCount": 526,
+      "rawRequestOrResponsePersisted": false,
+      "externalBlocker": "provider-account-credit-or-balance-required-before-new-authorized-attempt"
+    }
+  ],
   "requiredPerRunProvenance": [
     "provider",
     "api-base-and-endpoint",
@@ -249,7 +287,7 @@
     "latency-errors-and-retries"
   ],
   "pendingBeforeFreeze": [
-    "DeepSeek allowed tunnel and synthetic smoke under the enforced egress boundary",
+    "DeepSeek account credit or balance and a successful synthetic smoke under the already-observed egress boundary",
     "Qwen artifact download authorized by operator",
     "full Ollama manifest and blob digests",
     "Qwen hardware feasibility smoke",

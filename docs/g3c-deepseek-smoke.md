@@ -2,7 +2,7 @@
 
 **Decisões:** DEC-018 e DEC-020  
 **Tarefa:** G3-05  
-**Estado:** caminho implementado e aprovado offline; primeira tentativa inconclusiva, sem retry; aguardando nova autorização
+**Estado:** caminho implementado e aprovado offline; endpoint alcançado, mas a chamada foi recusada com HTTP 402; aguardando crédito/saldo no provedor
 
 ## 1. Objetivo e limite
 
@@ -34,7 +34,7 @@ O cenário fixo `G3C-DEEPSEEK-BENIGN-001` contém uma nota sintética marcada co
 
 O arquivo local `.runtime/evidence/g3c-deepseek-smoke.json` preserva somente status, commit, alias/modelo, ID saneado, fingerprint quando disponível, tokens, latências e hashes de request, response, conteúdo, mensagens, schema, documento e proposta. Documento, prompt, proposta, resposta bruta, cabeçalho e chave não são persistidos nesse manifesto nem enviados ao Git.
 
-O marcador local `.runtime/evidence/g3c-deepseek-smoke.attempt.json` impede repetição silenciosa quando o resultado da primeira tentativa for incerto.
+O marcador local `.runtime/evidence/g3c-deepseek-smoke.attempt.json` impede repetição silenciosa quando uma tentativa não produz o manifesto de sucesso. Marcadores anteriores são preservados localmente em `.runtime/evidence/archive/`, fora do Git, e somente seus metadados saneados e hashes entram na documentação.
 
 ## 4. Primeira tentativa inconclusiva
 
@@ -44,7 +44,17 @@ A causa observada no orquestrador foi a promoção, pelo Windows PowerShell 5.1 
 
 O marcador privado foi atualizado como `failed-or-call-outcome-uncertain-no-automatic-retry` e permanece ignorado pelo Git. Seu SHA-256 saneado é `7d11fb1648ec782b26ecaa352a58f16b4c765182ffefedb6d43f0e45c8c4a6d3`. O script passou a capturar progresso nativo com `ErrorActionPreference=Continue`, decidir pelo exit code do processo e preservar categoria saneada/quantidade de túneis antes de falhar. Uma nova tentativa exige autorização operacional explícita; não é continuação automática da anterior.
 
-## 5. Comando autorizado
+## 5. Tentativas posteriores e bloqueio externo
+
+Após nova autorização do operador, uma segunda tentativa foi executada sobre o commit `ffa155d636da64f8f84c2ffcfb1f38af56adfbfd`. A captura corrigida comprovou um túnel permitido e classificou a falha no cliente interno como HTTP 502, ainda sem preservar a categoria segura retornada pelo adapter. Não houve manifesto de sucesso nem retry. O marcador arquivado possui SHA-256 `921d81fd47c7bdb8c700ecb502175cb551906784948706b3304a1290eaddd2a3` e 500 bytes.
+
+Para remover essa ambiguidade sem persistir corpo de erro, o runner passou a extrair somente a categoria normalizada e o status HTTP já saneados pelo `llm-client`. A mudança foi aprovada em 97 testes offline e versionada no commit `ef956d2014e08967882aa8d79b7f9307504617e0`.
+
+Uma terceira tentativa única, também autorizada, alcançou `api.deepseek.com:443` por exatamente um túnel permitido. O provedor recusou a requisição com HTTP 402, classificado como `llm_client_request_rejected_provider_http_402`. Isso comprova a fronteira de egress e uma resposta do endpoint, mas não comprova autenticação utilizável, inferência, modelo retornado, JSON estruturado ou competência. Nenhum manifesto de sucesso foi escrito e nenhum retry ocorreu. O marcador ativo possui SHA-256 `df6ca79a99d816ee585d82d9d157f7d8487b365dd59c2299fc45234bce2c1b7a` e 526 bytes.
+
+G3-05 permanece `EXTERNAL`. Antes de nova tentativa, o operador deve disponibilizar crédito/saldo na conta DeepSeek e autorizar explicitamente uma nova chamada. Trocar modelo, endpoint, payload ou controles para contornar HTTP 402 é proibido.
+
+## 6. Comando autorizado
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test_g3c.ps1 -ConfirmRealCall
@@ -52,17 +62,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test_g3c.ps1
 
 O comando só deve ser executado depois de o commit de implementação estar limpo. Ele valida as topologias G3b/G3c, executa as suítes em contêiner sem rede, sobe apenas proxy e cliente, cria o marcador e então realiza uma única chamada.
 
-## 6. Validação offline desta implementação
+## 7. Validação offline desta implementação
 
 - `scripts/test_g3b_topology.py`: `PASS`, sem chamada real;
 - `scripts/test_g3c_topology.py`: `PASS`, chave como bind exato read-only e somente proxy na rede externa;
-- gateway/llm-client 0.5.0: `96 passed` com `--network none`, filesystem read-only e tmpfs;
+- gateway/llm-client 0.5.0: `97 passed` com `--network none`, filesystem read-only e tmpfs após a melhoria de diagnóstico;
 - proxy 0.1.0: `6 passed` com `--network none`;
 - smoke runtime G3b reexecutado: `PASS`, sem provedor, segredo ou download;
 - captura corrigida do `stderr` validada com runner inofensivo que apenas imprimiu texto, sem subir cliente/proxy ou ler chave: `PASS`;
 - contêineres temporários remanescentes: nenhum.
 
-## 7. Definition of Done de G3-05
+## 8. Definition of Done de G3-05
 
 G3-05 só passa para `DONE` quando:
 
@@ -73,8 +83,9 @@ G3-05 só passa para `DONE` quando:
 - [x] G3b continua offline e aprovado;
 - [x] tentativa inconclusiva registrada sem alegar sucesso ou ausência de chamada;
 - [x] falha de captura do orquestrador corrigida sem nova chamada;
+- [x] endpoint permitido alcançado e HTTP 402 registrado sem corpo, chave ou payload;
+- [x] proxy registrou exatamente um túnel permitido na tentativa diagnóstica;
 - [ ] exatamente uma chamada real foi concluída, sem retry;
 - [ ] manifesto local saneado passou no validador;
-- [ ] proxy registrou exatamente um túnel permitido;
 - [ ] logs/evidência foram verificados contra chave, `Authorization`, `Bearer`, documento, proposta e marcadores sensíveis;
-- [ ] lock, documentação e backlog foram atualizados sem raw ou segredo.
+- [x] lock, documentação e backlog foram atualizados sem raw ou segredo.

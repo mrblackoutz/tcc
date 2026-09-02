@@ -2,13 +2,13 @@
 
 **Decisão:** DEC-020
 
-**Estado:** desenho aceito; G3a e G3b offline comprovados; caminho G3c implementado e testado offline; primeira tentativa G3c inconclusiva, sem retry, aguardando nova autorização; artefato/smoke Qwen3 e piloto pendentes
+**Estado:** desenho aceito; G3a e G3b offline comprovados; caminho G3c implementado e testado offline; endpoint DeepSeek alcançado, mas recusado com HTTP 402; crédito/saldo, smoke aceito, artefato/smoke Qwen3 e piloto pendentes
 
 **Data:** 31/08/2026
 
 ## 1. Objetivo e limite desta etapa
 
-Este documento transforma a seleção de modelos da DEC-018 em um desenho implementável sem abrir a rede do laboratório nem antecipar o piloto. G3a implementou adapters, schema, mocks e saneamento; G3b materializou `llm-client`, redes e proxy e aprovou os testes offline em 01/09/2026. Em 02/09/2026, o caminho G3c foi preparado com um serviço real separado, runner sem segredo, chave montada por arquivo exato read-only, recusa de repetição automática e manifesto saneado. A primeira tentativa foi interrompida porque o Windows PowerShell promoveu uma linha normal de progresso do Docker em `stderr` a erro terminante: o runner iniciou e saiu com código 1, mas nenhum manifesto de sucesso foi criado. Como não é possível provar se o POST chegou ao provedor, o intervalo conservador é de zero a uma chamada; não houve retry. A implementação e os testes offline não equivalem à chamada real aceita nem à competência do C0 científico.
+Este documento transforma a seleção de modelos da DEC-018 em um desenho implementável sem abrir a rede do laboratório nem antecipar o piloto. G3a implementou adapters, schema, mocks e saneamento; G3b materializou `llm-client`, redes e proxy e aprovou os testes offline em 01/09/2026. Em 02/09/2026, o caminho G3c foi preparado com um serviço real separado, runner sem segredo, chave montada por arquivo exato read-only, recusa de repetição automática e manifesto saneado. A primeira tentativa foi inconclusiva por falha de captura do orquestrador. Depois da correção e de nova autorização, o túnel nominal foi observado; a telemetria sanitizada foi então aprimorada e uma terceira tentativa autorizada identificou resposta HTTP 402 do provedor. Nenhuma tentativa teve retry ou produziu manifesto de sucesso. A fronteira de egress está observada, mas inferência, modelo retornado e competência do C0 científico continuam pendentes até haver crédito/saldo e um smoke aceito.
 
 ## 2. Trust boundaries
 
@@ -121,7 +121,7 @@ O Git recebe hashes e metadados saneados. Requests/responses brutos pertencem ao
 
 - **G3a — código isolado:** adapters, schema e mocks passam; nenhuma rede real é usada.
 - **G3b — egress executável:** **atendido offline em 01/09/2026**; topologia, API mock, política e testes negativos passaram sem contato externo, conforme `docs/g3b-egress-topology.md`.
-- **G3c — smoke DeepSeek:** caminho executável preparado em `scripts/smoke_test_g3c.ps1`; capturador de `stderr` corrigido depois da tentativa inconclusiva; permanece pendente até nova autorização e uma chamada produzir evidência saneada e passar a varredura de segredo/log.
+- **G3c — smoke DeepSeek:** caminho executável preparado em `scripts/smoke_test_g3c.ps1`; capturador de `stderr` e diagnóstico sanitizado corrigidos; o endpoint respondeu HTTP 402. Permanece pendente até crédito/saldo, nova autorização e uma chamada produzir evidência saneada e passar a varredura de segredo/log.
 - **G3d — smoke Qwen3:** download autorizado, manifest/blobs fixados e hardware aprovado sem OOM.
 - **G3e — piloto:** prompts, parâmetros, retry, competência, custo e latência aprovados antes do freeze.
 

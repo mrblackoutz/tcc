@@ -92,7 +92,7 @@ Para Qwen3, o lock final deverá incluir versão do Ollama, nome exato, manifest
 
 A chave DeepSeek nunca entra em Git, Compose, argumento de linha de comando, log, fixture ou evidência saneada. O adapter deverá lê-la de arquivo de segredo ou variável de ambiente local e remover cabeçalhos e payloads sensíveis de erros.
 
-A topologia G3b mantém `lab`, `llm_control` e `llm_egress` internas. Somente o proxy participa de uma rede externa; gateway, Odoo e PostgreSQL não participam dela, e o cliente não participa de `lab` nem recebe credenciais do ERP. O profile corrente aceita apenas transporte mock e os testes negativos offline estão registrados em `docs/g3b-egress-topology.md`. A conectividade nominal com o DeepSeek e qualquer chave continuam bloqueadas até G3c autorizado.
+A topologia G3b mantém `lab`, `llm_control` e `llm_egress` internas. Somente o proxy participa de uma rede externa; gateway, Odoo e PostgreSQL não participam dela, e o cliente não participa de `lab` nem recebe credenciais do ERP. Os testes negativos offline estão registrados em `docs/g3b-egress-topology.md`. Em G3c autorizado, o destino nominal respondeu HTTP 402; assim, o egress foi observado, mas autenticação utilizável, inferência, alias retornado e competência continuam não comprovados até haver crédito/saldo e um smoke aceito.
 
 Requests e responses brutos, ainda que sintéticos, permanecem em armazenamento externo criptografado e com acesso controlado. O Git recebe somente hashes, metadados saneados e exports sintéticos aprovados por dois integrantes.
 
