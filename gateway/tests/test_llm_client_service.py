@@ -53,13 +53,124 @@ def test_service_config_is_mock_only_and_rejects_erp_credentials() -> None:
 
     with pytest.raises(LLMClientServiceError) as real_error:
         LLMClientServiceConfig.from_env({"TCC_LLM_CLIENT_MODE": "deepseek"})
-    assert real_error.value.category == "real_transport_disabled_until_g3c"
+    assert real_error.value.category == "invalid_mode"
 
     for forbidden in ("ODOO_BASE_URL", "POSTGRES_USER", "DEEPSEEK_API_KEY_FILE"):
         with pytest.raises(LLMClientServiceError) as credential_error:
             LLMClientServiceConfig.from_env({forbidden: SENSITIVE_MARKER})
         assert credential_error.value.category == "forbidden_credential_environment"
         assert SENSITIVE_MARKER not in str(credential_error.value)
+
+
+def _g3c_config(tmp_path) -> LLMClientServiceConfig:
+    key_file = tmp_path / "deepseek_api_key"
+    key_file.write_text(SENSITIVE_MARKER, encoding="utf-8")
+    config = LLMClientServiceConfig.from_env(
+        {
+            "TCC_LLM_CLIENT_MODE": "deepseek-smoke",
+            "DEEPSEEK_API_KEY_FILE": str(key_file),
+            "HTTPS_PROXY": "http://egress-proxy:8888",
+            "HTTP_PROXY": "http://egress-proxy:8888",
+        }
+    )
+    assert config.mode == "deepseek-smoke"
+    assert config.deepseek_config is not None
+    assert SENSITIVE_MARKER not in repr(config)
+    return config
+
+
+def test_g3c_config_requires_file_key_and_fixed_proxy(tmp_path) -> None:
+    _g3c_config(tmp_path)
+
+    with pytest.raises(LLMClientServiceError) as inline_error:
+        LLMClientServiceConfig.from_env(
+            {
+                "TCC_LLM_CLIENT_MODE": "deepseek-smoke",
+                "DEEPSEEK_API_KEY": SENSITIVE_MARKER,
+                "HTTPS_PROXY": "http://egress-proxy:8888",
+                "HTTP_PROXY": "http://egress-proxy:8888",
+            }
+        )
+    assert inline_error.value.category == "forbidden_credential_environment"
+    assert SENSITIVE_MARKER not in str(inline_error.value)
+
+    key_file = tmp_path / "deepseek_api_key"
+    with pytest.raises(LLMClientServiceError) as proxy_error:
+        LLMClientServiceConfig.from_env(
+            {
+                "TCC_LLM_CLIENT_MODE": "deepseek-smoke",
+                "DEEPSEEK_API_KEY_FILE": str(key_file),
+                "HTTPS_PROXY": "http://unapproved:8888",
+                "HTTP_PROXY": "http://egress-proxy:8888",
+            }
+        )
+    assert proxy_error.value.category == "invalid_proxy_configuration"
+
+
+def test_g3c_mode_performs_one_deepseek_call_and_rejects_ollama(tmp_path) -> None:
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        assert request.headers["Authorization"] == f"Bearer {SENSITIVE_MARKER}"
+        content = json.dumps(
+            {
+                "vendor_ref": "TCC-VENDOR-001",
+                "purchase_order_ref": "TCC-PO-001",
+                "document_ref": "TCC-G3C-NF-001-SEM-VALOR-FISCAL",
+                "invoice_date": "2026-09-02",
+                "currency": "BRL",
+                "bank_account_ref": "TCC-BANK-001",
+                "lines": [
+                    {
+                        "item_code": "TCC-SERVICE-001",
+                        "description": "SERVICO SINTETICO SEM VALOR FISCAL",
+                        "quantity": "1.00",
+                        "unit_price": "125.50",
+                        "line_total": "125.50",
+                    }
+                ],
+                "total": "125.50",
+            }
+        )
+        return httpx.Response(
+            200,
+            json={
+                "id": "synthetic-g3c-response",
+                "model": "deepseek-v4-flash",
+                "system_fingerprint": "fp_synthetic_g3c",
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {"role": "assistant", "content": content},
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 100,
+                    "completion_tokens": 50,
+                    "total_tokens": 150,
+                },
+            },
+        )
+
+    config = _g3c_config(tmp_path)
+    status, response = process_client_request(
+        _payload("deepseek"),
+        config,
+        transport=httpx.MockTransport(handler),
+    )
+    assert status == 200
+    assert response["status"] == "ok"
+    assert response["metadata"]["system_fingerprint"] == "fp_synthetic_g3c"
+    assert response["metadata"]["durations_ns"]["total_duration"] > 0
+    assert calls == 1
+
+    rejected_status, rejected = process_client_request(_payload("ollama"), config)
+    assert rejected_status == 400
+    assert rejected["error"]["category"] == "provider_not_allowed_in_mode"
+    assert calls == 1
 
 
 @pytest.mark.parametrize("provider", ["deepseek", "ollama"])

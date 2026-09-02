@@ -93,7 +93,7 @@ services:
       - lab
 
   gateway:
-    image: tcc-gateway:0.4.0
+    image: tcc-gateway:0.5.0
     platform: linux/amd64
     restart: "no"
     build:
@@ -154,7 +154,7 @@ services:
   llm-client:
     profiles:
       - g3b
-    image: tcc-gateway:0.4.0
+    image: tcc-gateway:0.5.0
     platform: linux/amd64
     restart: "no"
     build:
@@ -201,9 +201,108 @@ services:
       - llm_control
       - llm_egress
 
+  llm-client-g3c:
+    profiles:
+      - g3c
+    image: tcc-gateway:0.5.0
+    platform: linux/amd64
+    restart: "no"
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+      args:
+        PYTHON_BASE_IMAGE: python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab
+    depends_on:
+      egress-proxy:
+        condition: service_healthy
+    environment:
+      TCC_LLM_CLIENT_MODE: deepseek-smoke
+      TCC_LLM_CLIENT_BIND_HOST: 0.0.0.0
+      TCC_LLM_CLIENT_PORT: "8080"
+      DEEPSEEK_API_KEY_FILE: /run/tcc-secrets/deepseek_api_key
+      DEEPSEEK_BASE_URL: https://api.deepseek.com
+      DEEPSEEK_MODEL: deepseek-v4-flash
+      DEEPSEEK_TEMPERATURE: "0"
+      DEEPSEEK_MAX_OUTPUT_TOKENS: "2048"
+      HTTPS_PROXY: http://egress-proxy:8888
+      HTTP_PROXY: http://egress-proxy:8888
+      NO_PROXY: 127.0.0.1,localhost
+    command:
+      - python
+      - -m
+      - tcc_gateway.llm_client_service
+    expose:
+      - "8080"
+    volumes:
+      - type: bind
+        source: ./.runtime/secrets/deepseek_api_key
+        target: /run/tcc-secrets/deepseek_api_key
+        read_only: true
+        bind:
+          create_host_path: false
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import json,urllib.request;
+          body=json.load(urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=2));
+          assert body == {'mode':'deepseek-smoke','real_transport':True,'status':'ok'}
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    networks:
+      - llm_control
+      - llm_egress
+
+  g3c-runner:
+    profiles:
+      - g3c
+    image: tcc-gateway:0.5.0
+    platform: linux/amd64
+    restart: "no"
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+      args:
+        PYTHON_BASE_IMAGE: python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab
+    environment:
+      TCC_G3C_LLM_CLIENT_URL: http://llm-client-g3c:8080
+      TCC_G3C_EVIDENCE_FILE: /run/tcc-evidence/g3c-deepseek-smoke.json
+    command:
+      - python
+      - -m
+      - tcc_gateway.g3c_smoke_runner
+    volumes:
+      - type: bind
+        source: ./.runtime/evidence
+        target: /run/tcc-evidence
+        read_only: false
+        bind:
+          create_host_path: false
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - llm_control
+
   egress-proxy:
     profiles:
       - g3b
+      - g3c
     image: tcc-egress-proxy:0.1.0
     platform: linux/amd64
     restart: "no"

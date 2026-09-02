@@ -6,7 +6,7 @@ FROM ${PYTHON_BASE_IMAGE}
 ARG PYTHON_BASE_IMAGE
 
 LABEL org.opencontainers.image.title="TCC Odoo gateway and isolated LLM client" \
-      org.opencontainers.image.version="0.4.0" \
+      org.opencontainers.image.version="0.5.0" \
       org.opencontainers.image.base.name="${PYTHON_BASE_IMAGE}" \
       br.edu.fci.tcc.platform="linux/amd64"
 

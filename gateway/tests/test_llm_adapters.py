@@ -81,6 +81,7 @@ def _deepseek_response(**overrides: object) -> dict[str, object]:
     value: dict[str, object] = {
         "id": "synthetic-request-001",
         "model": DEEPSEEK_MODEL,
+        "system_fingerprint": "fp_synthetic_001",
         "choices": [
             {
                 "index": 0,
@@ -164,12 +165,14 @@ def test_deepseek_valid_json_is_normalised_with_sanitised_metadata() -> None:
     assert result.proposal.source.document_sha256 == "a" * 64
     assert result.metadata.provider == "deepseek"
     assert result.metadata.returned_model == DEEPSEEK_MODEL
+    assert result.metadata.system_fingerprint == "fp_synthetic_001"
     assert result.metadata.usage == (
         ("prompt_tokens", 120),
         ("completion_tokens", 80),
         ("total_tokens", 200),
     )
     assert result.metadata.received_at_utc == FIXED_TIME.isoformat()
+    assert dict(result.metadata.durations_ns)["total_duration"] > 0
     assert SYNTHETIC_KEY not in repr(result.metadata)
 
 
@@ -192,6 +195,7 @@ def test_ollama_valid_schema_output_uses_local_non_thinking_request() -> None:
     assert result.proposal.producer == OLLAMA_ADAPTER_ID
     assert result.metadata.provider == "ollama"
     assert result.metadata.returned_model == OLLAMA_MODEL
+    assert result.metadata.system_fingerprint is None
     assert result.metadata.usage == (
         ("prompt_eval_count", 120),
         ("eval_count", 80),

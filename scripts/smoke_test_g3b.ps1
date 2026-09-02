@@ -25,7 +25,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'O build das imagens G3b falhou.' }
 
     & docker run --rm --network none --read-only --tmpfs '/tmp:size=64m,mode=1777' `
-        tcc-gateway:0.4.0 python -m pytest -q -p no:cacheprovider
+        tcc-gateway:0.5.0 python -m pytest -q -p no:cacheprovider
     if ($LASTEXITCODE -ne 0) { throw 'A suíte do gateway/llm-client falhou.' }
 
     & docker run --rm --network none --read-only --tmpfs '/tmp:size=32m,mode=1777' `

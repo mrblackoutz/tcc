@@ -2,13 +2,13 @@
 
 **Decisão:** DEC-020
 
-**Estado:** desenho aceito; G3a e G3b offline comprovados; smoke DeepSeek G3c, artefato/smoke Qwen3 e piloto ainda pendentes
+**Estado:** desenho aceito; G3a e G3b offline comprovados; caminho G3c implementado e testado offline, chamada DeepSeek ainda não executada; artefato/smoke Qwen3 e piloto pendentes
 
 **Data:** 31/08/2026
 
 ## 1. Objetivo e limite desta etapa
 
-Este documento transforma a seleção de modelos da DEC-018 em um desenho implementável sem abrir a rede do laboratório nem antecipar o piloto. G3a implementou adapters, schema, mocks e saneamento; G3b materializou `llm-client`, redes e proxy e aprovou os testes offline em 01/09/2026. Esses gates não autorizam baixar Qwen3, fazer chamada DeepSeek, inserir chave ou tratar transporte simulado como C0 científico competente.
+Este documento transforma a seleção de modelos da DEC-018 em um desenho implementável sem abrir a rede do laboratório nem antecipar o piloto. G3a implementou adapters, schema, mocks e saneamento; G3b materializou `llm-client`, redes e proxy e aprovou os testes offline em 01/09/2026. Em 02/09/2026, o caminho G3c foi preparado com um serviço real separado, runner sem segredo, chave montada por arquivo exato read-only, recusa de repetição automática e manifesto saneado. A implementação e os testes offline não equivalem à chamada real nem à competência do C0 científico.
 
 ## 2. Trust boundaries
 
@@ -121,11 +121,11 @@ O Git recebe hashes e metadados saneados. Requests/responses brutos pertencem ao
 
 - **G3a — código isolado:** adapters, schema e mocks passam; nenhuma rede real é usada.
 - **G3b — egress executável:** **atendido offline em 01/09/2026**; topologia, API mock, política e testes negativos passaram sem contato externo, conforme `docs/g3b-egress-topology.md`.
-- **G3c — smoke DeepSeek:** autorizado pelo operador, documento sintético mínimo, segredo fora dos logs, alias/modelo retornado registrado.
+- **G3c — smoke DeepSeek:** caminho executável preparado em `scripts/smoke_test_g3c.ps1`; permanece pendente até uma única chamada autorizada produzir evidência saneada e passar a varredura de segredo/log.
 - **G3d — smoke Qwen3:** download autorizado, manifest/blobs fixados e hardware aprovado sem OOM.
 - **G3e — piloto:** prompts, parâmetros, retry, competência, custo e latência aprovados antes do freeze.
 
-Até G3b, qualquer método de transporte real deve permanecer inacessível pelo ambiente do laboratório. Até G3c/G3d, os respectivos provedores permanecem com estado `not-smoked` nos manifests.
+O transporte real só é acessível pelo serviço `llm-client-g3c`, profile `g3c` e modo explícito `deepseek-smoke`; G3b continua mock e rejeita a chave. Até a execução aceita de G3c/G3d, os respectivos provedores permanecem com estado `not-smoked` nos manifests.
 
 ## 10. Fontes oficiais observadas
 

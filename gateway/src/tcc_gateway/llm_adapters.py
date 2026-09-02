@@ -8,6 +8,7 @@ import re
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from time import perf_counter_ns
 from typing import Any, Protocol
 
 import httpx
@@ -97,6 +98,7 @@ class LLMCallMetadata:
     requested_model: str
     returned_model: str
     response_id: str | None
+    system_fingerprint: str | None
     received_at_utc: str
     thinking: str
     temperature: float
@@ -207,6 +209,7 @@ class _HttpAdapter:
                 connect=connect_timeout_seconds,
             ),
             transport=transport,
+            trust_env=transport is None,
         )
 
     def __enter__(self) -> _HttpAdapter:
@@ -302,7 +305,9 @@ class DeepSeekProposalAdapter(_HttpAdapter):
             "response_format": {"type": "json_object"},
             "stream": False,
         }
+        started_ns = perf_counter_ns()
         response = self._post(endpoint, payload)
+        request_duration_ns = perf_counter_ns() - started_ns
         value = self._json(response)
 
         choices = value.get("choices")
@@ -353,6 +358,7 @@ class DeepSeekProposalAdapter(_HttpAdapter):
             requested_model=self._config.model,
             returned_model=returned_model,
             response_id=_sanitised_identifier(value.get("id")),
+            system_fingerprint=_sanitised_identifier(value.get("system_fingerprint")),
             received_at_utc=self._clock().astimezone(timezone.utc).isoformat(),
             thinking="disabled",
             temperature=self._config.generation.temperature,
@@ -368,7 +374,7 @@ class DeepSeekProposalAdapter(_HttpAdapter):
                 value.get("usage"),
                 ("prompt_tokens", "completion_tokens", "total_tokens"),
             ),
-            durations_ns=(),
+            durations_ns=(("total_duration", request_duration_ns),),
         )
         return LLMProposalResult(proposal=proposal, metadata=metadata)
 
@@ -456,6 +462,7 @@ class OllamaProposalAdapter(_HttpAdapter):
             requested_model=self._config.model,
             returned_model=returned_model,
             response_id=None,
+            system_fingerprint=None,
             received_at_utc=self._clock().astimezone(timezone.utc).isoformat(),
             thinking="disabled",
             temperature=self._config.generation.temperature,

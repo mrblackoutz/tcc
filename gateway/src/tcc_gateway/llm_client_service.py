@@ -1,4 +1,4 @@
-"""API interna tipada do llm-client para o gate offline G3b."""
+"""API interna tipada do llm-client para os gates G3b e G3c."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import hashlib
 import json
 import os
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib.resources import files
 from typing import Any
@@ -33,7 +33,8 @@ RESPONSE_SCHEMA_VERSION = "llm-client-response/v1"
 MAXIMUM_BODY_BYTES = 131_072
 _MOCK_KEY = "synthetic-g3b-placeholder"
 _FORBIDDEN_ENV_PREFIXES = ("ODOO_", "POSTGRES_")
-_FORBIDDEN_ENV_NAMES = {"DEEPSEEK_API_KEY", "DEEPSEEK_API_KEY_FILE"}
+_DEEPSEEK_SMOKE_MODE = "deepseek-smoke"
+_REQUIRED_PROXY_URL = "http://egress-proxy:8888"
 
 
 class LLMClientServiceError(ValueError):
@@ -59,14 +60,19 @@ class LLMClientServiceConfig:
     bind_host: str = "0.0.0.0"
     port: int = 8080
     mode: str = "mock"
+    deepseek_config: DeepSeekConfig | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         if self.bind_host not in {"0.0.0.0", "127.0.0.1"}:
             raise LLMClientServiceError("invalid_bind_host")
         if not 1 <= self.port <= 65_535:
             raise LLMClientServiceError("invalid_port")
-        if self.mode != "mock":
-            raise LLMClientServiceError("real_transport_disabled_until_g3c")
+        if self.mode not in {"mock", _DEEPSEEK_SMOKE_MODE}:
+            raise LLMClientServiceError("invalid_mode")
+        if self.mode == "mock" and self.deepseek_config is not None:
+            raise LLMClientServiceError("mock_mode_received_provider_config")
+        if self.mode == _DEEPSEEK_SMOKE_MODE and self.deepseek_config is None:
+            raise LLMClientServiceError("deepseek_config_required")
 
     @classmethod
     def from_env(
@@ -76,7 +82,7 @@ class LLMClientServiceConfig:
         forbidden = [
             name
             for name in source
-            if name in _FORBIDDEN_ENV_NAMES
+            if name == "DEEPSEEK_API_KEY"
             or name.startswith(_FORBIDDEN_ENV_PREFIXES)
         ]
         if forbidden:
@@ -85,10 +91,27 @@ class LLMClientServiceConfig:
             port = int(source.get("TCC_LLM_CLIENT_PORT", "8080"))
         except ValueError:
             raise LLMClientServiceError("invalid_port") from None
+        mode = source.get("TCC_LLM_CLIENT_MODE", "mock")
+        deepseek_config: DeepSeekConfig | None = None
+        if mode == "mock":
+            if source.get("DEEPSEEK_API_KEY_FILE", "").strip():
+                raise LLMClientServiceError("forbidden_credential_environment")
+        elif mode == _DEEPSEEK_SMOKE_MODE:
+            if source.get("HTTPS_PROXY", "").strip() != _REQUIRED_PROXY_URL:
+                raise LLMClientServiceError("invalid_proxy_configuration")
+            if source.get("HTTP_PROXY", "").strip() != _REQUIRED_PROXY_URL:
+                raise LLMClientServiceError("invalid_proxy_configuration")
+            try:
+                deepseek_config = DeepSeekConfig.from_env(source)
+            except ValueError:
+                raise LLMClientServiceError("invalid_deepseek_configuration") from None
+        else:
+            raise LLMClientServiceError("invalid_mode")
         return cls(
             bind_host=source.get("TCC_LLM_CLIENT_BIND_HOST", "0.0.0.0"),
             port=port,
-            mode=source.get("TCC_LLM_CLIENT_MODE", "mock"),
+            mode=mode,
+            deepseek_config=deepseek_config,
         )
 
 
@@ -205,6 +228,7 @@ def _metadata_mapping(metadata: LLMCallMetadata) -> dict[str, Any]:
         "requested_model": metadata.requested_model,
         "returned_model": metadata.returned_model,
         "response_id": metadata.response_id,
+        "system_fingerprint": metadata.system_fingerprint,
         "received_at_utc": metadata.received_at_utc,
         "thinking": metadata.thinking,
         "temperature": metadata.temperature,
@@ -230,10 +254,31 @@ def _success_mapping(result: LLMProposalResult) -> dict[str, Any]:
     }
 
 
-def process_client_request(value: Any) -> tuple[int, dict[str, Any]]:
+def _adapter_for(
+    provider: str,
+    config: LLMClientServiceConfig,
+    *,
+    transport: httpx.BaseTransport | None = None,
+):
+    if config.mode == "mock":
+        return _mock_adapter(provider)
+    if config.mode == _DEEPSEEK_SMOKE_MODE:
+        if provider != "deepseek" or config.deepseek_config is None:
+            raise LLMClientServiceError("provider_not_allowed_in_mode")
+        return DeepSeekProposalAdapter(config.deepseek_config, transport=transport)
+    raise LLMClientServiceError("invalid_mode")
+
+
+def process_client_request(
+    value: Any,
+    config: LLMClientServiceConfig | None = None,
+    *,
+    transport: httpx.BaseTransport | None = None,
+) -> tuple[int, dict[str, Any]]:
+    selected_config = config or LLMClientServiceConfig()
     try:
         provider, request = parse_client_request(value)
-        with _mock_adapter(provider) as adapter:
+        with _adapter_for(provider, selected_config, transport=transport) as adapter:
             return 200, _success_mapping(adapter.propose(request))
     except LLMClientServiceError as error:
         return 400, {
@@ -254,7 +299,9 @@ def process_client_request(value: Any) -> tuple[int, dict[str, Any]]:
         }
 
 
-def build_handler():
+def build_handler(config: LLMClientServiceConfig | None = None):
+    selected_config = config or LLMClientServiceConfig()
+
     class LLMClientHandler(BaseHTTPRequestHandler):
         server_version = "tcc-llm-client/0.1"
         sys_version = ""
@@ -279,8 +326,8 @@ def build_handler():
                 200,
                 {
                     "status": "ok",
-                    "mode": "mock",
-                    "real_transport": False,
+                    "mode": selected_config.mode,
+                    "real_transport": selected_config.mode == _DEEPSEEK_SMOKE_MODE,
                 },
             )
 
@@ -305,7 +352,7 @@ def build_handler():
             except (UnicodeDecodeError, ValueError):
                 self._send_json(400, {"status": "error", "error": {"category": "invalid_json"}})
                 return
-            status, response = process_client_request(value)
+            status, response = process_client_request(value, selected_config)
             self._send_json(status, response)
 
     return LLMClientHandler
@@ -313,7 +360,7 @@ def build_handler():
 
 def main() -> None:
     config = LLMClientServiceConfig.from_env()
-    server = ThreadingHTTPServer((config.bind_host, config.port), build_handler())
+    server = ThreadingHTTPServer((config.bind_host, config.port), build_handler(config))
     server.daemon_threads = True
     try:
         server.serve_forever(poll_interval=0.25)
