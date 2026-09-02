@@ -270,7 +270,29 @@ def execute_smoke(
         raise G3CSmokeError("llm_client_transport") from None
     wall_duration_ns = perf_counter_ns() - started_ns
     if response.status_code != 200:
-        raise G3CSmokeError(f"llm_client_http_{response.status_code}")
+        category = f"llm_client_http_{response.status_code}"
+        try:
+            error_response = response.json()
+        except ValueError:
+            error_response = None
+        if isinstance(error_response, Mapping):
+            error_value = error_response.get("error")
+            if isinstance(error_value, Mapping):
+                provider_category = error_value.get("category")
+                provider_status = error_value.get("http_status")
+                if (
+                    isinstance(provider_category, str)
+                    and provider_category
+                    and provider_category.replace("_", "").isalnum()
+                    and provider_category == provider_category.lower()
+                    and isinstance(provider_status, int)
+                    and 100 <= provider_status <= 599
+                ):
+                    category = (
+                        f"llm_client_{provider_category}"
+                        f"_provider_http_{provider_status}"
+                    )
+        raise G3CSmokeError(category)
     try:
         response_value = response.json()
     except ValueError:
