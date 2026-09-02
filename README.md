@@ -29,6 +29,7 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 - `docs/releases/v1.2.7.md`: manifesto da seleção DeepSeek/Qwen3, do desenho por blocos e das pendências de G3 conforme DEC-018.
 - `docs/releases/v1.2.8.md`: manifesto da fronteira de egress, do aceite G3a e da distribuição integral do trabalho pendente.
 - `docs/releases/v1.2.9.md`: manifesto do isolamento executável e dos testes negativos offline de G3b.
+- `docs/releases/v1.2.10.md`: manifesto do caminho G3c, do egress nominal observado e do bloqueio HTTP 402 sem inferência.
 - `reproducibility/odoo-source.lock.json`: lock legível por máquina da fonte Odoo selecionada.
 - `reproducibility/lab-environment.lock.json`: versões, digests e últimos aceites M1/M2 saneados do laboratório.
 - `reproducibility/model-selection.lock.json`: seleção datada do DeepSeek e Qwen3, fatos observados e evidências ainda pendentes para o freeze.
@@ -46,7 +47,7 @@ O marco M2 também foi validado em 31/08/2026. Ele gera localmente um PDF sinté
 
 M2 é uma baseline de desenvolvimento do encanamento, não o C0 científico: o adaptador `deterministic-development/v1` não usa LLM e está proibido nas runs experimentais. Os aceites ainda não incluem modelo LLM, prompt injection, C1, add-on de autorização, postagem ou pagamento. O manifesto OCI é local e não foi publicado em registry. O estado verificável corrente está em `reproducibility/lab-environment.lock.json`; PDF, credenciais e evidências detalhadas permanecem em `.runtime`, fora do Git.
 
-Os modelos de G3 foram selecionados em DEC-018. O bloco principal usará a API DeepSeek com `model=deepseek-v4-flash`; na data da seleção, o provedor documentava o backend `DeepSeek-V4-Flash-0731`, mas o alias continua móvel. O bloco posterior de robustez usará `qwen3:14b-q4_K_M` via Ollama. Os dois blocos preservam C0/C1 com o mesmo modelo e configuração e usam *thinking* desligado no núcleo. Conforme DEC-020, G3a aprovou adapters e mocks; G3b materializou o `llm-client`, redes internas e proxy de destino fixo, com 91 testes do gateway/cliente, 6 do proxy e probe runtime offline. Chamadas reais autorizadas, artefato Qwen, parâmetros e competência do C0 científico continuam pendentes.
+Os modelos de G3 foram selecionados em DEC-018. O bloco principal usará a API DeepSeek com `model=deepseek-v4-flash`; na data da seleção, o provedor documentava o backend `DeepSeek-V4-Flash-0731`, mas o alias continua móvel. O bloco posterior de robustez usará `qwen3:14b-q4_K_M` via Ollama. Os dois blocos preservam C0/C1 com o mesmo modelo e configuração e usam *thinking* desligado no núcleo. Conforme DEC-020, G3a aprovou adapters e mocks; G3b materializou o `llm-client`, redes internas e proxy de destino fixo. Em G3c, o egress nominal foi observado, mas a tentativa diagnosticável recebeu HTTP 402 e não concluiu inferência. Crédito/saldo, smoke aceito, artefato Qwen, parâmetros e competência do C0 científico continuam pendentes.
 
 O host observado possui Ollama 0.30.10 e RTX 3060 Ti com 8 GiB de VRAM. Como o Qwen quantizado ocupa aproximadamente 9,3 GB, sua inclusão depende de smoke com offload parcial e manifest completo registrado. O modelo não foi baixado por esta release. A rede do laboratório permanece interna e nenhuma chave DeepSeek foi criada, lida ou versionada.
 

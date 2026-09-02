@@ -2,6 +2,17 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.10] — 2026-09-02
+
+- implementado o caminho real G3c em profile explícito, com chave local exata e read-only somente no `llm-client`, runner sem segredo/egress e proxy como único componente com saída;
+- corrigida a captura do Docker Compose no Windows PowerShell e ampliado o diagnóstico para preservar somente categoria/status saneados do provedor, sem corpo de erro;
+- aprovados 97 testes do gateway/cliente e 6 do proxy em contêiner sem rede antes da tentativa diagnosticável;
+- preservadas separadamente as tentativas autorizadas, sempre sem retry automático e sem manifesto de sucesso falso;
+- observado exatamente um túnel permitido na tentativa diagnosticável e resposta HTTP 402 do provedor, sem inferência, modelo retornado ou resultado científico;
+- mantida G3-05 como `EXTERNAL`, agora dependente de crédito/saldo e nova autorização explícita; G3-06, piloto e runs continuam bloqueados;
+- nenhum segredo, corpo bruto, prompt, proposta, documento real ou dado fiscal foi versionado;
+- mantidos inalterados problema, perguntas, hipóteses, endpoints, métricas, margem, threat model, amostras e comparação C0/C1; o protocolo continua pré-freeze.
+
 ## [1.2.9] — 2026-09-01
 
 - materializado em G3b o processo `llm-client` separado, sem credenciais do ERP/DeepSeek no profile offline e com API interna fechada `llm-client-request/v1`;
