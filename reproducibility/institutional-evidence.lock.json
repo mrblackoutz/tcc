@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "schemaVersion": 1,
-  "updatedOn": "2026-09-01",
+  "updatedOn": "2026-09-02",
   "evidence": [
     {
       "evidenceId": "ADM-07-2026-09-01-01",
@@ -44,6 +44,30 @@
         "registrationEvidenceKind": "confirmed-project-page-screenshot"
       },
       "conclusion": "adm-07-complete-all-three-authors-confirmed-and-registration-evidence-preserved"
+    },
+    {
+      "evidenceId": "ADM-08-2026-09-01-01",
+      "taskId": "ADM-08",
+      "sourceKind": "user-supplied-portal-request-details-screenshot",
+      "localPath": ".runtime/evidence/institutional/adm-08-portal-request-2026-09-01.png",
+      "sha256": "d0f3232ebf992acf48190e2b3b816ddc76786d8fd8937f53f3d91b25e64315ef",
+      "byteCount": 152591,
+      "containsAcademicIdentifiers": true,
+      "containsProtocolIdentifier": true,
+      "trackedByGit": false,
+      "publishable": false,
+      "observation": {
+        "requestTypeVisible": true,
+        "requestOpenedOn": "2026-09-01",
+        "requestStatus": "in-progress",
+        "currentStage": "academic-unit-advisor-analysis",
+        "expectedAuthorsVisible": 3,
+        "listedAuthorsVisible": 3,
+        "researchLineVisible": true,
+        "projectTitleVisible": true,
+        "receiptEvidenceKind": "request-details-page-with-protocol"
+      },
+      "conclusion": "adm-08-complete-request-protocolled-all-three-authors-verified-and-private-receipt-evidence-preserved"
     }
   ]
 }

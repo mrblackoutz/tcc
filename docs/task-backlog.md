@@ -92,7 +92,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | ADM-05 | P0 | Felipe | Thomaz | — | instituir registro semanal/quinzenal de orientação com pauta, presença, decisões e próximos passos | READY |
 | ADM-06 | P0 | Felipe | Gustavo | — | coletar anuência do orientador no Oriente até 01/09 e preservar recibo fora do Git | EXTERNAL |
 | ADM-07 | P0 | Gustavo | Felipe | — | cadastro do projeto e três autores confirmados; evidência privada de 01/09 preservada por hash no lock institucional, sem identificadores no Git | DONE |
-| ADM-08 | P0 | Gustavo | Felipe | ADM-07 | protocolar requerimento no Portal até 07/09, conferir autores e preservar recibo | EXTERNAL |
+| ADM-08 | P0 | Gustavo | Felipe | ADM-07 | requerimento protocolado em 01/09, três autores conferidos e evidência privada preservada por hash no lock institucional | DONE |
 | ADM-09 | P1 | Gustavo | Felipe | ADM-02 | manter calendário de submissão, avaliadores, banca, correção e anuência final | READY |
 | ADM-10 | P0 | Felipe | Thomaz | DEC-021 | atualizar requisitos institucionais com papéis nominais; disponibilidade revista semanalmente | DONE |
 

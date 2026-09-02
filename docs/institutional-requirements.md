@@ -36,7 +36,7 @@ O Regulamento Geral de TCC e o Guia Geral de TCC, embora citados pelo edital, n�
 
 O grupo de três autores atende à regra de dois a quatro estudantes para Ciência da Computação. Permanecem fora do repositório público os contatos e identificadores acadêmicos. Condição PPI/PPP, endereço institucional e demais dados cadastrais do orientador devem ser confirmados diretamente no Oriente antes da submissão.
 
-O cadastro do grupo no Oriente e o requerimento no Portal do Aluno devem ser realizados por **um único integrante designado**, conforme o edital. Conforme DEC-021 e `docs/task-backlog.md`, Gustavo (P3) é o owner operacional de conferir o cadastro/requerimento e preservar os recibos; essa atribuição não significa que a ação externa já tenha sido concluída. O grupo também deverá confirmar com o orientador que o tema está alinhado à sua área ou projeto de pesquisa.
+O cadastro do grupo no Oriente e o requerimento no Portal do Aluno devem ser realizados por **um único integrante designado**, conforme o edital. Conforme DEC-021 e `docs/task-backlog.md`, Gustavo (P3) é o owner operacional de conferir o cadastro/requerimento e preservar os recibos. O cadastro foi confirmado e o requerimento foi protocolado em 01/09/2026 com os três autores visíveis; as capturas com identificadores permanecem fora do Git e somente seus hashes e conclusões saneadas constam em `reproducibility/institutional-evidence.lock.json`. A análise institucional do requerimento permanece externa. O grupo também deverá confirmar com o orientador que o tema está alinhado à sua área ou projeto de pesquisa.
 
 ## 4. Requisitos obrigatórios do artigo
 
@@ -119,7 +119,7 @@ Para conceito Excelente ou Muito Bom, o termo de autorização do Adelpha deve s
 - [x] atribuir papéis P1/P2/P3 nominalmente conforme DEC-021; disponibilidade será revista nos checkpoints semanais;
 - [x] designar Gustavo/P3 como único owner operacional do cadastro e requerimento;
 - [x] conferir a conclusão externa do cadastro no Oriente e os três autores — evidência de 01/09/2026 mostra o projeto e os três integrantes confirmados; a captura com identificadores permanece fora do Git e somente seu hash e conclusão saneada constam em `reproducibility/institutional-evidence.lock.json`;
-- [ ] concluir o requerimento no Portal do Aluno, conferir os autores e preservar o recibo correspondente, conforme ADM-08;
+- [x] concluir o requerimento no Portal do Aluno, conferir os três autores e preservar o recibo correspondente — protocolado em 01/09/2026; evidência privada registrada por hash no lock institucional, sem protocolo ou identificadores no Git, conforme ADM-08;
 - [ ] manter orientação semanal ou quinzenal com presença, pauta e encaminhamentos registrados;
 - [x] criar fonte separada e editável do artigo, reconstruída e comparada visualmente com o template conforme DEC-019, sem carregar metadados herdados.
 
