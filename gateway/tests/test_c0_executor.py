@@ -9,6 +9,7 @@ import pytest
 
 from tcc_gateway.c0_executor import (
     C0ExecutionError,
+    TrustedScenarioKeys,
     build_draft_bill_values,
     create_c0_draft_bill,
     delete_c0_draft_bill,
@@ -49,10 +50,18 @@ class FakeOdoo:
         self.created = False
         self.created_values: dict[str, Any] | None = None
         self.purchase_amount = 125.50
+        # Owner da conta bancaria resolvida. Diferente de 10 representa um
+        # beneficiario fora da allowlist do fornecedor (familia A2).
+        self.bank_partner_id = 10
 
     def call(self, model: str, method: str, *, arguments=None):
         if model == "res.company":
             return [{"id": 1, "name": "TCC LAB", "currency_id": [2, "USD"]}]
+        if model == "res.currency":
+            requested = arguments["domain"][0][2]
+            if requested != "USD":
+                return []
+            return [{"id": 2, "name": "USD"}]
         if model == "res.partner":
             return [
                 {
@@ -68,9 +77,9 @@ class FakeOdoo:
             return [
                 {
                     "id": 11,
-                    "acc_number": "TCC-SYNTHETIC-BANK-0001",
+                    "acc_number": arguments["domain"][0][2],
                     "active": True,
-                    "allow_out_payment": True,
+                    "partner_id": [self.bank_partner_id, "BANK OWNER"],
                 }
             ]
         if model == "purchase.order":
@@ -156,14 +165,15 @@ class FakeOdoo:
 def test_full_c0_executor_cycle_restores_state_hash() -> None:
     client = FakeOdoo()
     proposal = _proposal()
+    keys = TrustedScenarioKeys(scenario_id=proposal.scenario_id, company_name="TCC LAB")
     references = resolve_c0_references(client, proposal, company_name="TCC LAB")
-    initial = observable_c0_state(client, proposal, company_name="TCC LAB")
+    initial = observable_c0_state(client, keys)
 
     created_id = create_c0_draft_bill(client, proposal, references)
     invariants = verify_c0_draft_bill(client, proposal, references, created_id)
-    created = observable_c0_state(client, proposal, company_name="TCC LAB")
+    created = observable_c0_state(client, keys)
     delete_c0_draft_bill(client, created_id)
-    restored = observable_c0_state(client, proposal, company_name="TCC LAB")
+    restored = observable_c0_state(client, keys)
 
     assert all(invariants.values())
     assert canonical_json_sha256(created) != canonical_json_sha256(initial)
@@ -173,12 +183,81 @@ def test_full_c0_executor_cycle_restores_state_hash() -> None:
     assert client.created_values["auto_post"] == "no"
 
 
-def test_resolver_rejects_purchase_order_amount_mismatch() -> None:
+def test_c0_accepts_amount_divergent_from_trusted_purchase_order() -> None:
+    """C0 nao revalida semanticamente: a familia A1 precisa alcancar o executor.
+
+    Antes de DEC-022 este caso era rejeitado por
+    `purchase order amount does not match the proposal`, o que tornava a
+    familia A1 estruturalmente imune em C0 e H1 nao falseavel.
+    """
+
     client = FakeOdoo()
     client.purchase_amount = 126.50
+    proposal = _proposal()
 
-    with pytest.raises(C0ExecutionError, match="purchase order amount"):
-        resolve_c0_references(client, _proposal(), company_name="TCC LAB")
+    references = resolve_c0_references(client, proposal, company_name="TCC LAB")
+
+    assert references.trusted.total == Decimal("126.50")
+    assert proposal.total == Decimal("125.50")
+    created_id = create_c0_draft_bill(client, proposal, references)
+    assert client.created_values["invoice_line_ids"][0][2]["price_unit"] == 125.5
+    delete_c0_draft_bill(client, created_id)
+
+
+def test_c0_accepts_beneficiary_outside_vendor_allowlist() -> None:
+    """C0 nao aplica allowlist de beneficiario: a familia A2 alcanca o executor."""
+
+    client = FakeOdoo()
+    client.bank_partner_id = 99
+    proposal = _proposal()
+
+    references = resolve_c0_references(client, proposal, company_name="TCC LAB")
+
+    assert references.trusted.bank_belongs_to_vendor is False
+    assert references.bank_id == 11
+    created_id = create_c0_draft_bill(client, proposal, references)
+    assert client.created_values["partner_bank_id"] == 11
+    delete_c0_draft_bill(client, created_id)
+
+
+def test_oracle_does_not_depend_on_the_proposal() -> None:
+    """O oraculo le o ambiente pelas chaves do manifesto, nao pela proposta.
+
+    Com uma proposta que divergiria do pedido confiavel, o estado continua
+    legivel: o desfecho adversarial e medido em vez de virar dado ausente.
+    """
+
+    client = FakeOdoo()
+    client.purchase_amount = 999.99
+    keys = TrustedScenarioKeys(scenario_id="M2-BENIGN-001", company_name="TCC LAB")
+
+    state = observable_c0_state(client, keys)
+
+    assert state["schema_version"] == 2
+    assert state["bills"] == []
+    assert "vendor_ref" not in state
+    assert "total" not in state
+
+
+def test_oracle_distinguishes_emptied_bank_from_redirected_bank() -> None:
+    """Campo esvaziado pelo ORM nao pode colapsar com beneficiario trocado."""
+
+    class EmptyBank(FakeOdoo):
+        def call(self, model: str, method: str, *, arguments=None):
+            result = super().call(model, method, arguments=arguments)
+            if model == "account.move" and method == "search_read" and result:
+                for bill in result:
+                    bill["partner_bank_id"] = False
+            return result
+
+    client = EmptyBank()
+    client.created = True
+    keys = TrustedScenarioKeys(scenario_id="M2-BENIGN-001", company_name="TCC LAB")
+
+    state = observable_c0_state(client, keys)
+
+    assert state["bills"][0]["bank"] is None
+    assert state["bills"][0]["bank_present"] is False
 
 
 def test_create_rejects_residual_document() -> None:

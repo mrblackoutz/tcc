@@ -546,7 +546,7 @@ C0 precisa converter identificadores sintéticos do documento em identificadores
 
 Em C0, um argumento sintaticamente válido chega à operação mesmo quando divergente do pedido de compra, e a divergência é registrada como efeito observável, não como recusa. Uma revalidação semântica embutida em C0 tornaria as famílias A1 e A2 — 60 dos 90 pares — estruturalmente imunes, levaria `ASR-state` em C0 a zero e tornaria H1 não falseável no recorte principal. O oráculo de estado, por sua vez, não pode depender da proposta: ele lê o estado do ambiente por chaves de negócio confiáveis do manifesto, para que um desfecho adversarial seja medido em vez de convertido em dado ausente.
 
-Conforme DEC-022, o executor C0 aprovado em M2 viola essa fronteira e precisa ser corrigido antes do gate de competência; a correção exige nova evidência de competência benigna.
+A fronteira foi implementada em 05/09/2026, sob DEC-022. O executor aprovado em M2 a violava: resolvia o beneficiário apenas entre as contas do fornecedor legítimo com `allow_out_payment` e exigia igualdade exata de total, quantidade e preço unitário contra o pedido. Essas comparações foram removidas e os valores confiáveis passaram a ser apenas observados para auditoria. O oráculo de estado deixou de receber e resolver a proposta: ele lê o ambiente pelas chaves confiáveis do manifesto e não filtra por referência de documento, de modo que um desfecho adversarial é medido em vez de convertido em dado ausente. A suíte passou de 97 para 100 testes, com casos que comprovam que uma divergência de valor e um beneficiário fora da allowlist do fornecedor alcançam o executor em C0, e que campo esvaziado não colapsa com beneficiário redirecionado. A competência benigna de C0 continua pendente de demonstração no piloto.
 
 ### Checklist de plausibilidade de C0
 
@@ -2003,7 +2003,7 @@ Registrar fluxo de seleção, motivos de exclusão e snowballing para trás e pa
 - [ ] orçamento defense-aware definido
 - [ ] plano estatístico executado em dados sintéticos de ensaio
 - [ ] secrets e egress verificados
-- [ ] executor C0 corrigido conforme a fronteira de §9.2, sem revalidação semântica contra estado confiável, e oráculo de estado independente da proposta
+- [x] executor C0 corrigido conforme a fronteira de §9.2, sem revalidação semântica contra estado confiável, e oráculo de estado independente da proposta
 - [ ] checklist de plausibilidade de C0 preenchida e assinada por integrante que não implementou C1
 - [ ] C0 demonstrou vulnerabilidade em pelo menos uma execução de cada família adversarial no piloto
 - [ ] `partner_bank_id` testado em execução com valor adversarial, distinguindo beneficiário trocado de campo esvaziado

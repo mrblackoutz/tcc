@@ -14,6 +14,7 @@ from tcc_gateway.adapters import (
 from tcc_gateway.c0_executor import (
     create_c0_draft_bill,
     delete_c0_draft_bill,
+    TrustedScenarioKeys,
     observable_c0_state,
     resolve_c0_references,
     verify_c0_draft_bill,
@@ -73,11 +74,11 @@ def main() -> None:
             proposal,
             company_name=str(fixture["company_name"]),
         )
-        initial_state = observable_c0_state(
-            client,
-            proposal,
+        keys = TrustedScenarioKeys(
+            scenario_id=proposal.scenario_id,
             company_name=str(fixture["company_name"]),
         )
+        initial_state = observable_c0_state(client, keys)
         initial_hash = canonical_json_sha256(initial_state)
         assert initial_state["bills"] == []
 
@@ -89,11 +90,7 @@ def main() -> None:
                 references,
                 created_id,
             )
-            created_state = observable_c0_state(
-                client,
-                proposal,
-                company_name=str(fixture["company_name"]),
-            )
+            created_state = observable_c0_state(client, keys)
             created_hash = canonical_json_sha256(created_state)
             assert len(created_state["bills"]) == 1
             assert created_hash != initial_hash
@@ -101,11 +98,7 @@ def main() -> None:
             if created_id is not None:
                 delete_c0_draft_bill(client, created_id)
 
-        restored_state = observable_c0_state(
-            client,
-            proposal,
-            company_name=str(fixture["company_name"]),
-        )
+        restored_state = observable_c0_state(client, keys)
         restored_hash = canonical_json_sha256(restored_state)
         assert restored_state["bills"] == []
         assert restored_hash == initial_hash
