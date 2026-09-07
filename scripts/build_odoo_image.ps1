@@ -181,9 +181,28 @@ try {
     $inspect = @(docker image inspect $imageTag 2>&1)
     if ($LASTEXITCODE -ne 0) { throw 'docker image inspect failed' }
     $image = ($inspect -join [Environment]::NewLine | ConvertFrom-Json)[0]
-    if ([string]$image.Id -ne $configDigest) {
-        throw 'loaded Docker image config digest differs from the OCI artifact'
+
+    # `docker image inspect .Id` nao tem semantica estavel entre image stores.
+    # Com o graph driver classico ele reporta o config digest; com o containerd
+    # image store (Docker 29.x, io.containerd.snapshotter.v1) reporta o manifest
+    # digest. Exigir apenas o config digest reprova um build integro por causa da
+    # configuracao do daemon, e nao por defeito de procedencia. As garantias
+    # substantivas ja foram verificadas acima: bytes do manifest contra o
+    # descritor do BuildKit, bytes do config contra o config digest, indice com
+    # exatamente um manifest linux/amd64 e manifest referenciando o config
+    # exportado. Aqui exige-se que a imagem carregada seja identificada por um
+    # dos dois digests da MESMA resolucao de build, e registra-se qual.
+    $loadedId = [string]$image.Id
+    if ($loadedId -eq $configDigest) {
+        $loadedIdentity = 'config_digest'
     }
+    elseif ($loadedId -eq $manifestDigest) {
+        $loadedIdentity = 'manifest_digest'
+    }
+    else {
+        throw 'loaded Docker image is not identified by the config or manifest digest of the same build resolution'
+    }
+    Write-Host ("Loaded image identity: {0} ({1})" -f $loadedIdentity, $loadedId)
 
     $labels = $image.Config.Labels
     if ($labels.'org.opencontainers.image.revision' -ne $expectedCommit) {

@@ -52,7 +52,7 @@ A3b & Trocar destinatário ou expor canário sintético & Somente destinatário 
 \end{tabularx}
 \end{table}
 
-A unidade independente é o cenário documental, identificado por \texttt{scenario\_id}; seu benigno e adversarial formam um \texttt{pair\_id}. As três repetições medem variabilidade de execução, mas não são tratadas como três amostras independentes. Uma run só é avaliável se documento e estado inicial forem validados, o pipeline for iniciado e o oráculo obtiver o estado terminal. Falha de modelo, saída inválida, recusa ou payload não entregue continua sendo outcome do sistema. Apenas falha de infraestrutura que impeça observar o estado depois dos retries pré-definidos vira dado ausente.
+A unidade independente é o par contrafactual, identificado por \texttt{pair\_id}; \texttt{scenario\_id} identifica o documento benigno ou adversarial dentro do par. Análises restritas à classe adversarial podem agrupar por \texttt{scenario\_id}, pois há um único cenário adversarial por par; análises que combinem benignos e adversariais, ou comparem utilidade entre as classes, agrupam e reamostram por \texttt{pair\_id}, preservando condição e repetição como medidas dependentes. As três repetições medem variabilidade de execução, mas não são tratadas como três amostras independentes. Uma run só é avaliável se documento e estado inicial forem validados, o pipeline for iniciado e o oráculo obtiver o estado terminal. Falha de modelo, saída inválida, recusa ou payload não entregue continua sendo outcome do sistema. Apenas falha de infraestrutura que impeça observar o estado depois dos retries pré-definidos vira dado ausente.
 
 \subsection{Arquiteturas C0 e C1}
 

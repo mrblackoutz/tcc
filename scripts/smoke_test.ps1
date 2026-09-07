@@ -109,7 +109,18 @@ try {
     Write-Host '=== Building and unit-testing the Python 3.12 gateway ===' -ForegroundColor Cyan
     & docker compose build gateway
     if ($LASTEXITCODE -ne 0) { throw 'gateway image build failed' }
-    & docker run --rm --entrypoint python tcc-gateway:0.2.0 -m pytest -q -p no:cacheprovider /opt/tcc/gateway/tests
+    # A tag do gateway nao pode ser fixada aqui: ela avancou de 0.2.0 (M2) para
+    # 0.3.0 (G3a), 0.4.0 (G3b) e 0.5.0 (G3c) sem que este script acompanhasse.
+    # Com a tag fixa, o smoke testava uma imagem antiga quando ela ainda existia
+    # localmente, e falhava em maquina limpa. A tag e resolvida do Compose, que e
+    # a fonte de verdade do artefato construido logo acima.
+    $gatewayImage = (& docker compose config --format json | ConvertFrom-Json).services.gateway.image
+    if ($LASTEXITCODE -ne 0) { throw 'docker compose config failed' }
+    if ([string]::IsNullOrWhiteSpace($gatewayImage)) {
+        throw 'could not resolve the gateway image tag from the Compose configuration'
+    }
+    Write-Host ("Gateway image under test: {0}" -f $gatewayImage)
+    & docker run --rm --entrypoint python $gatewayImage -m pytest -q -p no:cacheprovider /opt/tcc/gateway/tests
     if ($LASTEXITCODE -ne 0) { throw 'gateway unit tests failed' }
 
     Write-Host '=== Starting PostgreSQL 18 ===' -ForegroundColor Cyan
@@ -129,11 +140,30 @@ try {
 
     Write-Host '=== Loading deterministic M1 fixtures and C0 identity ===' -ForegroundColor Cyan
     $bootstrapSource = Get-Content -Raw -Encoding utf8 -LiteralPath .\odoo\fixtures\bootstrap_m1.py
-    $bootstrapSource | & docker compose run --rm -T odoo python /opt/odoo/odoo-bin `
-        shell `
-        -c /etc/odoo/odoo.conf `
-        -d tcc_ap_lab `
-        --no-http
+    # Canalizar uma string do PowerShell para um comando nativo a recodifica com
+    # [Console]::OutputEncoding. No Windows PowerShell 5.1 isso prefixa um BOM e
+    # transcodifica os acentos; como o `odoo shell` le o script por stdin, o
+    # interpretador falha com "invalid non-printable character U+FEFF" antes de
+    # executar qualquer fixture. Forcar UTF-8 sem BOM apenas ao redor do pipe, e
+    # remover um BOM residual do proprio arquivo, torna o bootstrap independente
+    # da edicao do PowerShell e da configuracao de console do host.
+    $previousOutputEncoding = $OutputEncoding
+    $previousConsoleEncoding = [Console]::OutputEncoding
+    try {
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        $OutputEncoding = $utf8NoBom
+        [Console]::OutputEncoding = $utf8NoBom
+        $bootstrapSource = $bootstrapSource.TrimStart([char]0xFEFF)
+        $bootstrapSource | & docker compose run --rm -T odoo python /opt/odoo/odoo-bin `
+            shell `
+            -c /etc/odoo/odoo.conf `
+            -d tcc_ap_lab `
+            --no-http
+    }
+    finally {
+        $OutputEncoding = $previousOutputEncoding
+        [Console]::OutputEncoding = $previousConsoleEncoding
+    }
     if ($LASTEXITCODE -ne 0) { throw 'M1 fixture bootstrap failed' }
     if (-not (Test-Path -LiteralPath (Join-Path $secretsDirectory 'odoo_api_key'))) {
         throw 'C0 API key was not written to the ignored runtime secret path'
