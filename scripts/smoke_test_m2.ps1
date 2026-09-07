@@ -78,8 +78,15 @@ try {
 
     $labLock = Get-Content -Raw -Encoding utf8 -LiteralPath $labLockPath | ConvertFrom-Json
     $labLock.status = 'm2-smoke-passed-pre-freeze'
-    $labLock.components.gateway.version = '0.2.0'
-    $labLock.components.gateway.localImageTag = 'tcc-gateway:0.2.0'
+    # A versao do gateway nao pode ser fixada aqui: fixada em 0.2.0, esta linha
+    # gravava no lock uma versao diferente da efetivamente testada, que avancou
+    # para 0.5.0 em G3c. O Compose e a fonte de verdade do artefato construido.
+    $composedGatewayImage = (& docker compose config --format json | ConvertFrom-Json).services.gateway.image
+    if ([string]::IsNullOrWhiteSpace($composedGatewayImage)) {
+        throw 'could not resolve the gateway image tag from the Compose configuration'
+    }
+    $labLock.components.gateway.localImageTag = $composedGatewayImage
+    $labLock.components.gateway.version = ($composedGatewayImage -split ':')[-1]
     $m2Smoke = [ordered]@{
         status = 'pass'
         scenarioId = [string]$evidence.scenario_id
@@ -91,11 +98,33 @@ try {
         initialStateSha256 = [string]$evidence.initial_state_sha256
         createdStateSha256 = [string]$evidence.created_state_sha256
         restoredStateSha256 = [string]$evidence.restored_state_sha256
+        invariantsAllPassed = (@($evidence.invariants.PSObject.Properties | Where-Object { -not $_.Value }).Count -eq 0)
         completedAt = (Get-Date).ToUniversalTime().ToString('o')
     }
+
+    # Mesclar, nao substituir. Substituir o no inteiro apagava campos gravados por
+    # versoes anteriores do script que esta execucao nao sabe gerar, como a
+    # contagem de testes e o hash do schema da proposta. Evidencia que nao pode
+    # ser regenerada nao deve ser silenciosamente descartada.
+    if ($labLock.PSObject.Properties['m2Smoke'] -and $null -ne $labLock.m2Smoke) {
+        # `unitTestsPassed` nao e herdado: a contagem verdadeira passa a viver em
+        # components.gateway, escrita pela execucao que rodou a suite. Herdar aqui
+        # perpetuaria um numero de uma suite que ja mudou de tamanho.
+        $naoHerdar = @('unitTestsPassed')
+        foreach ($previous in $labLock.m2Smoke.PSObject.Properties) {
+            if ((-not $m2Smoke.Contains($previous.Name)) -and ($naoHerdar -notcontains $previous.Name)) {
+                $m2Smoke[$previous.Name] = $previous.Value
+            }
+        }
+    }
     $labLock | Add-Member -NotePropertyName m2Smoke -NotePropertyValue $m2Smoke -Force
+
+    # Nao sobrescrever pendingEvidence com uma lista fixa: a que estava aqui era
+    # anterior a DEC-018 e apagava o estado real das pendencias a cada execucao.
+    # As pendencias sao normativas e vivem no plano e no decision log; o lock
+    # aponta para elas em vez de duplica-las.
     $labLock.pendingEvidence = @(
-        'LLM adapter and model selection remain pending for pilot/G3 per W04'
+        'Pendencias normativas de G3c, C0 cientifico competente, C1, dataset, piloto e freeze estao no plano-mestre e em docs/decision-log.md; este lock registra somente evidencia executada.'
     )
     Write-JsonFile $labLockPath $labLock
 

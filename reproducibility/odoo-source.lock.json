@@ -36,20 +36,20 @@
     "image":  {
                   "build_source_commit":  "a4b877245c9cb5e3d7152d1593a518170f115ca1",
                   "reference":  "tcc-odoo:19.0-a4b8772",
-                  "oci_digest":  "sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392",
+                  "oci_digest":  "sha256:3d884b3892356624e4997b431a5a6ccb215fe6da57b05bed7dbb4d326beeba2b",
                   "digest_scope":  "local_buildkit_oci_layout_manifest",
                   "runtime_platform":  "linux/amd64",
                   "dockerfile_sha256":  "76649dc11669dc39ca1f12f169c33ceef7afee8b74767a165b3db57752e3ea09",
                   "base_image_reference":  "python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab",
                   "base_image_oci_digest":  "sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab",
-                  "built_at":  "2026-08-31T14:40:13.5255264Z",
+                  "built_at":  "2026-09-07T07:31:29.6424306Z",
                   "source_image_linkage":  {
                                                "status":  "verified",
                                                "evidence":  "OCI manifest bytes, config digest, loaded image labels, and /opt/odoo/.tcc-source-commit verified"
                                            },
                   "status":  "built-and-source-verified",
                   "required_digest_format":  "sha256:\u003c64-hex\u003e",
-                  "local_config_digest":  "sha256:c85221764b096dde2df68c50e2da634147b10c14dcfb98bf57f71f62a14bd1f2",
+                  "local_config_digest":  "sha256:91bbde645d7a80219dc78c911d164b3354c6a95d8e86252b0c76668c699f5631",
                   "manifest_media_type":  "application/vnd.oci.image.manifest.v1+json"
               },
     "policy":  "The moving branch never updates selected_commit automatically. Any source change requires a documented plan version; any post-freeze change also requires a deviation record and affected reruns."

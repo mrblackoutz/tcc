@@ -27,28 +27,29 @@
                                     "repository":  "https://github.com/odoo/odoo.git",
                                     "commit":  "a4b877245c9cb5e3d7152d1593a518170f115ca1",
                                     "localImageTag":  "tcc-odoo:19.0-a4b8772",
-                                    "imageDigest":  "sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392",
+                                    "imageDigest":  "sha256:3d884b3892356624e4997b431a5a6ccb215fe6da57b05bed7dbb4d326beeba2b",
                                     "imageDigestKind":  "oci_manifest",
-                                    "localConfigDigest":  "sha256:c85221764b096dde2df68c50e2da634147b10c14dcfb98bf57f71f62a14bd1f2",
+                                    "localConfigDigest":  "sha256:91bbde645d7a80219dc78c911d164b3354c6a95d8e86252b0c76668c699f5631",
                                     "buildStatus":  "built-and-source-verified",
                                     "buildPlatform":  "linux/amd64",
                                     "dockerfileSha256":  "76649dc11669dc39ca1f12f169c33ceef7afee8b74767a165b3db57752e3ea09",
-                                    "builtAt":  "2026-08-31T14:40:13.5255264Z",
+                                    "builtAt":  "2026-09-07T07:31:29.6424306Z",
                                     "sourceCommitEvidencePath":  "/opt/odoo/.tcc-source-commit",
                                     "manifestMediaType":  "application/vnd.oci.image.manifest.v1+json",
                                     "digestScope":  "local_buildkit_oci_layout_manifest",
                                     "buildxBuilderDriver":  "docker-container"
                                 },
                        "gateway":  {
-                                       "version":  "0.2.0",
-                                       "localImageTag":  "tcc-gateway:0.2.0",
+                                       "version":  "0.5.0",
+                                       "localImageTag":  "tcc-gateway:0.5.0",
                                        "localConfigDigest":  "sha256:5c81dda4565efdc0d3352edd5223ca0addbab510e502fdc5e77de269320e16c0",
                                        "buildStatus":  "built-and-tested",
                                        "runtime":  "Python 3.12",
                                        "baseImageReference":  "python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab",
                                        "dockerfileSha256":  "5d79cad0e57360e777378b61310088993284235ee045be855b5a9416b37a1a45",
                                        "pyprojectSha256":  "bb8b105fc61a9c4c195233261308fef5827458ab64ebab2b5c1df72efc6f5a57",
-                                       "constraintsSha256":  "f6d0c0d269b259736af84f6070ab638d5df035c1d060c9d39a40ebf06c517d1b"
+                                       "constraintsSha256":  "f6d0c0d269b259736af84f6070ab638d5df035c1d060c9d39a40ebf06c517d1b",
+                                       "unitTestsPassed":  100
                                    }
                    },
     "controls":  {
@@ -65,27 +66,27 @@
     "m1Smoke":  {
                     "status":  "pass",
                     "scenarioId":  "M1-SYNTHETIC-001",
-                    "initialStateSha256":  "59f35a642fb61228f64fa2c0c016dafccec157a5eb7b338dd3ed360722398653",
-                    "createdStateSha256":  "4af857529f31c027965d4beb8937e0861b19ae7737595a93c1067954965b1986",
-                    "restoredStateSha256":  "59f35a642fb61228f64fa2c0c016dafccec157a5eb7b338dd3ed360722398653",
-                    "completedAt":  "2026-08-31T14:40:48.6270500Z"
+                    "initialStateSha256":  "ec1b067d08610e5f615b801b716c5647ccac4e6e79a3f2c8db114f7cf16c1cf6",
+                    "createdStateSha256":  "d14b579121a3b7e91cff455f3ba7730f76bf348473f8d95b77cba39a898770f2",
+                    "restoredStateSha256":  "ec1b067d08610e5f615b801b716c5647ccac4e6e79a3f2c8db114f7cf16c1cf6",
+                    "completedAt":  "2026-09-07T07:32:16.3891220Z"
                 },
     "pendingEvidence":  [
-                            "Model roles were selected in DEC-018; adapters, minimal egress, exact artifacts, final parameters and pilot competence remain pending for G3 and freeze"
+                            "Pendencias normativas de G3c, C0 cientifico competente, C1, dataset, piloto e freeze estao no plano-mestre e em docs/decision-log.md; este lock registra somente evidencia executada."
                         ],
     "m2Smoke":  {
                     "status":  "pass",
                     "scenarioId":  "M2-BENIGN-001",
                     "adapterId":  "deterministic-development/v1",
                     "scientificBaseline":  false,
-                    "unitTestsPassed":  41,
-                    "proposalSchemaSha256":  "03e429f9ca34181f5a3546fc49e19c0ba86f7c72df4614ebd983dec0f2d70db5",
                     "documentSha256":  "e36e2ca0107f728389ed947794d71e4402610a5ae096542f0035ef346f71d90a",
                     "textSha256":  "402823e62cdb43dd6753153309d4c612f23825299281b7b06d5083789b9c8699",
                     "proposalSha256":  "a517e4e80e5ea712968d9a3f447165d3c964f4904a86db87b7b5157f0addb2e4",
-                    "initialStateSha256":  "224448b689468e1abc66b6556a0c7ebae686914ad1bef9ca11cdde53993aea0f",
-                    "createdStateSha256":  "ba07916cc8eb2d37a46033e37187b2385a41daff804911dbe287b0bdad714806",
-                    "restoredStateSha256":  "224448b689468e1abc66b6556a0c7ebae686914ad1bef9ca11cdde53993aea0f",
-                    "completedAt":  "2026-08-31T14:40:54.5332750Z"
+                    "initialStateSha256":  "7e79feeaa0311eb1b78263bdbdc2462af20daff043ea47c457d6bc8df1b41c5f",
+                    "createdStateSha256":  "401bdf4ca1d4beed6a8a868098dbbc8eb50c609bc59a186ad34126f4eab6b9be",
+                    "restoredStateSha256":  "7e79feeaa0311eb1b78263bdbdc2462af20daff043ea47c457d6bc8df1b41c5f",
+                    "invariantsAllPassed":  true,
+                    "completedAt":  "2026-09-07T07:32:24.2747554Z",
+                    "proposalSchemaSha256":  "03e429f9ca34181f5a3546fc49e19c0ba86f7c72df4614ebd983dec0f2d70db5"
                 }
 }

@@ -120,8 +120,23 @@ try {
         throw 'could not resolve the gateway image tag from the Compose configuration'
     }
     Write-Host ("Gateway image under test: {0}" -f $gatewayImage)
-    & docker run --rm --entrypoint python $gatewayImage -m pytest -q -p no:cacheprovider /opt/tcc/gateway/tests
+    $gatewayTestOutput = @(
+        & docker run --rm --entrypoint python $gatewayImage -m pytest -q -p no:cacheprovider /opt/tcc/gateway/tests 2>&1
+    )
+    $gatewayTestOutput | ForEach-Object { Write-Host $_ }
     if ($LASTEXITCODE -ne 0) { throw 'gateway unit tests failed' }
+
+    # A contagem e lida da saida do pytest, nao fixada no script. O lock guardava
+    # 41 testes muito depois de a suite chegar a 100, o que e pior que a ausencia
+    # do campo: contradiz a execucao registrada ao lado.
+    $gatewayTestCount = 0
+    foreach ($line in $gatewayTestOutput) {
+        $match = [regex]::Match([string]$line, '(\d+) passed')
+        if ($match.Success) { $gatewayTestCount = [int]$match.Groups[1].Value }
+    }
+    if ($gatewayTestCount -le 0) { throw 'could not read the gateway test count from the pytest output' }
+    Write-Host ("Gateway unit tests passed: {0}" -f $gatewayTestCount)
+
 
     Write-Host '=== Starting PostgreSQL 18 ===' -ForegroundColor Cyan
     & docker compose up -d db
@@ -139,31 +154,22 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Odoo module initialization failed' }
 
     Write-Host '=== Loading deterministic M1 fixtures and C0 identity ===' -ForegroundColor Cyan
-    $bootstrapSource = Get-Content -Raw -Encoding utf8 -LiteralPath .\odoo\fixtures\bootstrap_m1.py
-    # Canalizar uma string do PowerShell para um comando nativo a recodifica com
-    # [Console]::OutputEncoding. No Windows PowerShell 5.1 isso prefixa um BOM e
-    # transcodifica os acentos; como o `odoo shell` le o script por stdin, o
-    # interpretador falha com "invalid non-printable character U+FEFF" antes de
-    # executar qualquer fixture. Forcar UTF-8 sem BOM apenas ao redor do pipe, e
-    # remover um BOM residual do proprio arquivo, torna o bootstrap independente
-    # da edicao do PowerShell e da configuracao de console do host.
-    $previousOutputEncoding = $OutputEncoding
-    $previousConsoleEncoding = [Console]::OutputEncoding
-    try {
-        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-        $OutputEncoding = $utf8NoBom
-        [Console]::OutputEncoding = $utf8NoBom
-        $bootstrapSource = $bootstrapSource.TrimStart([char]0xFEFF)
-        $bootstrapSource | & docker compose run --rm -T odoo python /opt/odoo/odoo-bin `
-            shell `
-            -c /etc/odoo/odoo.conf `
-            -d tcc_ap_lab `
-            --no-http
+    # O `odoo shell` recebe o script por stdin. Canalizar uma string do PowerShell
+    # para um comando nativo a recodifica: o Windows PowerShell 5.1 emite o preambulo
+    # UTF-8 mesmo com UTF8Encoding($false), e o interpretador falha com
+    # "invalid non-printable character U+FEFF" antes de executar qualquer fixture.
+    # O redirecionamento por `cmd /c ... < arquivo` entrega os bytes crus do arquivo,
+    # sem qualquer recodificacao, e nao depende da edicao do PowerShell nem da
+    # configuracao de console do host.
+    $bootstrapPath = (Resolve-Path -LiteralPath .\odoo\fixtures\bootstrap_m1.py).Path
+    if ([System.IO.File]::ReadAllBytes($bootstrapPath)[0..2] -join ',' -eq '239,187,191') {
+        throw 'bootstrap_m1.py has a UTF-8 BOM; remove it before running the lab'
     }
-    finally {
-        $OutputEncoding = $previousOutputEncoding
-        [Console]::OutputEncoding = $previousConsoleEncoding
-    }
+    $bootstrapCommand = (
+        'docker compose run --rm -T odoo python /opt/odoo/odoo-bin shell' +
+        ' -c /etc/odoo/odoo.conf -d tcc_ap_lab --no-http < "' + $bootstrapPath + '"'
+    )
+    & cmd /c $bootstrapCommand
     if ($LASTEXITCODE -ne 0) { throw 'M1 fixture bootstrap failed' }
     if (-not (Test-Path -LiteralPath (Join-Path $secretsDirectory 'odoo_api_key'))) {
         throw 'C0 API key was not written to the ignored runtime secret path'
@@ -203,7 +209,15 @@ try {
     $labLock.m1Smoke.createdStateSha256 = $evidence.created_state_sha256
     $labLock.m1Smoke.restoredStateSha256 = $evidence.restored_state_sha256
     $labLock.m1Smoke.completedAt = (Get-Date).ToUniversalTime().ToString('o')
-    $labLock.pendingEvidence = @()
+    $labLock.components.gateway | Add-Member -NotePropertyName unitTestsPassed `
+        -NotePropertyValue ([int]$gatewayTestCount) -Force
+    # Nao esvaziar pendingEvidence: um smoke bem-sucedido de M1 nao encerra as
+    # pendencias cientificas do trabalho, e esvaziar a lista fazia o lock afirmar
+    # ausencia de pendencia a cada execucao. M2 reescreve o campo com o apontador
+    # normativo; aqui apenas garante-se que o campo exista.
+    if (-not $labLock.PSObject.Properties['pendingEvidence']) {
+        $labLock | Add-Member -NotePropertyName pendingEvidence -NotePropertyValue @() -Force
+    }
     Write-JsonFile $labLockPath $labLock
 
     $completed = $true
