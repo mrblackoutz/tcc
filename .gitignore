@@ -29,6 +29,11 @@ pgpass.conf
 **/secrets.*
 **/credentials.*
 
+# Cópia aninhada acidental do próprio repositório, trazida de outra máquina.
+# Contém .env local e duplicatas do plano; nunca deve ser versionada.
+/tcc/
+/tcc.tar
+
 # Snapshot local do upstream; usar commit/imagem reproduzível no experimento
 /odoo-19.0/
 

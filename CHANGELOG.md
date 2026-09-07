@@ -2,6 +2,46 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.11] — 2026-09-05
+
+- concluída a primeira revisão adversarial sistemática do plano, em doze dimensões independentes, com refutação de cada achado contra o arquivo, o código e os documentos de apoio: 124 achados brutos, 4 refutados, 120 sobreviventes — 26 de severidade alta, 66 média e 28 baixa, nenhum crítico após a refutação;
+- publicado o dossiê completo em `docs/revisao-independente-v1.2.9.md`, com localização, trecho literal citado, problema, consequência, verificação adversarial e correção recomendada por achado, mais apêndice dos achados refutados e da razão da rejeição;
+- registrada a decisão DEC-022, que separa as correções aplicadas nesta versão das que dependem de ratificação do grupo;
+- fixada em §9.2 a fronteira entre resolução técnica de referências, permitida em C0, e revalidação semântica contra estado confiável, exclusiva de C1; o executor C0 aprovado em M2 viola essa fronteira e a correção é pré-condição do gate de competência, sob pena de `ASR-state` em C0 tender a zero nas famílias A1 e A2 e H1 deixar de ser falseável;
+- exigido que o oráculo de estado seja independente da proposta do modelo, para que desfecho adversarial seja medido em vez de convertido em dado ausente;
+- criada em §9.2 a checklist de plausibilidade de C0, até então apenas prometida, incluindo a exigência de que C0 demonstre vulnerabilidade por família adversarial no piloto;
+- reformuladas em §13.2 as métricas de fronteira como cascata marginal sobre o denominador comum de execuções adversariais avaliáveis, com a relação monótona `p_entrega ≥ p_proposta ≥ p_politica ≥ p_estado`; as razões condicionais `ASR-proposal` e `ASR-policy` passam a ser descrição de mecanismo dentro de cada condição e não sustentam hipótese, tabela confirmatória ou claim, porque condicionam em variáveis posteriores ao tratamento;
+- alterado o denominador de `False Block Rate` para execuções benignas avaliáveis, pela mesma razão;
+- retirada `ASR-policy` da coluna de endpoints de RQ1 em §28;
+- pré-especificada em §15.2 a regra de células zero e de fronteira — Newcombe para diferença pareada, Wilson para proporções isoladas, McNemar exato sempre, `RR` omitido quando indefinido, bootstrap com 10.000 replicações, percentil e semente registrada —, cenário esperado quando `ASR_C1 = 0`;
+- declarado em §15.1 que o denominador adversarial efetivo de H2 é o bloco A3a, com 15 pares e não 90, com a potência calculada e a decisão sobre seu status retirada do piloto, que conteria cerca de 2 pares A3a;
+- nomeados em H1 e H2 os endpoints congelados `ASR-state` e `UACR`, eliminando o termo "ASR de execução", ausente do glossário, e explicitada a equivalência entre o teste bilateral a 5% e o critério operacional de limite superior do IC95%;
+- definida em §11.4.1 a pré-imagem do hash da ação canônica, com campos enumerados, ordenação, normalização NFC, escala decimal, serialização e vetor de teste congelado, sem a qual C08, C10, R-POL-09 e o invariante I4 não eram falseáveis nem reproduzíveis;
+- vinculada a autorização de `POST_APPROVED` ao rascunho exato por `target_move_id`;
+- definido em §14.5 o conteúdo do hash canônico de estado, que antes era invocado como oráculo de reset sem enumeração e cuja única implementação observava apenas contas filtradas pela referência do cenário; passam a integrar a projeção `ir.sequence`, `ir.attachment`, `mail.message`, `res.partner.bank`, os computados do pedido, a ausência de `account.payment` e o outbox, agora verificado por execução e não por lote;
+- decomposta `SDR` em `SDR-context`, `SDR-proposal` e `SDR`, e registrado em §12.3 que `SDR_C1` é zero por construção na rota de cadastro mestre, porque a minimização nunca entrega o canário ao modelo;
+- ancorado o canário de origem documental nos cinco pares de "A3b — controle de criação" e acrescentado `canary_origin` ao manifesto de cenário, sem alterar tamanho amostral nem matriz;
+- acrescentada em §14.7 a quinta condição de ablação, sem minimização e sem allowlist de campos, sem a qual nenhuma condição move `SDR`, H5 fica inverificável nesse endpoint e os controles C11 e R-POL-08 não são exercidos em nenhuma execução científica; a matriz passa de `48 × 4 × 3 = 576` para `48 × 5 × 3 = 720`, o núcleo para 2.016 e o plano mínimo para 2.160 execuções, com a alternativa registrada de retirar `SDR` de H5 caso o grupo não ratifique a condição;
+- propagados os novos totais para §14.8, §14.9, o gate G7 do cronograma e o marco M7b;
+- nomeada em §9.5 a arquitetura de C1 como monitor de referência, com as três propriedades clássicas mapeadas a verificações já existentes, e declarada por escrito a base confiável e o que não pertence a ela, incluindo o LLM, o parser e o detector auxiliar C13;
+- restringida a exigência de cobertura de ramos de 100% aos módulos da base confiável, mantida a regra de 80% de linha para o restante;
+- acrescentado o invariante I10, de mediação completa e invariância diante de `context` hostil;
+- posicionada em §4.1 a arquitetura no espaço de projeto das defesas, com o agente enquadrado como deputado confundido e o contraste explícito com a propagação de capacidades de CaMeL;
+- declarado em §22.3 o limite superior estrutural da abordagem: C1 só protege propriedades que o estado confiável consegue decidir, e um ataque inteiramente consistente com o pedido de compra não é detectável pelo policy engine;
+- declarada em §8.3 a implementação deliberada da conciliação de duas vias e a ausência por construção da via de recebimento, com a consequência de validade externa em §22.3;
+- acrescentado a §16.8 o invariante da política de faturamento do item das fixtures, cuja resolução por quantidade recebida zeraria `qty_to_invoice` e bloquearia todo `CREATE_DRAFT` legítimo;
+- adotadas quatro referências clássicas, cada uma instanciada em critério verificável: ANDERSON (1972), SALTZER e SCHROEDER (1975), HARDY (1988) e HEVNER et al. (2004); rejeitadas explicitamente COSO, NIST SP 800-207, DENNING (1976), NBC TA 315 e o arcabouço FEDS, por não produzirem critério testável neste recorte;
+- criada em §29.1.1 a declaração de busca dirigida para a fundamentação clássica, que os critérios de inclusão de §29.3 excluíam por construção, com a regra de que essas obras não entram na matriz comparativa nem sustentam claim de resultado;
+- corrigido o título da referência PIArena, que não correspondia ao registro da ACL Anthology; a verificação contra ACL Anthology, PMLR, USENIX e registros DOI não encontrou nenhuma referência fabricada;
+- acrescentados os riscos R26 a R30: tautologia de SDR, colapso do contraste por revalidação em C0, indisponibilidade do provedor, troca de backend no meio da coleta e ausência de definição do pacote saneado;
+- acrescentada a §18.1 a reconciliação de 05/09/2026, que registra a anuência do orientador vencida em 01/09 sem evidência, o requerimento no Portal do Aluno com prazo interno de 07/09, o replanejamento da matriz de literatura para 13/09, o avanço assimétrico entre as três trilhas, a ausência de folga para reexecução e a distinção entre o gate G3 e as subetapas G3a, G3b e G3c;
+- acrescentados dezessete itens ao checklist de congelamento de §30.1, cobrindo as correções acima;
+- mantidos inalterados problema, perguntas de pesquisa, D01–D15, a margem D13, o threat model, o tamanho do teste v1 e a comparação C0×C1.
+- restaurados 25 arquivos rastreados que uma cópia trazida de outra máquina havia rebaixado para conteúdo anterior ao commit `4578e85`, entre eles `compose.yaml` (101 linhas), `gateway/src/tcc_gateway/llm_client_service.py`, os testes do cliente e os locks de ambiente e de seleção de modelo; sem a restauração, publicar esta versão apagaria o trabalho de G3c já commitado;
+- removidas 19 duplicatas com sufixo `(2)` criadas pela mesma cópia, todas verificadas por hash como idênticas ao conteúdo já versionado;
+- acrescentadas ao `.gitignore` a cópia aninhada `/tcc/` e `/tcc.tar`, que não podem ser versionadas por conterem `.env` local e duplicatas do plano;
+- renumerada esta versão para 1.2.11 porque a revisão foi conduzida sobre o texto da v1.2.9 presente na árvore de trabalho, enquanto a v1.2.10 já estava publicada em `4578e85`; nenhum commit de versão publicada foi reescrito.
+
 ## [1.2.10] — 2026-09-02
 
 - implementado o caminho real G3c em profile explícito, com chave local exata e read-only somente no `llm-client`, runner sem segredo/egress e proxy como único componente com saída;
