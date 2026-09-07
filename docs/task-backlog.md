@@ -90,12 +90,14 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | ADM-03 | P0 | Felipe | Gustavo | — | confirmar janela/horários/eligibilidade PPI/PPP/PPA e anomalia `31/11`; atualizar matriz | EXTERNAL |
 | ADM-04 | P0 | Felipe | Gustavo | — | confirmar dados institucionais e alinhamento do tema à área/projeto do orientador | EXTERNAL |
 | ADM-05 | P0 | Felipe | Thomaz | — | instituir registro semanal/quinzenal de orientação com pauta, presença, decisões e próximos passos | READY |
-| ADM-06 | P0 | Felipe | Gustavo | — | coletar anuência do orientador no Oriente até 01/09 e preservar recibo fora do Git | EXTERNAL |
+| ADM-06 | P0 | Felipe | Gustavo | — | coletar anuência do orientador no Oriente e preservar recibo fora do Git. Prazo oficial 01/09, vencido; requerimento 565711 em análise pelo orientador desde 01/09. **Escalonamento imediato**: consta no checkpoint seguinte até ser deferida | EXTERNAL |
 | ADM-07 | P0 | Gustavo | Felipe | — | cadastro do projeto e três autores confirmados; evidência privada de 01/09 preservada por hash no lock institucional, sem identificadores no Git | DONE |
 | ADM-08 | P0 | Gustavo | Felipe | ADM-07 | requerimento protocolado em 01/09, três autores conferidos e evidência privada preservada por hash no lock institucional | DONE |
 | ADM-09 | P1 | Gustavo | Felipe | ADM-02 | manter calendário de submissão, avaliadores, banca, correção e anuência final | READY |
 | ADM-10 | P0 | Felipe | Thomaz | DEC-021 | atualizar requisitos institucionais com papéis nominais; disponibilidade revista semanalmente | DONE |
 | ADM-11 | P0 | Felipe | Thomaz | — | manter `docs/ai-usage.md` atualizado a cada release do plano e a cada seção do artigo; derivar dele a declaração institucional quando ADM-02 responder, sem reconstruir de memória | ACTIVE |
+| REP-05 | P1 | Gustavo | Thomaz | FRZ-08 | reexecutar a suíte de segurança de C1 em ambiente limpo e registrar tentativa independente de bypass, fechando o ciclo de reprodução dos três componentes | WAIT |
+| LIC-01 | P1 | Felipe | Thomaz | ADM-12 | criar `docs/licensing.md` fixando LGPL-3.0-or-later para o add-on derivado do Odoo, licença aberta para gateway/runner/análise e licença própria para o dataset, com compatibilidade verificada contra `gateway/constraints.txt` | READY |
 | ADM-12 | P1 | Felipe | Thomaz | — | escolher e adicionar `LICENSE` para código, dataset e documentação, com compatibilidade verificada contra a LGPLv3 do Odoo e as licenças das dependências; registrar a justificativa no decision log | READY |
 | ADM-13 | P1 | Felipe | Gustavo | ADM-12 | criar `CITATION.cff` e a seção de instruções de citação no README; conferir contra o checklist de §17.3 do plano | READY |
 | SEC-A2 | P0 | Thomaz | Gustavo | — | implementar no executor e no runner a assertion que impede escrita de `partner_id` depois de `partner_bank_id`, conforme o invariante de §16.8 e o resultado do `T-A2-PREFREEZE` | READY |
@@ -123,7 +125,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | G3-02 | P0 | Gustavo | Thomaz | G3-01 | materializar redes separadas e proxy TLS pass-through com allowlist `api.deepseek.com:443` | DONE |
 | G3-03 | P0 | Gustavo | Thomaz | G3-02 | testes negativos: gateway/Odoo/db sem Internet; cliente sem ERP/Internet direta; proxy nega host/IP/porta alternativos | DONE |
 | G3-04 | P0 | Gustavo | Felipe | G3-01 | harness de smoke sintético, manifest saneado e varredura de logs, ainda com transporte mock | DONE |
-| G3-05 | P0 | Gustavo | Thomaz | G3-03, G3-04, autorização | caminho e egress validados; tentativa diagnóstica autorizada alcançou o provedor, mas foi recusada com HTTP 402, sem inferência, manifesto de sucesso ou retry; requer crédito/saldo e nova autorização explícita | EXTERNAL |
+| G3-05 | P0 | Gustavo | Thomaz | G3-03, G3-04, autorização | caminho e egress validados; tentativa diagnóstica autorizada alcançou o provedor, mas foi recusada com HTTP 402, sem inferência, manifesto de sucesso ou retry; requer crédito/saldo e nova autorização explícita. **Prazo de resposta 12/09/2026; escalonamento em 15/09**, por ser bloqueio único do caminho crítico sobre C0-04, DATA-05 e PILOT-01 | EXTERNAL |
 | G3-06 | P1 | Gustavo | Felipe | G3-05 | observar defaults/limites, propor timeout/backoff/max tokens e fechar parâmetros candidatos do piloto | WAIT |
 | G3-07 | P2 | Gustavo | Thomaz | núcleo protegido, autorização | baixar Qwen3, registrar manifest/blobs/Ollama/Modelfile sem expor dados | CONDITIONAL |
 | G3-08 | P2 | Gustavo | Felipe | G3-07 | smoke Qwen: offload, CPU/GPU/RAM/VRAM, TTFT, tok/s, latência, contexto e OOM | CONDITIONAL |
@@ -279,6 +281,9 @@ Nenhuma integração deve contornar um contrato com dicionário livre, ID intern
 
 ## 17. Regras de merge e revisão
 
+- toda tarefa `P0` possui data-limite explícita, conforme §19.3 do plano; tarefa `EXTERNAL` recebe data-limite de resposta e data de escalonamento;
+- ultrapassada a data de escalonamento, o assunto vai ao orientador na reunião seguinte e o fato é registrado; tarefa que passou da data-limite sem mudar de estado é reportada como atrasada no checkpoint semanal e obriga replanejamento explícito da onda, nunca prorrogação silenciosa;
+- o estado `ACTIVE` é usado de fato: tarefa com owner trabalhando não permanece `READY`, sob pena de o backlog deixar de detectar atraso;
 - um owner não aprova sozinho tarefa crítica própria;
 - P2 não recebe o conjunto final completo antes do freeze da defesa;
 - mudanças nos contratos I1 geram decisão e reexecução dos consumidores afetados;

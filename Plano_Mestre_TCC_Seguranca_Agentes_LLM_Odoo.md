@@ -1029,7 +1029,7 @@ Bloquear uma tarefa maliciosa por falha geral pode reduzir ASR, mas não constit
 
 ## 13.4 Eficiência e confiabilidade
 
-- `L_e2e_benign`: do ingresso do documento ao estado técnico terminal benigno esperado, com a fixture pré-declarada injetada sincronamente quando o cenário a exigir; este é o relógio comparável usado em H4 e exclui espera ou deliberação humana;
+- `L_e2e_benign`: do ingresso do documento ao estado técnico terminal benigno esperado, com a fixture pré-declarada injetada sincronamente quando o cenário a exigir; este é o relógio comparável usado em H4 e exclui espera ou deliberação humana. Só é comparável entre execuções do mesmo host declarado: troca de host invalida a comparação de latência e exige reexecução dos pares afetados, conforme R32;
 - `L_disposition`: do ingresso à primeira disposição técnica (`ALLOW`, `DENY`, `REVIEW_REQUIRED` ou erro terminal), reportada separadamente como diagnóstico;
 - `L_approval_verify`: do recebimento da fixture ao aceite ou rejeição do token, reportada separadamente apenas para C1;
 - latência das demais etapas, com limites de relógio e timestamps monotônicos definidos no protocolo;
@@ -1076,6 +1076,8 @@ C0 deverá atingir, no piloto benigno:
 
 O gate acima é de C0 e incide sobre as 72 execuções da condição, não sobre o piloto inteiro. Independentemente dele, aplica-se ao piloto completo o critério de engenharia de §17.2: pelo menos 95% de logs completos, isto é, no mínimo 137 das 144 execuções planejadas; abaixo disso o piloto é interrompido e reexecutado.
 
+**Gate de eficácia adversarial.** O relatório do piloto reportará a ASR-state diagnóstica de C0 no nível de cenário. Se ela for insuficiente para sustentar comparação — em particular se for nula ou próxima de zero — o grupo revisa as estratégias A1 a A3, as posições e o prompt-base comum **sem enfraquecer C0**, registra a iteração em `docs/decision-log.md` e repete o piloto uma única vez. Persistindo a ausência de efeito mensurável, o grupo decide antes do congelamento, e registra em `docs/protocol.md`, enquadrar o estudo como estimativo, reportando ARR com intervalo em vez de teste de superioridade. Em nenhuma hipótese se troca o endpoint primário depois de observar o teste final, e em nenhuma hipótese se enfraquece C0 para produzir efeito.
+
 O gate é uma decisão operacional, não um teste de hipótese. Deve ser validado antes do piloto. Se C0 não for competente, o grupo corrige a funcionalidade compartilhada, registra a iteração e repete o piloto; não enfraquece a definição de sucesso.
 
 ## 14.3 Piloto
@@ -1092,6 +1094,8 @@ O piloto usa o modelo principal DeepSeek, solicitado como `deepseek-v4-flash`, c
 O piloto pode corrigir implementação e protocolo. Ele não pode ser misturado ao teste final nem ser apresentado como confirmação das hipóteses.
 
 O relatório do piloto incluirá a precisão esperada dos intervalos e uma análise de poder baseada nas discordâncias pareadas. Se 180 documentos forem insuficientes, a decisão anterior ao freeze será uma entre: aumentar o número de pares, manter 90 pares e enquadrar o estudo como estimativo com limitação explícita, ou reduzir hipóteses secundárias. Aumentar apenas o número de repetições não substituirá cenários independentes.
+
+A partir dos tokens e do preço datado registrados no piloto, o grupo fixará antes do congelamento um teto monetário total para o bloco DeepSeek, projetado sobre as 2.016 execuções do programa e sobre o teto operacional de retries, e configurará no provedor um limite de gasto igual a esse teto acrescido de 20%. Ultrapassar 70% do teto durante a coleta aciona a escada de contingência de §21.2, nunca a redução silenciosa de repetições.
 
 Ao final do piloto, o grupo registrará em `docs/protocol.md` os limites usados em H4: `L_e2e_benign`, custo por 100 documentos e `Review Demand per 100` em documentos benignos. `L_e2e_benign` será calculada somente sobre pares benignos com o mesmo estado de negócio esperado em C0 e C1; nos casos críticos, a fixture prevista no manifesto entra imediatamente no ponto fixado do pipeline, sem tempo de espera de pessoa. `L_disposition` e `L_approval_verify` serão diagnósticas e não substituirão esse endpoint. A terceira medida é somente demanda potencial, não tempo, erro, aceitabilidade ou custo de revisores reais. Cada limite deverá ter justificativa técnica ou orçamentária anterior ao teste final; caso contrário, H4 será reclassificada como descritiva antes do congelamento.
 
@@ -1174,7 +1178,7 @@ Os 36 documentos do conjunto defense-aware serão executados nas duas condiçõe
 - orçamento e conhecimento do atacante;
 - casos em que C1 apenas deslocou o ataque para outro estágio.
 
-Somando o experimento principal (`1.080`), o bloco de ablação com referência contemporânea (`720`) e a avaliação defense-aware (`216`), o núcleo planejado compreende **2.016 execuções**. Com o piloto (`144`), o plano mínimo totaliza **2.160 execuções**, excluídos retries de infraestrutura, até 90 consultas de desenvolvimento do red team e eventual segundo modelo. Como são permitidas no máximo duas novas tentativas por falha transitória, o teto puramente operacional é de `2.160 × 3 = 6.480` tentativas registradas; esse pior caso não será usado como previsão de custo, mas como limite de capacidade. Sem a quinta condição de ablação, os totais retornam a `576`, **1.872** de núcleo, **2.016** com piloto e `6.048` de teto.
+Somando o experimento principal (`1.080`), o bloco de ablação com referência contemporânea (`720`) e a avaliação defense-aware (`216`), o programa completo compreende **2.016 execuções**. Apenas as `1.080` do experimento principal são confirmatórias e obrigatórias: respondem RQ1, RQ2, H1, H2, H3 e H4. Os blocos de ablação e defense-aware são planejados e condicionados — respondem RQ4, H5 e a análise secundária de robustez — e sua execução depende de o núcleo estar concluído e de a reserva de reexecução de §18.1 não ter sido consumida. Com o piloto (`144`), o plano mínimo totaliza **2.160 execuções**, excluídos retries de infraestrutura, até 90 consultas de desenvolvimento do red team e eventual segundo modelo. Como são permitidas no máximo duas novas tentativas por falha transitória, o teto puramente operacional é de `2.160 × 3 = 6.480` tentativas registradas; esse pior caso não será usado como previsão de custo, mas como limite de capacidade. Sem a quinta condição de ablação, os totais retornam a `576`, **1.872** de núcleo, **2.016** com piloto e `6.048` de teto.
 
 ## 14.9 Segundo modelo
 
@@ -1584,18 +1588,20 @@ Se o provedor não oferece snapshot imutável do modelo, registrar alias solicit
 
 O cronograma abaixo está reancorado ao edital `EditalTCC_2026_2-V1`. A submissão inicial ocorre entre 03 e 09/11/2026; portanto, o artigo precisa estar internamente aprovado até 02/11 e deve ser enviado, por segurança, até 08/11. A prioridade é obter experimento congelado e resultados até meados de outubro, evitando deixar ciência, reprodução ou redação para a semana de entrega.
 
+**Premissa de capacidade.** Cada integrante declara sua disponibilidade semanal em horas em `docs/institutional-requirements.md` e a revisa no checkpoint semanal. O cronograma pressupõe as três trilhas ativas simultaneamente. Se a disponibilidade declarada cair abaixo do necessário para a onda corrente do backlog, o checkpoint registra o desvio e aciona a ordem de corte de §21.1 antes de comprimir a semana seguinte. O esforço observado por bloco é registrado no checkpoint, para que a estimativa deixe de ser suposição e passe a ser medida.
+
 | Período | Foco | Entregável verificável | Gate |
 |---|---|---|---|
 | 25–30 ago | Gate 0, papéis, ambiente e protocolo | edital/template/fonte auditados; lacunas registradas; board; decisões assinadas | G0 |
 | 31 ago–6 set | obrigações cadastrais + revisão estruturada + Odoo | integrante único designado; cadastro no Oriente; requerimento no Portal do Aluno protocolado até 07/09, dentro da janela oficial de 01–21/09, com recibo preservado; anuência do orientador deferida; alinhamento com área/projeto do orientador confirmado; matriz de literatura; Odoo/DB; JSON-2 smoke test | G1 |
 | 7–13 set | vertical slice e estado restaurável | **atendido tecnicamente em 31/08:** PDF benigno → proposta tipada → draft C0; reset/oráculo; adaptador determinístico fora das runs científicas | G2 |
 | 14–20 set | C0 e dataset piloto | baseline revisada; 24 documentos piloto; runner inicial | G3 |
-| 21–27 set | C1 estrutural e autoria do teste v1 | schema, policy engine, allowlist, capacidades e 180 documentos candidatos (rascunhos; o fechamento do tamanho depende do relatório do piloto e ocorre em G5) | G4 |
-| 28 set–4 out | autorização, auditoria, piloto e dataset final | approval gate técnico; fault tests; relatório do piloto; dupla revisão e hashes dos 180 documentos | G5 |
-| 5–11 out | congelamento e experimento principal | tags/hashes; 1.080 execuções contabilizadas; missing e desvios classificados | G6 |
-| 12–18 out | defense-aware e ablação | 216 execuções de robustez; 720 de ablação; QA de dados | G7 |
-| 19–25 out | análise | dataset analítico, ICs, testes, tabelas e gráficos | G8 |
-| 26 out–1 nov | artigo completo e reprodução | artigo em 18–19 páginas no template; reprodução independente; resultados e claims auditados | G9 |
+| 21–27 set | C1 estrutural, templates e piloto | schema, policy engine, allowlist e capacidades; templates, codebook e gerador do conjunto final prontos; piloto executado | G4 |
+| 28 set–11 out | autorização, auditoria, relatório do piloto e conjunto final | approval gate técnico; fault tests; relatório do piloto e cálculo de poder; 90 pares gerados **após** o fechamento do tamanho amostral, com dupla revisão, resolução de divergências e hashes | G5 |
+| 5–11 out | congelamento e ensaio de lote | tags/hashes; checklist de §30.1 assinada; ensaio de lote executado com vazão medida em execuções por hora | G6 |
+| 12–25 out | experimento principal e reserva de reexecução | 1.080 execuções contabilizadas, com missing e desvios classificados; cinco dias úteis reservados para reexecução de pares afetados por desvio registrado; ablação e defense-aware executadas somente se a reserva não for consumida | G7 |
+| 19–25 out | análise e reprodução independente | dataset analítico, ICs, testes, tabelas e gráficos; reprodução independente do ambiente e da análise concluída com relatório | G8 |
+| 26 out–1 nov | artigo completo e auditoria de claims | artigo dentro do teto editorial de §24.1; cada número rastreado a script, dado e versão; Resumo e Abstract escritos; claims auditados contra §24.3 | G9 |
 | 2–8 nov | revisão final e submissão inicial | grupo/orientador aprovam; metadados e formato conferidos; recibo do Oriente preservado até 08/11 | G10 |
 | 9–15 nov | preparação da defesa | banca confirmada; slides; demonstração e vídeo de contingência; simulado de 15–20 minutos | G11 |
 | 16 nov–1 dez | janela institucional de bancas | apresentação presencial e registro das correções solicitadas; confirmar a data exata no Oriente | G12 |
@@ -1604,7 +1610,11 @@ O cronograma abaixo está reancorado ao edital `EditalTCC_2026_2-V1`. A submiss�
 
 **Reconciliação em 05/09/2026.** O cronograma acima foi escrito em 01/09 e precisa ser lido com a situação real. G0 está atendido. G1 está parcialmente atendido: Odoo, banco e o smoke JSON-2 foram comprovados em 31/08 com M1 e M2, e G3a/G3b foram concluídos em 01/09, antecipando trabalho previsto para depois. Permanecem abertos, na trilha institucional, a anuência do orientador — cujo prazo era 01/09 e que não possui evidência registrada em nenhum artefato — e o requerimento no Portal do Aluno, com prazo interno de 07/09 dentro da janela oficial de 01 a 21/09. Permanece aberta, na trilha científica, a matriz de literatura, cujo protocolo de busca e execução são replanejados para conclusão até 13/09, dentro da janela de G2, sem deslocar G3. O avanço é assimétrico entre as três trilhas: a trilha de Odoo e experimentação acumula quatro aceites técnicos, enquanto as trilhas de ciência e de arquitetura encerram a primeira onda sem artefato. Nenhum outro gate é movido por esta reconciliação. Se a matriz de literatura não fechar até 13/09, a formulação da lacuna passa a risco declarado de caminho crítico.
 
-Duas observações sobre a estrutura do cronograma. As janelas de G3 a G10 são semanas consecutivas sem folga, e o plano torna obrigatória a reexecução integral dos pares afetados diante de qualquer desvio posterior ao congelamento; não há reserva alocada para essa reexecução. E os identificadores G0 a G14 desta tabela designam gates de cronograma: G3a, G3b e G3c são subetapas de habilitação do LLM exigidas por G3, foram deliberadamente antecipadas, e sua conclusão não antecipa o gate G3, que só fecha com C0 científico competente e dataset piloto.
+**Sobre a reserva de reexecução.** A janela de 12 a 25 de outubro não é folga discricionária. Ela existe porque §14.4 obriga a repetição integral dos pares afetados por qualquer mudança que altere comportamento depois do congelamento, e até esta revisão o cronograma não alocava tempo algum para isso. Consumi-la com trabalho novo elimina a única defesa do cronograma contra um desvio. Os blocos de ablação e defense-aware entram nessa janela apenas se a reserva não tiver sido consumida, coerentemente com a condicionalidade declarada em §14.8. Se em 20 de setembro `docs/protocol.md` não estiver assinado ou o C0 científico não tiver executado uma vez fim a fim, aciona-se imediatamente a ordem de corte de §21.1, começando pelo segundo modelo, e só então a escada de §21.2.
+
+**Sobre a vazão.** O ensaio de lote de G6 mede e registra a vazão efetiva em execuções por hora e a duração projetada de cada bloco, incluindo restauração de fixture e verificação de hash. O congelamento só é assinado se a vazão medida permitir concluir o bloco principal dentro da janela vigente com 20% de margem para retries; caso contrário aplica-se a escada de §21.2 antes de congelar, e não durante a coleta.
+
+**Sobre a numeração.** Os identificadores G0 a G14 desta tabela designam gates de cronograma. G3a, G3b e G3c são subetapas de habilitação do LLM exigidas por G3, foram deliberadamente antecipadas, e sua conclusão não antecipa o gate G3, que só fecha com C0 científico competente e dataset piloto.
 
 ## 18.2 Caminho crítico
 
@@ -1670,7 +1680,9 @@ Legenda: R = executa; A = responde pelo aceite; C = consulta/revisa; I = informa
 | Reprodução independente | A | R* | R* | I |
 | Slides e defesa | A | R | R | C |
 
-`R*`: P2 reproduz o ambiente/runner mantido por P3; P3 reexecuta a análise mantida por P1. Nenhum integrante valida como evidência independente o próprio componente.
+`R*`: o ciclo de reprodução é fechado nos três componentes. P2 reproduz o ambiente e o runner mantidos por P3; P3 reexecuta a análise mantida por P1; P3 reexecuta a suíte de segurança de C1 mantida por P2 a partir de ambiente limpo, incluindo os testes negativos de ACL, contexto hostil, replay e concorrência. Nenhum integrante valida como evidência independente o próprio componente.
+
+A revisão da distribuição considera esforço, não contagem de tarefas. Nenhum integrante deve acumular, em uma mesma janela semanal, mais de metade do esforço estimado do caminho crítico; o desequilíbrio é medido no checkpoint semanal e corrigido por realocação registrada em `docs/decision-log.md`, não por esforço adicional individual. Cada elo do caminho crítico tem dono secundário nomeado, capaz de continuar a tarefa a partir da documentação existente.
 
 P3 conduz o red team defense-aware e P1 aceita o resultado. P2, que implementa C1, não participa da autoria adversarial. A separação é deliberada: P1 coordena a autoria confirmatória dos ataques e do codebook, conforme §12.6, e concentrar as duas autorias na mesma pessoa reduziria a independência entre o conjunto congelado e o adaptativo. Se houver um quarto integrante, ele assume a execução. O limite residual correspondente consta em §22.2.
 
@@ -1693,6 +1705,7 @@ O backlog operacional normativo está em `docs/task-backlog.md`. Ele contém 120
 | Marco | Considerado concluído somente quando... | Evidência |
 |---|---|---|
 | M0 — protocolo | problema, RQs, hipóteses, threat model, métricas, escopo e datas foram aprovados | ata/commit assinado |
+| M0b — literatura | bases, strings, data de corte, itens triados, incluídos e excluídos com motivo, snowballing para trás e para frente concluídos, matriz comparativa preenchida e formulação da lacuna congelada com fonte para cada frase | `docs/literature-review.md` com fluxo de seleção e matriz |
 | M1 — Odoo | fonte oficial e commit estão fixados; a imagem foi construída desse commit e possui referência, plataforma, digest OCI, digest da base e evidência da ligação fonte→imagem; ambiente sobe limpo; fixtures carregam; conta é criada/lida; reset restaura hashes | **Atendido em 31/08/2026:** locks de fonte/ambiente, commit `b9a96da`, `docs/lab-runbook.md`, scripts de build/smoke e evidência local saneada |
 | M2 — vertical slice C0 | fluxo benigno é funcional; schema e integração passam; checklist elimina caricatura | **Atendido tecnicamente em 31/08/2026:** DEC-017, commit `fef3348`, 41 testes, smoke M1/M2, `docs/m2-c0-baseline.md`, locks e hashes restaurados; adapters e isolamento foram atendidos depois em G3a/G3b, mas C0 científico continua para G3c e piloto |
 | G3a — adapters simulados | contratos DeepSeek/Ollama, schema auxiliar, validação, sanitização, configuração por ambiente e falhas seguras passam sem egress ou segredo | **Atendido em 01/09/2026:** DEC-020, commits `b2deec8` e `9d0afd9`, imagem local `tcc-gateway:0.3.0`, 82 testes em contêiner sem rede e `docs/g3a-llm-adapters.md` |
@@ -1761,6 +1774,8 @@ O TCC só está concluído quando:
 | R28 | provedor do modelo fica indisponível, bloqueado ou impagável | Baixa | Crítico | falha de autenticação, suspensão de conta, restrição regional ou descontinuação do alias | concluir G3-05 com data-limite; manter o bloco Qwen3 tecnicamente pronto como rota alternativa declarada; qualquer substituição de modelo exige nova decisão registrada e reexecução integral, nunca troca no meio da coleta |
 | R29 | backend do provedor muda no meio da coleta | Média | Alto | identificador retornado divergente do registrado no freeze, em qualquer execução | conferir o identificador retornado a cada execução, e não apenas por lote; na primeira divergência, interromper o lote, registrar desvio e reexecutar integralmente os pares afetados sob backend único; estratificação só é admissível se declarada antes de observar os endpoints |
 | R30 | pacote saneado de reprodução não é definido antes da coleta | Média | Alto | ausência de esquema de colunas e regra de saneamento no freeze | fixar em `docs/protocol.md`, antes do congelamento, o esquema do pacote saneado, a regra de saneamento e o responsável, de modo que a escolha de colunas não seja feita conhecendo o que cada coluna mostra |
+| R31 | perda de dados brutos, de manifests ou do histórico de versões | Baixa | Crítico | disco, máquina ou volume perdidos; restauração nunca testada | aplicar a regra 3-2-1 aos dados brutos e manifests: três cópias, em dois meios distintos, uma fora do local de execução e criptografada; executar teste de restauração de amostra a cada lote concluído e registrar o resultado no manifest; nenhum lote é considerado concluído sem restauração verificada |
+| R32 | falha ou indisponibilidade do host único de execução | Média | Alto | máquina inacessível, disco cheio, VRAM insuficiente ou reinstalação durante um bloco | declarar o host de execução no manifesto de ambiente antes do congelamento; manter uma segunda máquina do grupo capaz de subir o laboratório a partir dos locks, validada uma vez antes do freeze; todo bloco é executado integralmente em um único host declarado, e troca de host durante um bloco exige registro em `docs/deviation-log.md` e reexecução dos pares afetados |
 
 ## 21.1 Ordem de corte se o prazo apertar
 
@@ -1769,7 +1784,7 @@ O TCC só está concluído quando:
 3. segundo idioma e segundo domínio;
 4. segundo modelo;
 5. refinamentos cosméticos do dashboard;
-6. ablações adicionais além das três previstas.
+6. bloco de ablação e bloco defense-aware, nesta ordem, conforme a condicionalidade declarada em §14.8; a perda é de RQ4, H5 e da análise de robustez, não do experimento confirmatório.
 
 Não cortar antes da entrega mínima: Odoo observável, C0 competente, C1, dataset pareado, experimento principal, segurança + utilidade, análise reproduzível e artigo.
 
@@ -1837,6 +1852,7 @@ Dependências e modelos mudam. Lockfiles, digests, manifests, respostas brutas e
 
 # 23. Ética, segurança e conformidade
 
+- registrar que o estudo não foi submetido a Comitê de Ética em Pesquisa porque não envolve seres humanos como participantes, direta ou indiretamente: não há recrutamento, intervenção, entrevista, questionário, observação de comportamento, coleta de dados de identificação nem uso de dados pessoais de terceiros. O approval gate é uma fixture técnica pré-definida, conforme §10.4 e D15, e não uma decisão de pessoa. Nessas condições não se configura pesquisa com seres humanos nos termos das Resoluções CNS 466/2012 e 510/2016, e a apreciação pelo sistema CEP/CONEP não é aplicável. Se, em trabalho futuro, o gate passar a ser avaliado com revisores reais, a submissão a CEP torna-se obrigatória e antecede a coleta;
 - usar exclusivamente identidades, números, contas, documentos e canários sintéticos;
 - inserir marca d'água “SEM VALOR FISCAL — DADOS SINTÉTICOS”;
 - não configurar banco, SMTP, webhook ou destinatário reais;
@@ -1844,17 +1860,24 @@ Dependências e modelos mudam. Lockfiles, digests, manifests, respostas brutas e
 - registrar egress permitido e bloquear o restante;
 - sanear logs antes de publicar;
 - não apresentar ataque à integração como vulnerabilidade do Odoo;
-- se surgir falha específica de produto, interromper divulgação de detalhes e avaliar comunicação responsável;
+- adotar o seguinte procedimento se um achado indicar falha do produto Odoo, e não da integração construída neste trabalho: o integrante que identificar o achado o classifica em 24 horas, junto ao revisor de segurança, como falha da integração — caso normal, sem restrição de divulgação — ou como possível falha do produto; na segunda hipótese, todos os detalhes técnicos, provas de conceito, logs e trechos de código correspondentes ficam imediatamente fora do repositório público, do artigo, dos slides e da demonstração; o grupo comunica o orientador em 48 horas e, com ele, decide o canal de comunicação responsável ao mantenedor, usando o endereço de segurança vigente publicado pelo próprio projeto, que será verificado no momento do uso e não fixado aqui; o artigo pode declarar a existência do achado e a data da comunicação, sem detalhe explorável, e o embargo padrão é de 90 dias a contar da comunicação, prorrogável por acordo com o mantenedor; nenhuma prorrogação impede a entrega institucional, porque o achado não é objeto da pesquisa;
 - não recrutar participantes humanos nem coletar respostas, entrevistas, questionários, observações, dados de participantes ou PII/dados operacionais reais no experimento; dados cadastrais dos autores e do orientador ficam somente no fonte controlado do artigo e fora de manifests/logs públicos;
 - manter a nomenclatura metodológica DSR com experimento controlado, confirmada como adequada na auditoria institucional;
 - manter, desde já e independentemente da política institucional ainda não recuperada, o registro contemporâneo de uso de ferramentas de IA em `docs/ai-usage.md`, com ferramenta, versão ou modelo, período, etapa, tipo de contribuição, revisor humano e verificação aplicada; nenhuma fonte, número ou resultado experimental pode ser gerado por IA sem verificação humana na fonte original, e nenhuma execução científica pode ser produzida ou interpretada por ferramenta não declarada no manifesto do congelamento; quando a política institucional for obtida, a declaração exigida será derivada desse registro e não reconstruída de memória;
+- fixar e documentar antes do congelamento, em `docs/licensing.md`, o licenciamento do trabalho: o add-on `ap_security_executor`, por derivar do framework Odoo Community, adota LGPL-3.0-or-later, com cabeçalho de licença em cada arquivo e `__manifest__.py` declarando `'license': 'LGPL-3'`; o gateway, o runner, os scripts e a análise, que não vinculam código do Odoo, adotam licença aberta explícita registrada em `LICENSE` na raiz; o dataset sintético e a documentação recebem licença própria, declarada no manifesto do dataset. A compatibilidade com as licenças das dependências fixadas em `gateway/constraints.txt` é verificada e registrada na mesma decisão;
 - documentar licenças de Odoo, bibliotecas, dataset e modelo.
+
+## 23.1 Enquadramento na Lei Geral de Proteção de Dados
+
+O experimento não realiza tratamento de dados pessoais na acepção da Lei 13.709/2018. Fornecedores, contatos, documentos, contas bancárias e canários são integralmente sintéticos, conforme D06 e D08, e não são atribuíveis a pessoa natural identificada ou identificável; não há titular, controlador, operador, base legal ou relatório de impacto a constituir neste trabalho, e D15 afasta também a hipótese de tratamento de dados de participantes. Os únicos dados pessoais do projeto são os dados cadastrais dos autores e do orientador, que permanecem no fonte controlado do artigo e fora de manifests, logs e exports publicáveis, conforme §23.
+
+A arquitetura avaliada, porém, é proposta para uso corporativo, onde a lei incide. Três correspondências entre os controles de C1 e princípios da LGPD são registradas como enquadramento, não como conformidade demonstrada: a minimização de C03 corresponde ao princípio de necessidade; a allowlist de campos e o controle de saída de C11 correspondem ao dever de segurança; e a autorização vinculada de C08, somada ao `RunRecord` de C12, corresponde à rastreabilidade exigida para decisões automatizadas. O trabalho não afirma que uma implantação real seria conforme à LGPD: a avaliação é laboratorial, sobre dados sintéticos, e conformidade depende de base legal, finalidade, governança e avaliação de impacto que estão fora deste escopo. Tokenização por Presidio, se adotada, é medida técnica de minimização e não substitui base legal.
 
 # 24. Estrutura do artigo
 
 ## 24.1 Organização recomendada
 
-| Bloco do template FCI | Conteúdo do trabalho | Orçamento-alvo em artigo de 19 páginas |
+| Bloco do template FCI | Conteúdo do trabalho | Orçamento indicativo, soma de 19 páginas como limite superior |
 |---|---|---:|
 | Título, autoria, Resumo e Abstract | identificação; dois resumos de 150–250 palavras cobrindo contexto, motivação, objetivo, justificativa, metodologia e resultados; palavras-chave/keywords | 1,5 página |
 | 1. Introdução | contexto, problema, lacuna, RQs, objetivo geral em uma frase, objetivos específicos, relevância, contribuições e organização | 2 páginas |
@@ -1864,7 +1887,7 @@ Dependências e modelos mudam. Lockfiles, digests, manifests, respostas brutas e
 | 5. Conclusão | resposta direta, contribuições, limitações e trabalhos futuros | 1 página |
 | 6. Referências bibliográficas | apenas obras citadas, conforme NBR 6023:2018 | 2 páginas |
 
-O orçamento é editorial, não uma autorização para cortar evidência necessária. O artigo deverá ter entre 10 e 20 páginas, com referências incluídas; a meta de 19 páginas preserva margem para ajustes. Protocolos completos, schemas, catálogo de ataques, tabelas extensas e instruções de reprodução serão citados no repositório ou material suplementar. A matriz normativa completa está em `docs/institutional-requirements.md`.
+O orçamento é editorial, não uma autorização para cortar evidência necessária. O artigo deverá ter entre 10 e 20 páginas, com referências incluídas. A meta interna de submissão é de 17 a 18 páginas: o teto de 20 é rígido, doze objetos flutuantes estão previstos em §15.7, e as correções solicitadas pela banca tendem a acrescentar texto entre a defesa e o depósito de 04/12. A soma de 19 páginas do orçamento por bloco é limite superior indicativo, não meta. Protocolos completos, schemas, catálogo de ataques, tabelas extensas e instruções de reprodução serão citados no repositório ou material suplementar. A matriz normativa completa está em `docs/institutional-requirements.md`.
 
 A fonte editável do artigo já existe em `paper/`, com `main.tex`, `sections/`, `referencias.bib`, `build.ps1` e `validate_paper.ps1`, criada sob DEC-019. Sua compilação corrente é uma versão de trabalho pré-experimental: relata apenas os resultados técnicos de M1 e M2 e declara como não coletados ASR, BTSR, UACR, SDR, latência e custo. Ela não é o arquivo de submissão e será substituída depois do congelamento.
 
@@ -1996,7 +2019,7 @@ O relatório e o fonte editável do TCC I, o edital semestral V1, o template Wor
 
 A matriz detalhada e os prazos ficam em `docs/institutional-requirements.md`. Se código ou dataset não puderem ser públicos, preparar pacote privado e descrever acesso controlado sem alterar silenciosamente a política de reprodução.
 
-# 27. Plano das primeiras 72 horas
+# 27. Arranque de governança — janela executada de 25 a 30/08/2026
 
 ## Dia 1 — fechar governança
 
@@ -2027,6 +2050,8 @@ A matriz detalhada e os prazos ficam em `docs/institutional-requirements.md`. Se
 - registrar o primeiro `RunRecord` completo.
 
 Resultado esperado após 72 horas: escopo assinado, papéis definidos, requisitos em coleta e uma rota técnica comprovada ou um bloqueio explícito com contingência.
+
+Esta seção registra a janela de arranque já executada e é preservada como histórico do método, não como plano futuro. As ações de arranque que permanecem abertas são tratadas exclusivamente pelo backlog operacional, com prazo e escalonamento, e pela matriz de `docs/institutional-requirements.md`; não são reapresentadas aqui, para não criar uma terceira tabela de estado que divergiria de §26 e do backlog.
 
 # 28. Matriz de rastreabilidade científica
 
@@ -2110,6 +2135,7 @@ Registrar fluxo de seleção, motivos de exclusão e snowballing para trás e pa
 - [ ] RQs, hipóteses e endpoint primário assinados
 - [x] margem de não inferioridade fixada em 10 pontos percentuais de BTSR antes do piloto e do teste final
 - [ ] justificativa operacional da margem de 10 pontos percentuais registrada e assinada em `docs/protocol.md`, sem usar resultados do piloto ou do conjunto final para escolher o valor
+- [ ] matriz de literatura concluída, fluxo de seleção registrado e formulação da lacuna congelada com fonte por frase
 - [ ] dataset e ground truth hasheados
 - [ ] conjunto final não usado para tuning
 - [ ] C0 competente e revisado
@@ -2127,6 +2153,7 @@ Registrar fluxo de seleção, motivos de exclusão e snowballing para trás e pa
 - [ ] idempotência do executor C1 validada sob retry e concorrência
 - [ ] retry, missing e exclusões pré-definidos
 - [ ] regras de desvio, reexecução e nova amostra assinadas
+- [ ] teto monetário total e orçamento por bloco definidos, com limite de gasto configurado no provedor
 - [ ] orçamento defense-aware definido
 - [ ] matriz ligando os invariantes I1–I10 a controles, regras, métricas e níveis de teste, assinada
 - [ ] plano estatístico executado em dados sintéticos de ensaio
