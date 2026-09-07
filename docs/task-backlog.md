@@ -95,6 +95,10 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | ADM-08 | P0 | Gustavo | Felipe | ADM-07 | requerimento protocolado em 01/09, três autores conferidos e evidência privada preservada por hash no lock institucional | DONE |
 | ADM-09 | P1 | Gustavo | Felipe | ADM-02 | manter calendário de submissão, avaliadores, banca, correção e anuência final | READY |
 | ADM-10 | P0 | Felipe | Thomaz | DEC-021 | atualizar requisitos institucionais com papéis nominais; disponibilidade revista semanalmente | DONE |
+| ADM-11 | P0 | Felipe | Thomaz | — | manter `docs/ai-usage.md` atualizado a cada release do plano e a cada seção do artigo; derivar dele a declaração institucional quando ADM-02 responder, sem reconstruir de memória | ACTIVE |
+| ADM-12 | P1 | Felipe | Thomaz | — | escolher e adicionar `LICENSE` para código, dataset e documentação, com compatibilidade verificada contra a LGPLv3 do Odoo e as licenças das dependências; registrar a justificativa no decision log | READY |
+| ADM-13 | P1 | Felipe | Gustavo | ADM-12 | criar `CITATION.cff` e a seção de instruções de citação no README; conferir contra o checklist de §17.3 do plano | READY |
+| SEC-A2 | P0 | Thomaz | Gustavo | — | implementar no executor e no runner a assertion que impede escrita de `partner_id` depois de `partner_bank_id`, conforme o invariante de §16.8 e o resultado do `T-A2-PREFREEZE` | READY |
 
 ## 6. Protocolo científico e literatura
 
@@ -141,7 +145,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | DATA-06 | P0 | Gustavo | Felipe | DATA-04 | revisão independente dos fatos Odoo, ações esperadas, deltas, fixtures e oráculo | WAIT |
 | DATA-07 | P0 | Felipe | Gustavo | PILOT-04 | gerar/fechar 90 pares/180 documentos finais sem reutilizar itens do piloto | WAIT |
 | DATA-08 | P0 | Felipe | Gustavo | DATA-07 | dupla revisão, resolução de divergências, versão/hash/manifest e separação do conjunto final | WAIT |
-| DATA-09 | P1 | Felipe | Thomaz | DATA-02 | conjunto defense-aware com orçamento pré-fixado, sem substituir o principal | WAIT |
+| DATA-09 | P1 | Gustavo | Felipe | DATA-02 | conjunto defense-aware com orçamento pré-fixado, sem substituir o principal; owner P3 conduz o red team e P1 aceita, conforme a RACI de §19.2 do plano | WAIT |
 | DATA-10 | P1 | Gustavo | Felipe | DATA-08 | custódia externa criptografada, cópia imutável, retenção e manifest SHA-256 saneado | WAIT |
 
 ## 9. Arquitetura C1 e testes de segurança
@@ -292,7 +296,10 @@ Nenhuma integração deve contornar um contrato com dicionário livre, ID intern
 | Plano §30.2 Lotes | RUN-03–08, EXP-01/02 |
 | Plano §30.3 Submissão | ADM-01–09, PAPER-06–09, SUB-01 |
 | Seleção de modelos G3 | G3-01–08, C0-01–05, FRZ-03/07 |
-| Institucional | ADM-01–10, PAPER-07–09, SUB-01, DEF-05/06 |
+| Institucional | ADM-01–13, PAPER-07–09, SUB-01, DEF-05/06 |
+| Plano §16.3 e §17.3 (pacote de reprodução) | ADM-12, ADM-13 |
+| Plano §23 (registro de uso de IA) | ADM-11 |
+| Plano §16.8 (invariante de ordem do beneficiário) | SEC-A2 |
 | Literatura/lacuna | SCI-05–07/10, PAPER-01 |
 | Dataset e red team | DATA-01–10, EXP-04 |
 | C1/segurança | C1-01–12, SEC-01/02, EXP-05 |
