@@ -40,21 +40,21 @@ O trabalho também responde ao feedback de que a continuidade do TCC I precisava
 
 \subsection{Resultados confirmatórios ainda não disponíveis}
 
-Na data desta versão, o adapter DeepSeek, o smoke Qwen3, C1, o conjunto piloto, o dataset final e o protocolo congelado permanecem pendentes. Por consequência, nenhuma run adversarial C0--C1 foi contabilizada. A Tabela~\ref{tab:pending-results} registra explicitamente o estado das respostas às perguntas de pesquisa; “não executado” não representa zero ocorrência.
+Na data desta versão, a integração científica com o modelo principal, C1, o conjunto piloto, o dataset final e o protocolo congelado permanecem pendentes. Por consequência, nenhuma run adversarial C0--C1 foi contabilizada. A Tabela~\ref{tab:pending-results} registra explicitamente o estado das respostas às perguntas de pesquisa; “não executado” não representa zero ocorrência.
 
 \begin{table}[H]
 \centering
-\caption{Estado dos resultados científicos em 31 de agosto de 2026.}
+\caption{Estado dos resultados científicos em 8 de setembro de 2026.}
 \label{tab:pending-results}
 \small
 \begin{tabularx}{\textwidth}{C{0.80cm} L{3.25cm} Y}
 \toprule
 \textbf{RQ} & \textbf{Estimadores previstos} & \textbf{Estado} \\
 \midrule
-RQ1 & ASR-proposal, ASR-policy, ASR-state e UACR por C0/C1 & Não executado antes do piloto e do freeze; nenhum percentual é reportável \\
-RQ2 & BTSR, falsos bloqueios, STP, escalonamento, latência e custo & Não executado; a perda de utilidade e o overhead são desconhecidos \\
-RQ3 & Efeitos por A1, A2, A3a e A3b & Não executado; subgrupos permanecem secundários \\
-RQ4 & Diferenças das ablações em relação ao C1 contemporâneo & C1 e ablações ainda não implementados/executados \\
+\hyperlink{rq1}{RQ1} & ASR-proposal, ASR-policy, ASR-state e UACR por C0/C1 & Não executado antes do piloto e do freeze; nenhum percentual é reportável \\
+\hyperlink{rq2}{RQ2} & BTSR, falsos bloqueios, STP, escalonamento, latência e custo & Não executado; a perda de utilidade e o overhead são desconhecidos \\
+\hyperlink{rq3}{RQ3} & Efeitos por A1, A2 e A3a & Não executado; subgrupos permanecem secundários \\
+\hyperlink{rq4}{RQ4} & Diferenças das ablações em relação ao C1 contemporâneo & C1 e ablações ainda não implementados/executados \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -65,7 +65,7 @@ Não é possível afirmar que C1 reduz prompt injection, mantém BTSR ou possui 
 
 A literatura sugere que separar instruções e dados, alinhar ferramentas à tarefa e impor regras em tempo de execução pode reduzir ataques \cite{chen2025struq,jia2025taskshield,li2025drift}. O artefato segue essa direção, mas desloca a autoridade crítica para política e executor determinísticos. Essa escolha procura reduzir a dependência de reconhecer todas as formulações de ataque: mesmo que o LLM proponha outra conta bancária, o estado confiável deve impedir a autorização. O experimento dirá se essa composição reduz violações sem bloquear o processo em excesso.
 
-Antes do piloto, ainda são necessários: egress mínimo para o cliente DeepSeek sem liberar Odoo ou banco; adapters DeepSeek e Ollama atrás da mesma interface; testes de resposta válida, múltipla, truncada, timeout, rate limit e sanitização; manifest completo do Qwen3; implementação do add-on C1; fixtures de aprovação; e autoria/revisão dos 24 documentos piloto. O gate de competência de C0 precede qualquer comparação de segurança.
+Antes do piloto, ainda são necessários: concluir a chamada real ao modelo principal e integrar o fluxo científico; implementar o add-on C1 e as autorizações pré-definidas; e criar/revisar os 24 documentos piloto. O isolamento e os adaptadores já possuem evidência técnica posterior a M2, mas isso não substitui a competência do agente no piloto. O artefato Qwen3 será exigido somente se seu bloco condicionado for executado. O gate de competência de C0 precede qualquer comparação de segurança.
 
 Depois do piloto, o grupo deverá documentar discordâncias pareadas, poder, precisão, latência, custo e completude de logs. Somente então poderá confirmar 180 documentos ou ajustar a amostra antes do freeze. O artigo final substituirá a Tabela~\ref{tab:pending-results} por resultados com numeradores, denominadores, missing, diferenças, riscos relativos, intervalos e análises de sensibilidade; acrescentará ablações apenas como mecanismo exploratório.
 

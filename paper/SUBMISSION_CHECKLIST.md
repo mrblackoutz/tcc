@@ -1,6 +1,6 @@
 # Checklist de submissão — artigo TCC II
 
-**Estado:** versão de trabalho pré-experimental. Este checklist diferencia um PDF tecnicamente válido de um arquivo autorizado para envio.
+**Estado:** versão de trabalho pré-experimental, revisada em 08/09/2026 conforme a [retirada da exposição de dados (DEC-023)](../docs/decision-log.md#dec-023). Este checklist diferencia um PDF tecnicamente válido de um arquivo autorizado para envio.
 
 ## Estrutura e formato
 
@@ -21,6 +21,8 @@
 - [x] caso de uso delimitado a Contas a Pagar e Odoo 19.0 Community
 - [x] problema, público-alvo, lacuna, RQs, hipóteses e objetivo estão explícitos
 - [x] método diferencia C0/C1, unidade, ameaça, dataset, métricas, freeze e análise
+- [x] avaliação de exposição de dados retirada de fontes, PDF e métricas; 90 pares distribuídos igualmente entre três objetivos
+- [x] perguntas e hipóteses possuem definição e links internos no PDF
 - [x] ausência de participantes humanos está declarada
 - [x] M1/M2 são relatados como resultados técnicos, não como eficácia de C1
 - [x] não há percentuais confirmatórios inventados

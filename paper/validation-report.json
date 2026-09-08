@@ -1,79 +1,151 @@
 {
   "schema_version": "paper-validation/v1",
-  "validated_on": "2026-08-31",
-  "decision": "DEC-019",
+  "validated_on": "2026-09-08",
+  "decision": "DEC-023",
+  "plan_version": "1.2.12",
   "artifact": {
     "path": "paper/relatorio_tcc_ii.pdf",
-    "sha256": "a6a1ffcac63bb538b6f62a3575329b18afdfb632b86c1eabd535597270638988",
-    "bytes": 240094,
+    "sha256": "dbc0aeb401dd4fe89388bf410887aabca40c8e16c45c63b3087a8aff832da9f4",
+    "bytes": 233327,
     "pages": 17,
     "page_size": "A4",
     "status": "pre-experimental"
   },
   "automated_checks": {
     "status": "PASS",
-    "resumo_words": 217,
-    "abstract_words": 205,
+    "email_addresses_in_versioned_sources": 0,
     "citation_keys": 20,
     "bibliography_entries": 20,
-    "undefined_citations_or_references": 0,
+    "internal_article_targets": 9,
+    "resumo_words": 211,
+    "abstract_words": 196,
     "overfull_boxes": 0,
     "underfull_boxes": 0,
+    "undefined_citations_or_references": 0,
+    "inherited_template_metadata": false,
     "required_main_headings": 6,
     "forbidden_placeholders": 0,
-    "email_addresses_in_versioned_sources": 0,
+    "page_word_counts": [
+      313,
+      537,
+      577,
+      553,
+      582,
+      416,
+      505,
+      391,
+      508,
+      344,
+      550,
+      538,
+      428,
+      422,
+      496,
+      338,
+      129
+    ],
+    "pdf_text_and_metadata": "PASS",
     "encrypted": false,
-    "javascript": false,
-    "inherited_template_metadata": false
+    "javascript": false
   },
+  "validation_command": "python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log <same-build>/main.log",
   "visual_inspection": {
     "status": "PASS",
-    "pages_inspected": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+    "pages_inspected": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
     "cover_and_summaries": "PASS",
     "dense_tables": "PASS",
     "section_transitions": "PASS",
     "conclusion_and_references": "PASS",
     "intermediate_header_only_pages": 0,
-    "residual_table_line_pages": 0
+    "residual_table_line_pages": 0,
+    "method": "Poppler rendered all final pages at 1100 pixels; changed pages reviewed again and unchanged renders matched by SHA-256."
   },
   "metadata": {
-    "title": "Desenvolvimento e implementacao de uma arquitetura de protecao na integracao de LLMs em ERPs: estudo de caso com Odoo e Contas a Pagar",
-    "creator": "Universidade Presbiteriana Mackenzie - Faculdade de Computacao e Informatica",
-    "encrypted": false,
-    "javascript": false
+    "title": "Desenvolvimento e implementação de uma arquitetura de proteção na integração de LLMs em ERPs: estudo de caso com Odoo e Contas a Pagar",
+    "creator": "Universidade Presbiteriana Mackenzie - Faculdade de Computação e Informática",
+    "javascript": false,
+    "encrypted": false
   },
   "institutional_sources": {
     "template_doc_sha256": "56cb33c40e6c3d43ce809ba95999d04700da420db526bbc1e84ec627bb579945",
     "template_reference_pdf_sha256": "18b5802047437639edf0bcd5e2cfbfa15106bf6c9d2bb4ad406e71ad1435074b",
     "traceability": "reproducibility/institutional-sources.lock.json"
   },
+  "source_sha256": {
+    "paper/main.tex": "c748025775f337b3faf8c0ffda44b8fe7a307a0639571a147f25a97b73548563",
+    "paper/sections/01-introducao.tex": "3d768b24753f0739209a67765ea94100c4d108b0750d180a8d895c65db659d6e",
+    "paper/sections/02-referencial.tex": "f53f371fe7305e749246e1735126a3a43da85b768f8492fa3a71ba0cc17e8fe0",
+    "paper/sections/03-metodologia.tex": "3aa46917c0b9753473fae947747aa7ffeb0c5ebcec00f55fdbcc65322a408ebc",
+    "paper/sections/04-resultados.tex": "eb5c910b9abefe9c6196a16beebee24aa121dc2ee8c98da62defbf0b8fd7f2f7",
+    "paper/sections/05-conclusao.tex": "c7e1821561677505a4b4d5d44c710fead007b2d8afd8b5cb2913307a7b84d409",
+    "paper/sections/resumo-en.tex": "61d3e5354c55f626edbd0f67b6fe8b6f90210c934ff18cd7456d075cd623dc66",
+    "paper/sections/resumo-pt.tex": "5cb9dce3ec50e915e3437e3ba0ceefd8f352372e60f06de11a6669e5351c0f51",
+    "paper/referencias.bib": "9e448f74bee367e5536ea4fb14772d3c4207f22b7d85895444fa73cb7648e1a3",
+    "paper/assets/fci-header.png": "ad7c11fbe2cbf8da370fecb8d2f0316eaef8bc962f8c26338ff5910cf1939d9c",
+    "scripts/validate_current_docs.py": "2765041d581a52b006a02f1f2398588045d0c1585fd36944cbd0cf03bbe37995"
+  },
+  "build_evidence": {
+    "final_log_sha256": "249dc626109f20a702b2b9059620869dd0ad1f2add1228f17e3375232c33cd5f",
+    "bibliography_output_sha256": "ef2c564b7c0ce9fa6afc6aa303b75a0dd112f45c79f5edd99f6e0ae31d3859af",
+    "logs_retained_outside_git": true
+  },
   "toolchain": {
-    "pdflatex": "MiKTeX-pdfTeX 4.23 (MiKTeX 25.12)",
-    "bibtex": "MiKTeX-BibTeX 4.2 (MiKTeX 25.12)",
-    "pdfinfo": "Poppler 24.04.0",
+    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.28 (TeX Live 2025/Debian)",
+    "bibtex": "BibTeX 0.99d (TeX Live 2025/Debian)",
+    "pdfinfo": "Poppler 26.01.0",
+    "pdftotext": "Poppler 26.01.0",
     "bibliography_style": "abntex2-alf 1.9.7",
-    "notice": "MiKTeX reported that its repository update check had not yet been run; the document build and all artifact gates passed."
+    "packages_sha256": {
+      "libgpgme45_2.0.1-2build1_amd64.deb": "b95f81d26bd4922510eb58a08f9c0bf143781cb23a907ce9ede7a3b1c6024be6",
+      "libgpgmepp7_2.0.0-2_amd64.deb": "3dd75723159c2c171382f836e491d83d71f5fdf7a58c9f6754d85ff0c725b761",
+      "libpoppler156_26.01.0-2ubuntu0.1_amd64.deb": "8f9b381982deed672786b89d97473ad33e0a8d4f3dc44c6c8f6653b69030ca94",
+      "poppler-utils_26.01.0-2ubuntu0.1_amd64.deb": "16399d6fe46fbef3259297601ffeeaf024d725b02cdd6d8ddbbc2f4b0aa1ed7d",
+      "texlive-publishers_2025.20260124-1_all.deb": "6e2b4c5f312e50b694b722fe5f388d25391c1d3d97e4a56b0e7daa929a7329c2"
+    },
+    "notice": "TeX Live in WSL; missing ABNT and Poppler dependencies extracted from official Ubuntu packages into a temporary directory, without system installation or changes to the experimental laboratory."
   },
   "scientific_boundary": {
-    "verified": [
+    "previously_recorded_technical_evidence": [
       "M1 laboratory and reversible synthetic vendor-bill smoke",
       "M2 PDF-to-typed-proposal-to-draft vertical slice",
       "41 automated gateway tests",
       "exact post-run state restoration"
     ],
+    "technical_evidence_date": "2026-08-31 (M1/M2 evidence cited in the article; later adapter and isolation work described separately)",
+    "runtime_tests_rerun_in_this_revision": false,
+    "experimental_runs_in_this_revision": 0,
     "not_yet_measured": [
       "C1 efficacy",
       "ASR-state",
       "BTSR",
       "UACR",
-      "SDR",
       "latency",
       "cost"
-    ]
+    ],
+    "scope": "30 pairs for field manipulation, 30 for beneficiary redirection and 30 for unauthorized critical action; no confidentiality evaluation"
   },
   "submission_blockers": [
     "validate the DeepSeek adapter and scientific C0 in the pilot",
     "implement and test C1",
+    "verify power and precision for the revised 30-pair critical-action subgroup before freeze",
     "freeze and execute the confirmatory dataset",
     "replace not-executed result states with observed effects and confidence intervals",
     "confirm contacts, accepted file extension, AI disclosure policy and advisor approval in Oriente"

@@ -1,10 +1,12 @@
 # Artigo institucional do TCC II
 
-Este diretório contém a fonte editável do artigo científico estendido destinado à submissão do TCC II no Oriente. Ele é separado do plano-mestre e segue DEC-019.
+Este diretório contém a fonte editável do artigo científico estendido destinado à submissão do TCC II no Oriente. Ele é separado do plano-mestre e segue a [decisão sobre o artigo institucional (DEC-019)](../docs/decision-log.md#dec-019).
 
 ## Estado atual
 
-A versão corrente é **pré-experimental**. Ela registra resultados técnicos comprovados de M1/M2 e a metodologia congelável, mas não apresenta ASR, BTSR, UACR, SDR, latência ou custo confirmatórios porque C1, piloto, freeze e execução principal ainda estão pendentes.
+A versão corrente é **pré-experimental**. Ela registra resultados técnicos comprovados de M1/M2 e a metodologia congelável, mas não apresenta taxas de sucesso do ataque, sucesso benigno, ações críticas indevidas, latência ou custo confirmatórios porque C1, piloto, freeze e execução principal ainda estão pendentes.
+
+A revisão de 08/09/2026 retira a exposição de dados e mantém 90 pares distribuídos igualmente entre os três objetivos financeiros. Perguntas e hipóteses possuem links internos no PDF. O registro está na [decisão de redução do escopo (DEC-023)](../docs/decision-log.md#dec-023).
 
 O PDF gerado agora serve para revisão científica, editorial e de template com o grupo e o orientador. Não deve ser tratado como arquivo final de submissão.
 
@@ -30,9 +32,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paper\build.ps1
 
 Arquivos auxiliares e logs ficam em `.runtime`, fora do Git. O script copia para este diretório somente o PDF final e executa a validação automaticamente.
 
-A compilação validada em 31/08/2026 possui 17 páginas, Resumo com 217 palavras, Abstract com 205 palavras e 20 citações reconciliadas com 20 referências. O log final não contém caixas acima ou abaixo da largura, citações indefinidas ou referências pendentes. Os valores e o hash exato do PDF estão em `validation-report.json`.
+A compilação revisada em 08/09/2026 possui 17 páginas, Resumo com 211 palavras, Abstract com 196 palavras e 20 citações reconciliadas com 20 referências. O log final não contém caixas acima ou abaixo da largura, citações indefinidas ou referências pendentes. Os valores e o hash exato do PDF estão em `validation-report.json`.
 
-Para validar um PDF já existente:
+A compilação desta revisão usou TeX Live 2025 no WSL. O pacote ABNT foi obtido do pacote oficial Ubuntu `texlive-publishers` e extraído em diretório temporário; nenhuma configuração do laboratório experimental foi alterada. A sequência é pdfLaTeX, BibTeX no diretório de saída e mais duas passagens de pdfLaTeX, com `TEXINPUTS`, `BIBINPUTS` e `BSTINPUTS` apontando para fonte e estilos. As versões e os hashes usados estão no relatório de validação.
+
+Com Python e Poppler disponíveis no WSL/Linux, a verificação de documentação e artigo pode ser executada a partir da raiz:
+
+```bash
+python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log /caminho/do/build/main.log
+```
+
+O log precisa ser da mesma compilação do PDF. A inspeção visual continua obrigatória e é registrada separadamente.
+
+Para validar um PDF já existente no Windows:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\paper\validate_paper.ps1

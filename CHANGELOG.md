@@ -2,6 +2,18 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.12] — 2026-09-08
+
+- retirada a avaliação de exposição de dados (A3b), incluindo canários, mensagens ao fornecedor, métricas SDR, tokenização e a condição de ablação dedicada à minimização, conforme [redução do escopo (DEC-023)](docs/decision-log.md#dec-023);
+- preservada a meta de 90 pares, distribuídos em 30 de manipulação de campos, 30 de redirecionamento de beneficiário e 30 de ação crítica sem autorização; os cálculos antigos sobre 15 pares críticos deixam de valer e serão refeitos antes do congelamento;
+- preservados piloto e principal com 1.224 execuções obrigatórias; ablação com quatro condições soma 576 e ataques adaptados à defesa somam 216, ambos condicionais; programa com esses blocos e piloto soma 2.016 e, com segundo modelo, 2.448;
+- retiradas obrigações dependentes no catálogo de controles, regras, invariantes, riscos, checklist e backlog; IDs retirados ficam reservados e os registros históricos são preservados;
+- acrescentadas leitura rápida, definições em linguagem direta e referências com descrição e link para decisões, perguntas, hipóteses e seções; registrada a convenção no AGENTS.md;
+- corrigida a inversão textual da ordem de escrita do fornecedor/beneficiário para coincidir com o teste já registrado, sem mudar código do executor;
+- atualizados fontes, navegação interna e PDF pré-experimental do artigo; nenhuma medição científica foi produzida;
+- acrescentada validação executável de Markdown, links, matrizes, escopo e fontes/PDF do artigo; preservados os binários históricos do plano-mestre;
+- versão registrada em commit local dedicado, sem envio ao remoto.
+
 ## [1.2.11] — 2026-09-05
 
 - concluída a primeira revisão adversarial sistemática do plano, em doze dimensões independentes, com refutação de cada achado contra o arquivo, o código e os documentos de apoio: 124 achados brutos, 4 refutados, 120 sobreviventes — 26 de severidade alta, 66 média e 28 baixa, nenhum crítico após a refutação;

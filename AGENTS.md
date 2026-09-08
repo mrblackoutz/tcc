@@ -29,6 +29,7 @@ Antes de editar:
 Durante a mudança:
 
 - manter o escopo delimitado a Contas a Pagar, Odoo 19.0 Community, C0/C1 e prompt injection indireta;
+- avaliar somente manipulação de campos, redirecionamento de beneficiário e ação crítica sem autorização; a exposição de dados, mensagens ao fornecedor, canários e tokenização foram retirados pela [decisão de redução do escopo (DEC-023)](docs/decision-log.md#dec-023);
 - registrar decisões antes de implementá-las, incluindo alternativas descartadas e consequências;
 - não modificar o core do Odoo; extensões pertencem a add-ons versionados;
 - preservar igualdade entre C0 e C1 nas variáveis controladas;
@@ -58,6 +59,8 @@ Depois da mudança:
 ## Registro de decisões e desvios
 
 Cada decisão material deve conter: ID, data, status, contexto, alternativas, decisão, consequências, evidência, responsável e seções/artefatos afetados.
+
+Na documentação corrente, apresentar referências pelo significado, com ID e link: por exemplo, [contribuição das camadas (RQ4)](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#rq4) e [revisão independente do plano (DEC-022)](docs/decision-log.md#dec-022). Explicar siglas na primeira ocorrência de cada seção ou apontar para o [glossário](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#glossario). Não renumerar IDs para fechar lacunas nem reescrever registros históricos; IDs retirados permanecem reservados. A leitura rápida e as definições ficam no plano, sem criar um manual paralelo.
 
 Depois do freeze:
 

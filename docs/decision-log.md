@@ -2,6 +2,8 @@
 
 Este log complementa as decisões D01–D15 do plano-mestre. Nenhuma decisão material deve permanecer apenas em conversa, memória individual ou código.
 
+**Como ler:** cada `DEC` é uma decisão registrada, com data, motivo e consequências. O número identifica o registro; o título explica seu conteúdo. A decisão vigente para esta redução de escopo é a [retirada da exposição de dados e melhoria da leitura (DEC-023)](#dec-023). Registros anteriores preservam o que foi decidido à época; uma decisão posterior pode substituir apenas parte deles.
+
 ## Modelo obrigatório
 
 ```text
@@ -18,6 +20,8 @@ Seções, código, dados e runs afetados:
 Substitui ou é substituída por:
 ```
 
+<a id="dec-001"></a>
+
 ## DEC-001 — Caso de uso e ameaça principal
 
 - **Data:** 26/08/2026
@@ -29,6 +33,8 @@ Substitui ou é substituída por:
 - **Evidência:** decisões D01–D04 e seções 3–8 do plano 1.2.
 - **Responsável:** grupo, sujeito à validação do orientador.
 - **Afeta:** problema, RQs, dataset, threat model, arquitetura e experimento.
+
+<a id="dec-002"></a>
 
 ## DEC-002 — Ambiente Odoo
 
@@ -43,6 +49,8 @@ Substitui ou é substituída por:
 - **Afeta:** stack, containers, integração, referências e reprodução.
 - **Complementada por:** DEC-009, em 30/08/2026, que fixa o repositório e a revisão de fonte.
 
+<a id="dec-003"></a>
+
 ## DEC-003 — Fronteira de autorização de C1
 
 - **Data:** 29/08/2026
@@ -54,6 +62,8 @@ Substitui ou é substituída por:
 - **Evidência:** D12 e §§16.5–16.8 do plano 1.2.
 - **Responsável:** grupo.
 - **Afeta:** C1, ACLs, executor, testes, protocolo e threat model.
+
+<a id="dec-004"></a>
 
 ## DEC-004 — Controle do modelo e utilidade
 
@@ -68,6 +78,8 @@ Substitui ou é substituída por:
 - **Afeta:** piloto, manifesto, poder, custo e análise estatística.
 - **Substituída por:** DEC-008 exclusivamente quanto ao caráter candidato e à aprovação da margem; modelo concreto e tamanho amostral final continuam dependentes do piloto em W04 e W05.
 
+<a id="dec-005"></a>
+
 ## DEC-005 — Governança do histórico e dos segredos
 
 - **Data:** 30/08/2026
@@ -79,6 +91,8 @@ Substitui ou é substituída por:
 - **Evidência:** política do plano 1.2, `AGENTS.md`, `.gitignore` e script de segurança.
 - **Responsável:** grupo.
 - **Afeta:** todos os commits, documentação, dados e releases do plano.
+
+<a id="dec-006"></a>
 
 ## DEC-006 — Saneamento de artefatos e custódia dos dados brutos
 
@@ -92,6 +106,8 @@ Substitui ou é substituída por:
 - **Responsável:** grupo.
 - **Afeta:** geração e validação de artefatos, publicação de datasets, execução experimental e pacote de reprodução.
 
+<a id="dec-007"></a>
+
 ## DEC-007 — Âncora da release 1.2 sem reescrita do histórico publicado
 
 - **Data:** 30/08/2026
@@ -103,6 +119,8 @@ Substitui ou é substituída por:
 - **Evidência:** reflog de `origin/main`, commits `81b8191` e `39baf53`, manifesto da release e resultados de validação.
 - **Responsável:** grupo.
 - **Afeta:** histórico Git, changelog, política de releases e publicação remota.
+
+<a id="dec-008"></a>
 
 ## DEC-008 — Confirmação da margem W06
 
@@ -117,6 +135,8 @@ Substitui ou é substituída por:
 - **Afeta:** hipótese H3, piloto, plano estatístico, freeze, análise e critérios de sucesso.
 - **Substitui:** estado provisório de W06 na versão 1.2.
 
+<a id="dec-009"></a>
+
 ## DEC-009 — Pin imutável da fonte Odoo 19.0
 
 - **Data:** 30/08/2026
@@ -128,6 +148,8 @@ Substitui ou é substituída por:
 - **Evidência:** decisão explícita do grupo, consultas `git ls-remote` em 30/08/2026 e `reproducibility/odoo-source.lock.json`.
 - **Responsável:** grupo.
 - **Afeta:** stack, Dockerfile, imagem Odoo, manifesto experimental, smoke tests, reprodução e runs.
+
+<a id="dec-010"></a>
 
 ## DEC-010 — Formato institucional do artigo final e separação do plano-mestre
 
@@ -141,6 +163,8 @@ Substitui ou é substituída por:
 - **Responsável:** grupo; dúvidas de interpretação institucional serão confirmadas com o orientador e no Oriente.
 - **Afeta:** Gate 0, cronograma, estrutura do artigo, checklist editorial, preparação da banca, privacidade e pacote de reprodução.
 
+<a id="dec-011"></a>
+
 ## DEC-011 — Ausência de participantes humanos
 
 - **Data:** 30/08/2026
@@ -153,6 +177,8 @@ Substitui ou é substituída por:
 - **Responsável:** grupo.
 - **Afeta:** escopo, metodologia, threat model, métricas de revisão, ética, limitações e artigo.
 
+<a id="dec-012"></a>
+
 ## DEC-012 — Plano-mestre editável somente em Markdown
 
 - **Data:** 31/08/2026
@@ -164,6 +190,8 @@ Substitui ou é substituída por:
 - **Evidência:** decisão explícita do grupo em 31/08/2026 e distinção já fixada por DEC-010 entre plano operacional e artigo institucional.
 - **Responsável:** grupo.
 - **Afeta:** política de releases, `AGENTS.md`, `README.md`, `CHANGELOG.md`, árvore do repositório, artefatos históricos e scripts de geração/validação.
+
+<a id="dec-013"></a>
 
 ## DEC-013 — Garantia comprovável na fronteira JSON-2 de C1
 
@@ -178,6 +206,8 @@ Substitui ou é substituída por:
 - **Afeta:** threat model, §§8.4 e 16.5–16.6, critérios de segurança, risco R23, checklist de freeze, desenho do add-on e testes de C1.
 - **Complementa:** DEC-003 e D12; não altera hipóteses, métricas, margem, dataset ou comparação C0/C1.
 
+<a id="dec-014"></a>
+
 ## DEC-014 — Primeiro incremento executável e ambiente-base do laboratório
 
 - **Data:** 31/08/2026
@@ -190,6 +220,8 @@ Substitui ou é substituída por:
 - **Responsável:** grupo.
 - **Afeta:** scaffold Docker, gateway JSON-2, fixtures, scripts de build/bootstrap/smoke/reset, testes e M1/G1.
 - **Fora deste incremento:** LLM, PDF, OCR, C1, `ap_security_executor`, `action_post`, pagamentos, egress de rede, dataset piloto e qualquer dado real.
+
+<a id="dec-015"></a>
 
 ## DEC-015 — Adoção de PostgreSQL 18 para o banco do laboratório
 
@@ -204,6 +236,8 @@ Substitui ou é substituída por:
 - **Afeta:** `compose.yaml`, `reproducibility/lab-environment.lock.json`, smoke test e M1/G1.
 - **Complementa:** DEC-014.
 
+<a id="dec-016"></a>
+
 ## DEC-016 — Correção do aceite M1 e da semântica do digest da imagem
 
 - **Data:** 31/08/2026
@@ -216,6 +250,8 @@ Substitui ou é substituída por:
 - **Responsável:** grupo.
 - **Afeta:** status de M1/G1, build e proveniência da imagem, identidade C0, fixtures, smoke JSON-2, oráculo de reset, locks, README, changelog e próxima release do plano.
 - **Complementa:** DEC-009, DEC-014 e DEC-015; corrige o critério de aceite atribuído à v1.2.4 sem alterar hipóteses, métricas, margem, dataset ou desenho C0/C1.
+
+<a id="dec-017"></a>
 
 ## DEC-017 — Escopo e contrato do vertical slice M2/C0
 
@@ -230,6 +266,8 @@ Substitui ou é substituída por:
 - **Responsável pela decisão:** grupo.
 - **Seções, código, dados e runs afetados:** W02, W04, M2/G2, `gateway`, `scripts`, `compose.yaml`, `.runtime`, documentação do laboratório e futura release do plano. Não altera hipóteses, métricas, margem, threat model, dataset ou protocolo experimental congelável.
 - **Substitui ou é substituída por:** complementa DEC-014 e DEC-016. Será complementada pela decisão de seleção do LLM/adaptador em W04; não substitui o futuro C0 científico.
+
+<a id="dec-018"></a>
 
 ## DEC-018 — Seleção dos modelos e papéis experimentais
 
@@ -249,6 +287,8 @@ Substitui ou é substituída por:
 - **Seções, código, dados e runs afetados:** W02, W04, W05, §§11, 14.3, 14.5, 14.9, 16, 17, 20, 21 e 22; futuros adaptadores, runner, manifests de modelo, custódia de dados brutos e relatório do piloto. Não altera problema, perguntas, hipóteses, endpoints, margem de não inferioridade, threat model, dataset planejado ou comparação C0/C1.
 - **Substitui ou é substituída por:** complementa DEC-004 e DEC-017 e encerra a pendência de seleção nominal de W04. O artefato exato, os parâmetros finais e os limites operacionais ainda serão complementados pelo piloto e pelo manifesto de freeze; qualquer troca posterior de família/modelo exige nova decisão e, depois do freeze, também desvio e reexecução aplicáveis.
 
+<a id="dec-019"></a>
+
 ## DEC-019 — Fonte e estado editorial do artigo institucional do TCC II
 
 - **Data:** 31/08/2026
@@ -267,6 +307,8 @@ Substitui ou é substituída por:
 - **Seções, código, dados e runs afetados:** `paper/`, README, documentação institucional e futura rastreabilidade artigo↔experimento. Não altera problema, RQs, hipóteses, métricas, margem, threat model, dataset, arquitetura C0/C1 ou resultados experimentais.
 - **Substitui ou é substituída por:** complementa DEC-010, DEC-011 e DEC-012. Não transforma o artigo em plano-mestre nem autoriza submissão. Será complementada pela versão pós-experimento e pela confirmação formal dos requisitos pendentes do Oriente.
 
+<a id="dec-020"></a>
+
 ## DEC-020 — Fronteira mínima de egress e contrato dos adapters LLM
 
 - **Data:** 31/08/2026
@@ -284,6 +326,8 @@ Substitui ou é substituída por:
 - **Seções, código, dados e runs afetados:** W02, W04, C0/C1, G3, `gateway`, futuro serviço `llm-client`, `compose.yaml`, arquivos de ambiente, locks de modelo, runner, logs e custódia bruta. Não altera problema, RQs, hipóteses, endpoints científicos, margem, dataset, tamanho amostral ou comparação C0/C1.
 - **Substitui ou é substituída por:** complementa DEC-003, DEC-006, DEC-013, DEC-017 e DEC-018. Será complementada pela evidência de implantação/testes de rede e, antes do freeze, pelos parâmetros, prompts e artefatos efetivamente aprovados no piloto.
 
+<a id="dec-021"></a>
+
 ## DEC-021 — Papéis nominais, ownership e paralelização do trabalho restante
 
 - **Data:** 31/08/2026
@@ -299,6 +343,8 @@ Substitui ou é substituída por:
 - **Responsável pela decisão:** grupo.
 - **Seções, código, dados e runs afetados:** organização da equipe, cronograma, ownership de `docs/protocol.md`, literatura, dataset, `gateway`, `odoo/addons`, runtime/Compose, runner, oráculo, análise, artigo, reprodução, submissão e defesa. Não altera problema, RQs, hipóteses, endpoints, margem, threat model, desenho C0/C1 ou tamanho amostral.
 - **Substitui ou é substituída por:** preenche nominalmente os papéis previstos no §19 e complementa as regras de QA do §14.2. Não substitui decisões científicas nem o freeze; o backlog poderá ser repriorizado preservando dependências e itens obrigatórios.
+
+<a id="dec-022"></a>
 
 ## DEC-022 — Revisão independente da v1.2.9 e correções pré-congelamento
 
@@ -323,3 +369,22 @@ Substitui ou é substituída por:
 - **Responsável pela decisão:** revisão independente registrada por Gustavo (P3); ratificação dos itens de protocolo aprovada pelo grupo em 05/09/2026.
 - **Seções, código, dados e runs afetados:** seções 4.1, 5.3, 8.3, 9.2, 9.5 (nova), 11.4.1 (nova), 12.3, 12.5, 13.2, 14.5, 14.7, 14.8, 15.1, 15.2, 16.8, 17.2, 18.1, 21, 22.3, 28, 29.1.1 (nova), 31 e Apêndice A; `gateway/src/tcc_gateway/c0_executor.py`; matriz de ablação; `paper/referencias.bib` e `paper/sections/03-metodologia.tex`.
 - **Substitui ou é substituída por:** complementa DEC-017 quanto ao escopo do executor C0 e DEC-004 quanto à igualdade entre condições. Não altera D01 a D15, a margem D13, o tamanho do teste v1, o threat model nem a comparação C0 versus C1.
+
+<a id="dec-023"></a>
+
+## DEC-023 — Retirada da exposição de dados e melhoria da leitura
+
+- **Data:** 08/09/2026
+- **Status:** aceita por solicitação explícita do usuário, antes do congelamento experimental.
+- **Contexto:** o usuário aprovou começar a poda pela família de exposição de dados (A3b) e relatou dificuldade para revisar documentos que crescem e usam IDs e siglas sem explicar seu significado. O protocolo continua pré-congelamento; dataset final, runner experimental e C1 ainda não estão implementados. A árvore Git estava limpa antes desta mudança.
+- **Alternativas consideradas:** manter A3b e seus controles; excluir seus 15 pares e reduzir a meta para 75 pares; retirar a frente de confidencialidade e manter a meta de 90 pares, distribuídos igualmente entre os três objetivos financeiros restantes; renumerar todos os identificadores ou preservar IDs com descrições e links.
+- **Decisão de escopo:** retirar A3b da avaliação corrente, incluindo canários, métricas de exposição (SDR e suas decomposições), mensagens ao fornecedor, tokenização reversível e a condição de ablação dedicada à minimização de dados. Excluir as obrigações correspondentes de controles, regras, invariantes, tarefas e artigo. Preservar a proteção de segredos, o isolamento do laboratório e o uso exclusivo de dados sintéticos. A pesquisa deixa de avaliar confidencialidade e não sustentará conclusões sobre prevenção de exposição de dados.
+- **Decisão amostral:** preservar a meta pré-piloto de 90 pares, sem reduzir a amostra nesta etapa: 30 de manipulação de campos (A1), 30 de redirecionamento de beneficiário (A2) e 30 de ação crítica sem autorização (A3a). O código A3a permanece para não confundir o histórico. Seus 30 controles benignos recebem a aprovação de fixture da ação legítima exata. O cálculo de precisão/poder de ações críticas deverá usar 30 pares; os cálculos antigos de 15 pares deixam de valer. O piloto permanece com 12 pares, quatro por objetivo. A decisão decorre da delimitação, antes dos resultados, e não da escolha do melhor efeito.
+- **Blocos condicionais preservados:** a ablação continua com 48 documentos (12 benignos e 12 por objetivo adversarial) e quatro condições, somando 576 execuções. O bloco de ataques adaptados à defesa continua com 18 pares, seis por objetivo, e 216 execuções. O segundo modelo permanece condicionado. A retirada dessas outras frentes e a reclassificação das hipóteses auxiliares não fazem parte desta etapa. Piloto e principal somam 1.224 execuções; com ablação e ataques adaptados, 2.016; com o segundo modelo, 2.448, antes de retries e consultas de desenvolvimento.
+- **Decisão de leitura:** preservar os IDs para rastreabilidade, mas usar descrições curtas e links para definições no plano, README e backlog. Exemplo: “contribuição das camadas (RQ4)” significa a quarta pergunta de pesquisa e aponta para seu enunciado. “Revisão independente do plano (DEC-022)” aponta para a decisão histórica correspondente. Acrescentar uma leitura rápida do experimento e explicar os termos operacionais junto das definições. Não criar um manual paralelo nem reescrever registros históricos.
+- **Divergências encontradas e encaminhamento:** a especificação de ordem dos campos em §16.6 e no checklist invertia a regra de §16.8 e do teste de persistência do beneficiário já executado. Corrigir apenas o texto para escrever o fornecedor antes do beneficiário, sem reescrever o fornecedor depois; nenhuma mudança de executor é necessária nesta etapa. As contagens antigas e dependências de tarefas de confidencialidade serão reconciliadas. O artigo e seu PDF precisam refletir a mesma fonte ou declarar explicitamente uma compilação histórica; não atribuir validação antiga ao texto novo.
+- **Consequências:** menor variedade de mecanismos e superfícies para implementar e revisar, mantendo integridade financeira, autorização externa ao modelo, comparação C0/C1 e medição de utilidade. O resultado agregado passa a representar três objetivos igualmente ponderados; não é diretamente comparável ao desenho anterior com quatro subfamílias. IDs retirados não serão reutilizados. Hipóteses, amostra final e testes permanecem sujeitos às verificações pré-freeze já previstas, sem alterar a margem de utilidade de 10 pontos percentuais.
+- **Evidência necessária ou disponível:** pedido do usuário nesta sessão; plano vigente, registro de desvios sem freeze, busca de dependências no repositório e ausência de implementação experimental de A3b. Exigir validação de links/Markdown, coerência das matrizes e contagens, atualização das fontes do artigo e verificações de segurança antes/depois do staging. Nenhum resultado experimental é produzido por esta mudança.
+- **Responsável pela decisão:** usuário solicitante; execução documental pelo assistente. A comunicação ao orientador permanece no checkpoint de orientação, sem alegar anuência já recebida.
+- **Seções e artefatos afetados:** plano §§1–16, 20–23, 28 e 30, glossário e Apêndice A; `docs/task-backlog.md`; `README.md`; `AGENTS.md`; fontes e estado editorial de `paper/`; changelog, manifesto da v1.2.12 e validador de documentação.
+- **Substitui parcialmente:** DEC-022 quanto à confidencialidade, distribuição de pares e quinta condição de ablação; DEC-019 quanto à lista de métricas do artigo; DEC-021 quanto às tarefas retiradas. Preserva as demais decisões, a margem de utilidade (D13), o Odoo fixado e as variáveis controladas C0/C1. Não requer desvio pós-freeze nem reexecução de resultados finais, pois o protocolo ainda não foi congelado.

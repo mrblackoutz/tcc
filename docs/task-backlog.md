@@ -1,10 +1,12 @@
 # Backlog operacional completo do TCC II
 
-**Decisão de ownership:** DEC-021
+**Decisão de ownership:** [divisão do trabalho (DEC-021)](decision-log.md#dec-021)
 
-**Data-base:** 31/08/2026
+**Data-base:** 08/09/2026
 
-**Estado científico:** pré-freeze; M1, M2 e G3a concluídos; nenhum resultado confirmatório coletado
+**Estado científico:** pré-congelamento; laboratório, rascunho e isolamento de rede comprovados; inferência real, C1, dataset, piloto e resultados confirmatórios pendentes. Escopo atualizado por [retirada da exposição de dados (DEC-023)](decision-log.md#dec-023).
+
+**Leitura dos códigos:** [C0](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#c0) é a integração direta; [C1](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#c1), a integração protegida. RQ significa pergunta de pesquisa; H, hipótese; DEC, decisão registrada. Os links levam ao significado completo. Consulte a [leitura rápida](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida) antes de iniciar uma tarefa.
 
 ## 1. Como usar este backlog
 
@@ -94,7 +96,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | ADM-07 | P0 | Gustavo | Felipe | — | cadastro do projeto e três autores confirmados; evidência privada de 01/09 preservada por hash no lock institucional, sem identificadores no Git | DONE |
 | ADM-08 | P0 | Gustavo | Felipe | ADM-07 | requerimento protocolado em 01/09, três autores conferidos e evidência privada preservada por hash no lock institucional | DONE |
 | ADM-09 | P1 | Gustavo | Felipe | ADM-02 | manter calendário de submissão, avaliadores, banca, correção e anuência final | READY |
-| ADM-10 | P0 | Felipe | Thomaz | DEC-021 | atualizar requisitos institucionais com papéis nominais; disponibilidade revista semanalmente | DONE |
+| ADM-10 | P0 | Felipe | Thomaz | [divisão do trabalho (DEC-021)](decision-log.md#dec-021) | atualizar requisitos institucionais com papéis nominais; disponibilidade revista semanalmente | DONE |
 | ADM-11 | P0 | Felipe | Thomaz | — | manter `docs/ai-usage.md` atualizado a cada release do plano e a cada seção do artigo; derivar dele a declaração institucional quando ADM-02 responder, sem reconstruir de memória | ACTIVE |
 | REP-05 | P1 | Gustavo | Thomaz | FRZ-08 | reexecutar a suíte de segurança de C1 em ambiente limpo e registrar tentativa independente de bypass, fechando o ciclo de reprodução dos três componentes | WAIT |
 | LIC-01 | P1 | Felipe | Thomaz | ADM-12 | criar `docs/licensing.md` fixando LGPL-3.0-or-later para o add-on derivado do Odoo, licença aberta para gateway/runner/análise e licença própria para o dataset, com compatibilidade verificada contra `gateway/constraints.txt` | READY |
@@ -109,7 +111,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | SCI-01 | P0 | Felipe | Thomaz | — | criar `docs/protocol.md` com RQs, hipóteses, endpoint primário e assinaturas pré-piloto | READY |
 | SCI-02 | P0 | Felipe | Gustavo | — | justificar operacionalmente a margem BTSR de 10 p.p. sem usar piloto/final | READY |
 | SCI-03 | P0 | Felipe | Thomaz | — | fixar regras de retry, timeout, missing, exclusão, reexecução e nova amostra | READY |
-| SCI-04 | P0 | Felipe | Gustavo | — | definir procedimento prévio de H4 para latência, custo e demanda potencial de revisão | READY |
+| SCI-04 | P0 | Felipe | Gustavo | — | definir procedimento prévio de [limites de custo operacional (H4)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h4) para latência, custo e demanda potencial de revisão | READY |
 | SCI-05 | P0 | Felipe | Thomaz | — | criar protocolo de revisão: bases, strings, inclusão/exclusão, snowballing e data de corte | READY |
 | SCI-06 | P0 | Felipe | Thomaz | SCI-05 | executar busca/verificação primária e matriz comparativa de threat model, ambiente, defesa, métricas e reprodução | WAIT |
 | SCI-07 | P0 | Felipe | Thomaz | SCI-06 | congelar formulação da lacuna e claims de originalidade com fontes que sustentem cada frase | WAIT |
@@ -121,7 +123,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| G3-01 | P0 | Gustavo | Thomaz | DEC-020, G3a | criar processo/serviço `llm-client` sem credencial Odoo e API interna tipada | DONE |
+| G3-01 | P0 | Gustavo | Thomaz | [isolamento da chamada ao modelo (DEC-020)](decision-log.md#dec-020), G3a | criar processo/serviço `llm-client` sem credencial Odoo e API interna tipada | DONE |
 | G3-02 | P0 | Gustavo | Thomaz | G3-01 | materializar redes separadas e proxy TLS pass-through com allowlist `api.deepseek.com:443` | DONE |
 | G3-03 | P0 | Gustavo | Thomaz | G3-02 | testes negativos: gateway/Odoo/db sem Internet; cliente sem ERP/Internet direta; proxy nega host/IP/porta alternativos | DONE |
 | G3-04 | P0 | Gustavo | Felipe | G3-01 | harness de smoke sintético, manifest saneado e varredura de logs, ainda com transporte mock | DONE |
@@ -131,7 +133,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | G3-08 | P2 | Gustavo | Felipe | G3-07 | smoke Qwen: offload, CPU/GPU/RAM/VRAM, TTFT, tok/s, latência, contexto e OOM | CONDITIONAL |
 | C0-01 | P0 | Thomaz | Felipe | SCI-01, G3a | especificar prompt-base, ações e ferramentas plausíveis comuns; separar construção C0/C1 do transporte | READY |
 | C0-02 | P0 | Thomaz | Gustavo | C0-01 | integrar adapter LLM ao fluxo direto C0 sem policy C1; valores tipados chegam ao executor | WAIT |
-| C0-03 | P0 | Thomaz | Gustavo | C0-01 | definir capacidades mínimas: rascunho, ação crítica simulada/outbox e mensagem local, sem pagamento/e-mail real | READY |
+| C0-03 | P0 | Thomaz | Gustavo | C0-01 | definir capacidades mínimas: rascunho e contabilização autorizada; solicitação simulada de pagamento continua extensão secundária, sem pagamento/e-mail real | READY |
 | C0-04 | P0 | Thomaz | Felipe | C0-02, DATA-05, G3-05 | medir competência benigna no piloto e corrigir apenas falhas funcionais pré-freeze | WAIT |
 | C0-05 | P0 | Felipe | Gustavo | C0-04 | revisão independente de plausibilidade; documentar diferenças não relacionadas à segurança | WAIT |
 
@@ -142,10 +144,10 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | DATA-01 | P0 | Felipe | Gustavo | contrato atual | schemas de `pair_id`, `scenario_id`, fatos, ação esperada, deltas proibidos e labels | READY |
 | DATA-02 | P0 | Felipe | Thomaz | threat model | codebook de famílias, posições, estratégias, sucesso e falhas; sem revelar conjunto final a P2 | READY |
 | DATA-03 | P0 | Felipe | Gustavo | DATA-01 | gerador/template de PDF sintético com watermark, hashes e validação de texto extraído | READY |
-| DATA-04 | P0 | Felipe | Gustavo | DATA-01–03 | 12 pares/24 documentos do piloto, fora do conjunto final, com ground truth preliminar | WAIT |
+| DATA-04 | P0 | Felipe | Gustavo | DATA-01–03 | 12 pares/24 documentos do piloto, quatro pares por objetivo financeiro, fora do conjunto final, com ground truth preliminar | WAIT |
 | DATA-05 | P0 | Gustavo | Felipe | DATA-04, G3-04 | validar Delivery Rate: payload chega intacto ao modelo; registrar texto/hash/posição | WAIT |
 | DATA-06 | P0 | Gustavo | Felipe | DATA-04 | revisão independente dos fatos Odoo, ações esperadas, deltas, fixtures e oráculo | WAIT |
-| DATA-07 | P0 | Felipe | Gustavo | PILOT-04 | gerar/fechar 90 pares/180 documentos finais sem reutilizar itens do piloto | WAIT |
+| DATA-07 | P0 | Felipe | Gustavo | PILOT-04 | gerar/fechar 90 pares/180 documentos finais, 30 pares por objetivo financeiro sem reutilizar itens do piloto | WAIT |
 | DATA-08 | P0 | Felipe | Gustavo | DATA-07 | dupla revisão, resolução de divergências, versão/hash/manifest e separação do conjunto final | WAIT |
 | DATA-09 | P1 | Gustavo | Felipe | DATA-02 | conjunto defense-aware com orçamento pré-fixado, sem substituir o principal; owner P3 conduz o red team e P1 aceita, conforme a RACI de §19.2 do plano | WAIT |
 | DATA-10 | P1 | Gustavo | Felipe | DATA-08 | custódia externa criptografada, cópia imutável, retenção e manifest SHA-256 saneado | WAIT |
@@ -161,13 +163,13 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | C1-05 | P0 | Thomaz | Gustavo | C1-04 | grupo/ACL mínimos; usuário sem grupos de faturamento/compras/pagamento; inventário de leituras residuais | WAIT |
 | C1-06 | P0 | Thomaz | Gustavo | C1-02, C1-04 | revalidação transacional, locks de PO/idempotência, unicidade e criação de rascunho confiável | WAIT |
 | C1-07 | P0 | Thomaz | Felipe | C1-01 | autorização vinculada a hash/ação/fornecedor/valor/moeda/banco/expiração/nonce | WAIT |
-| C1-08 | P0 | Thomaz | Gustavo | C1-06, C1-07 | modos `CREATE_DRAFT` e `POST_APPROVED`; solicitação de pagamento somente no outbox | WAIT |
+| C1-08 | P0 | Thomaz | Gustavo | C1-06, C1-07 | modos `CREATE_DRAFT` e `POST_APPROVED`; solicitação de pagamento, se incluída como extensão secundária, somente no outbox | WAIT |
 | C1-09 | P0 | Thomaz | Felipe | C1-02 | auditoria com proveniência, regras, identidade, before/after, recibo idempotente e falha segura | WAIT |
 | C1-10 | P0 | Thomaz | Gustavo | C1-05–09 | testes diretos de bypass JSON-2, CRUD genérico, método arbitrário, contexto hostil e troca de empresa | WAIT |
 | C1-11 | P0 | Thomaz | Gustavo | C1-06–09 | concorrência, replay, alteração pós-aprovação, duplicidade e fault injection sem mutação residual | WAIT |
-| C1-12 | P1 | Thomaz | Felipe | C1-09 | controle de saída/canário no outbox e mensagens locais allowlisted | WAIT |
+| C1-12 | — | Thomaz | Felipe | — | controle de saída e mensagens retirados com a avaliação de exposição de dados, conforme [retirada da exposição de dados (DEC-023)](decision-log.md#dec-023); ID preservado no histórico | CUT |
 | SEC-01 | P0 | Thomaz | Felipe | C1-01 | matriz threat→controle→invariante→teste→evidência, incluindo limites residuais | READY |
-| SEC-02 | P1 | Thomaz | Gustavo | C1-10–12 | inventário de permissões/capacidades e prova de zero mutação crítica fora do método | WAIT |
+| SEC-02 | P1 | Thomaz | Gustavo | C1-10–11 | inventário de permissões/capacidades e prova de zero mutação crítica fora do método | WAIT |
 
 ## 10. Runner, oráculo e observabilidade experimental
 
@@ -175,8 +177,8 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 |---|---:|---|---|---|---|---|
 | RUN-01 | P0 | Gustavo | Felipe | SCI-03 | schema `RunRecord` com configuração, hashes, condição, modelo, tentativas, estado e outcomes | READY |
 | RUN-02 | P0 | Gustavo | Thomaz | RUN-01 | runner único C0/C1, sem lógica de defesa, com relógios e tentativas individualizadas | READY |
-| RUN-03 | P0 | Gustavo | Felipe | estado M2 | oráculo de proposta/policy/ação/estado, canário, invariantes e reason codes | READY |
-| RUN-04 | P0 | Gustavo | Thomaz | RUN-02 | reset/asserts de fixture, outbox vazio, saúde, espaço, relógio e estado residual | READY |
+| RUN-03 | P0 | Gustavo | Felipe | estado M2 | oráculo de proposta/política/ação/estado, invariantes e reason codes | READY |
+| RUN-04 | P0 | Gustavo | Thomaz | RUN-02 | reset/asserts de fixture, saúde, espaço, relógio e estado residual; verificar outbox vazio se a extensão secundária existir | READY |
 | RUN-05 | P0 | Gustavo | Felipe | RUN-01–04 | pareamento, ordem intercalada/randomizada, três repetições e seed/ordem registradas | WAIT |
 | RUN-06 | P0 | Gustavo | Felipe | SCI-03, RUN-02 | retry/missing idênticos em C0/C1; falhas de parsing/recusa permanecem outcomes | WAIT |
 | RUN-07 | P1 | Gustavo | Felipe | G3-05, RUN-01 | token/custo/latência por etapa, pricing datado e request ID saneado | WAIT |
@@ -190,15 +192,15 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | PILOT-01 | P0 | Gustavo | Felipe | G3-05, C0-04, C1-11, DATA-06, RUN-09 | checklist de prontidão: 24 docs × C0/C1 × 3 = 144 runs, sem conjunto final | WAIT |
 | PILOT-02 | P0 | Gustavo | Thomaz | PILOT-01 | executar piloto, preservar raw/manifest e restaurar estado a cada cenário | WAIT |
 | PILOT-03 | P0 | Felipe | Gustavo | PILOT-02 | relatório de competência, ASR diagnóstica, BTSR, Delivery, latência, custo, erros e denominadores | WAIT |
-| PILOT-04 | P0 | Felipe | Thomaz | PILOT-03 | poder/precisão por discordância pareada; decidir tamanho antes do conjunto final | WAIT |
+| PILOT-04 | P0 | Felipe | Thomaz | PILOT-03 | poder/precisão por discordância pareada; ações críticas usam 30 pares; decidir tamanho antes do conjunto final | WAIT |
 | PILOT-05 | P0 | Thomaz | Felipe | PILOT-03 | lista fechada de correções funcionais/segurança; nenhuma escolha pelo melhor resultado final | WAIT |
 | PILOT-06 | P0 | Gustavo | Felipe | PILOT-05 | reexecutar integralmente piloto afetado e produzir relatório final de prontidão | WAIT |
 | STAT-01 | P0 | Felipe | Gustavo | RUN-01 | pipeline estatístico em dados sintéticos: denominadores, McNemar, IC, bootstrap por par, GEE/misto | READY |
-| FRZ-01 | P0 | Felipe | Thomaz | SCI-01–09, PILOT-06 | assinar RQs, hipóteses, endpoints, métricas, margem, H4 e SAP | WAIT |
+| FRZ-01 | P0 | Felipe | Thomaz | SCI-01–09, PILOT-06 | assinar RQs, hipóteses, endpoints, métricas, margem, [limites de custo operacional (H4)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h4) e SAP | WAIT |
 | FRZ-02 | P0 | Felipe | Gustavo | DATA-08 | congelar dataset/ground truth/codebook/manifests por hash | WAIT |
 | FRZ-03 | P0 | Gustavo | Thomaz | G3-06, C1-11, RUN-09 | congelar modelos/prompts/schemas/policy/retry/timeouts/imagens/configuração e igualdade C0/C1 | WAIT |
 | FRZ-04 | P0 | Gustavo | Felipe | FRZ-03 | preservar artefatos OCI finais em custódia imutável ou registry aprovado; registrar digests | WAIT |
-| FRZ-05 | P0 | Thomaz | Gustavo | C1-10–12 | assinar ACLs, contexto, auto-post, idempotência, concorrência, replay e fail-closed | WAIT |
+| FRZ-05 | P0 | Thomaz | Gustavo | C1-10–11 | assinar ACLs, contexto, auto-post, idempotência, concorrência, replay e fail-closed | WAIT |
 | FRZ-06 | P0 | Felipe | Gustavo | SCI-03, STAT-01 | assinar missing/exclusão/desvio/reexecução/defense-aware e plano de análise | WAIT |
 | FRZ-07 | P0 | Gustavo | Thomaz | G3-03, FRZ-03 | comprovar secrets/egress, rotação planejada e ausência de segredo/log bruto no pacote | WAIT |
 | FRZ-08 | P0 | Felipe | Thomaz/Gustavo | FRZ-01–07 | release/tag 1.3 e checklist M6 completos antes de abrir o conjunto final | WAIT |
@@ -211,23 +213,23 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | EXP-02 | P0 | Gustavo | Felipe | EXP-01 | executar 1.080 runs DeepSeek C0×C1 intercaladas; raw íntegro, reset e nenhum retry pendente | WAIT |
 | EXP-03 | P0 | Felipe | Gustavo | EXP-02 | QA de denominadores/missing/desvios sem observar/tunar defesa durante coleta | WAIT |
 | EXP-04 | P1 | Gustavo | Felipe | EXP-02, DATA-09 | 216 runs defense-aware conforme orçamento congelado | CONDITIONAL |
-| EXP-05 | P1 | Gustavo | Thomaz | EXP-02 | 576 runs de ablação leave-one-out conforme matriz congelada | CONDITIONAL |
+| EXP-05 | P1 | Gustavo | Thomaz | EXP-02 | 576 execuções de ablação: 48 documentos × quatro condições × três repetições; 12 benignos e 12 ataques por objetivo | CONDITIONAL |
 | EXP-06 | P2 | Gustavo | Felipe | G3-08, EXP-02 | 432 runs Qwen3 C0×C1 em amostra de 72 documentos | CONDITIONAL |
-| EXP-07 | P0 | Gustavo | Felipe | EXP-02–06 | fechar manifests, hashes, custo, integridade, custódia raw e rotação da chave | WAIT |
+| EXP-07 | P0 | Gustavo | Felipe | EXP-02; EXP-04–06 somente se executadas | fechar manifests, hashes, custo, integridade, custódia raw e rotação da chave | WAIT |
 
 ## 13. Análise e resultados
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
 | AN-01 | P0 | Felipe | Gustavo | EXP-07, STAT-01 | validar dados, schema, duplicatas, pares, missing, retries e denominadores | WAIT |
-| AN-02 | P0 | Felipe | Thomaz | AN-01 | H1: ASR-proposal/policy/state com efeito pareado, IC95% e teste pré-definido | WAIT |
-| AN-03 | P0 | Felipe | Thomaz | AN-01 | H3: BTSR e não inferioridade com limite `−0,10` e IC95% | WAIT |
-| AN-04 | P0 | Felipe | Gustavo | AN-01 | H2/utilidade: UACR, SDR, FBR, escalation e análise de falhas | WAIT |
-| AN-05 | P0 | Felipe | Gustavo | AN-01 | H4/overhead: latência, tokens, custo, revisão potencial e limites congelados | WAIT |
+| AN-02 | P0 | Felipe | Thomaz | AN-01 | [redução do sucesso dos ataques (H1)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h1): ASR-proposal/policy/state com efeito pareado, IC95% e teste pré-definido | WAIT |
+| AN-03 | P0 | Felipe | Thomaz | AN-01 | [preservação da utilidade (H3)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h3): BTSR e não inferioridade com limite `−0,10` e IC95% | WAIT |
+| AN-04 | P0 | Felipe | Gustavo | AN-01 | [redução de ações críticas indevidas (H2)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h2) e utilidade: UACR, falsos bloqueios, encaminhamentos e análise de falhas | WAIT |
+| AN-05 | P0 | Felipe | Gustavo | AN-01 | [limites de custo operacional (H4)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h4): latência, tokens, custo, revisão potencial e limites congelados | WAIT |
 | AN-06 | P1 | Felipe | Thomaz | EXP-04/05 | defense-aware, ablação, subgrupos/Holm e rotulagem exploratória | CONDITIONAL |
 | AN-07 | P2 | Felipe | Gustavo | EXP-06 | transportabilidade DeepSeek/Qwen sem comparação causal entre modelos | CONDITIONAL |
-| AN-08 | P0 | Felipe | Thomaz/Gustavo | AN-02–07 | figuras/tabelas regeneráveis, trace entre número, script, dado e commit | WAIT |
-| AN-09 | P0 | Thomaz | Felipe | AN-02–08 | análise qualitativa das falhas, mecanismos e limites dos controles | WAIT |
+| AN-08 | P0 | Felipe | Thomaz/Gustavo | AN-02–05; AN-06–07 somente se executadas | figuras/tabelas regeneráveis, trace entre número, script, dado e commit | WAIT |
+| AN-09 | P0 | Thomaz | Felipe | AN-02–05/08; AN-06–07 somente se executadas | análise qualitativa das falhas, mecanismos e limites dos controles | WAIT |
 
 ## 14. Artigo, reprodução, submissão e defesa
 
@@ -261,7 +263,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | Defense-aware e ablação | P1 condicionado | executar somente após principal íntegro e conforme orçamento congelado |
 | UI de revisão | P3 opcional | não implementar antes de experimento; logs/tabelas bastam |
 | Detector de prompt injection | P3 opcional | não integra núcleo; se existir, nunca autoriza e precisa bloco exploratório |
-| Presidio | P3 opcional | apenas privacidade; não vender como defesa contra injection |
+| Presidio e mensagens ao fornecedor | fora do escopo | retirados com a avaliação de exposição de dados; não criar implementação ou experimento |
 | OCR, NF-e válida, SaaS 19.4, Enterprise, IA nativa, pagamento/e-mail real | fora do escopo | não criar tarefa nem protótipo durante o TCC |
 | Segundo domínio/ERP/idioma | trabalho futuro | não entra no cronograma atual |
 
@@ -307,7 +309,7 @@ Nenhuma integração deve contornar um contrato com dicionário livre, ID intern
 | Plano §16.8 (invariante de ordem do beneficiário) | SEC-A2 |
 | Literatura/lacuna | SCI-05–07/10, PAPER-01 |
 | Dataset e red team | DATA-01–10, EXP-04 |
-| C1/segurança | C1-01–12, SEC-01/02, EXP-05 |
+| C1/segurança | C1-01–11, SEC-01/02, EXP-05 |
 | Estatística/resultados | STAT-01, PILOT-03/04, AN-01–09 |
 | Reprodução/defesa | REP-01–03, DEF-01–06 |
 

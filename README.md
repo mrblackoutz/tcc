@@ -2,6 +2,10 @@
 
 Este repositório contém o plano-mestre editável do TCC em Ciência da Computação sobre mitigação de prompt injection indireta em um fluxo de Contas a Pagar integrado ao Odoo 19.0 Community self-hosted.
 
+**Comece pela [leitura rápida do experimento](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida).** A versão 1.2.12 concentra a avaliação em alteração de campos, troca de beneficiário e contabilização sem autorização. A frente de exposição de dados foi retirada. A meta continua em 90 pares, 30 por objetivo; não houve coleta de resultados finais.
+
+As referências têm descrição e destino: [contribuição das camadas (RQ4)](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#rq4) é uma pergunta de pesquisa; [revisão independente do plano (DEC-022)](docs/decision-log.md#dec-022) é uma decisão histórica; [retirada da exposição de dados (DEC-023)](docs/decision-log.md#dec-023) registra esta mudança. Outros termos estão no [glossário do plano](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#glossario).
+
 ## Artefatos principais
 
 - `Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md`: fonte editorial e operacional.
@@ -14,20 +18,21 @@ Este repositório contém o plano-mestre editável do TCC em Ciência da Computa
 - `docs/institutional-requirements.md`: matriz de conformidade com edital, template, calendário e avaliação do TCC II 2026/2.
 - `docs/lab-runbook.md`: procedimento operacional dos marcos M1–M2, evidências, recuperação e limites.
 - `docs/m2-c0-baseline.md`: relatório técnico, interpretação e limites científicos do vertical slice M2/C0.
-- `docs/model-selection.md`: papéis dos modelos, configuração comum, proveniência, segurança e gates de G3 definidos em DEC-018.
-- `docs/llm-egress-and-adapters.md`: fronteira mínima de rede, ameaças, contrato comum e gates dos adapters definidos em DEC-020.
+- `docs/model-selection.md`: papéis dos modelos, configuração comum, proveniência, segurança e gates de G3 definidos em [seleção dos modelos (DEC-018)](docs/decision-log.md#dec-018).
+- `docs/llm-egress-and-adapters.md`: fronteira mínima de rede, ameaças, contrato comum e gates dos adapters definidos em [isolamento da chamada ao modelo (DEC-020)](docs/decision-log.md#dec-020).
 - `docs/g3a-llm-adapters.md`: evidência técnica saneada da implementação simulada e dos 82 testes de G3a.
 - `docs/g3b-egress-topology.md`: evidência da API interna, topologia executável, proxy allowlisted e testes negativos offline de G3b.
-- `docs/revisao-independente-v1.2.9.md`: dossiê da revisão adversarial em doze dimensões, com 120 achados verificados, evidência literal, veredito e correção recomendada, conforme DEC-022.
-- `docs/task-backlog.md`: inventário operacional de 116 tarefas, dependências, revisões, DoD e ondas paralelas dos três integrantes conforme DEC-021.
-- `paper/`: fonte LaTeX editável, referências, validação e PDF pré-experimental do artigo institucional do TCC II, conforme DEC-019.
+- `docs/revisao-independente-v1.2.9.md`: dossiê da revisão adversarial em doze dimensões, com 120 achados verificados, evidência literal, veredito e correção recomendada, conforme [revisão independente do plano (DEC-022)](docs/decision-log.md#dec-022).
+- `docs/task-backlog.md`: inventário operacional de 116 tarefas, dependências, revisões, DoD e ondas paralelas dos três integrantes conforme [divisão do trabalho (DEC-021)](docs/decision-log.md#dec-021).
+- `paper/`: fonte LaTeX editável, referências, validação e PDF pré-experimental do artigo institucional do TCC II, conforme [fonte do artigo (DEC-019)](docs/decision-log.md#dec-019).
+- `docs/releases/v1.2.12.md`: manifesto da retirada de exposição de dados e da navegação por referências explicadas.
 - `docs/releases/v1.2.md`: manifesto auditável, hashes e gates da release 1.2.
 - `docs/releases/v1.2.1.md`: manifesto auditável de W06, do pin Odoo e da auditoria institucional de 2026/2.
 - `docs/releases/v1.2.2.md`: manifesto da transição do plano para Markdown como formato único.
 - `docs/releases/v1.2.3.md` e `docs/releases/v1.2.4.md`: manifests históricos da correção JSON-2 e do scaffold inicial do laboratório.
-- `docs/releases/v1.2.5.md`: manifesto do aceite técnico M1 corrigido conforme DEC-016.
-- `docs/releases/v1.2.6.md`: manifesto do aceite técnico M2/G2 e de seus limites pré-experimentais conforme DEC-017.
-- `docs/releases/v1.2.7.md`: manifesto da seleção DeepSeek/Qwen3, do desenho por blocos e das pendências de G3 conforme DEC-018.
+- `docs/releases/v1.2.5.md`: manifesto do aceite técnico M1 corrigido conforme [aceite do laboratório (DEC-016)](docs/decision-log.md#dec-016).
+- `docs/releases/v1.2.6.md`: manifesto do aceite técnico M2/G2 e de seus limites pré-experimentais conforme [primeiro fluxo de rascunho (DEC-017)](docs/decision-log.md#dec-017).
+- `docs/releases/v1.2.7.md`: manifesto da seleção DeepSeek/Qwen3, do desenho por blocos e das pendências de G3 conforme [seleção dos modelos (DEC-018)](docs/decision-log.md#dec-018).
 - `docs/releases/v1.2.8.md`: manifesto da fronteira de egress, do aceite G3a e da distribuição integral do trabalho pendente.
 - `docs/releases/v1.2.9.md`: manifesto do isolamento executável e dos testes negativos offline de G3b.
 - `docs/releases/v1.2.10.md`: manifesto do caminho G3c, do egress nominal observado e do bloqueio HTTP 402 sem inferência.
@@ -48,11 +53,11 @@ O marco M2 também foi validado em 31/08/2026. Ele gera localmente um PDF sinté
 
 M2 é uma baseline de desenvolvimento do encanamento, não o C0 científico: o adaptador `deterministic-development/v1` não usa LLM e está proibido nas runs experimentais. Os aceites ainda não incluem modelo LLM, prompt injection, C1, add-on de autorização, postagem ou pagamento. O manifesto OCI é local e não foi publicado em registry. O estado verificável corrente está em `reproducibility/lab-environment.lock.json`; PDF, credenciais e evidências detalhadas permanecem em `.runtime`, fora do Git.
 
-Os modelos de G3 foram selecionados em DEC-018. O bloco principal usará a API DeepSeek com `model=deepseek-v4-flash`; na data da seleção, o provedor documentava o backend `DeepSeek-V4-Flash-0731`, mas o alias continua móvel. O bloco posterior de robustez usará `qwen3:14b-q4_K_M` via Ollama. Os dois blocos preservam C0/C1 com o mesmo modelo e configuração e usam *thinking* desligado no núcleo. Conforme DEC-020, G3a aprovou adapters e mocks; G3b materializou o `llm-client`, redes internas e proxy de destino fixo. Em G3c, o egress nominal foi observado, mas a tentativa diagnosticável recebeu HTTP 402 e não concluiu inferência. Crédito/saldo, smoke aceito, artefato Qwen, parâmetros e competência do C0 científico continuam pendentes.
+Os modelos de G3 foram selecionados em [seleção dos modelos (DEC-018)](docs/decision-log.md#dec-018). O bloco principal usará a API DeepSeek com `model=deepseek-v4-flash`; na data da seleção, o provedor documentava o backend `DeepSeek-V4-Flash-0731`, mas o alias continua móvel. O bloco posterior de robustez usará `qwen3:14b-q4_K_M` via Ollama. Os dois blocos preservam C0/C1 com o mesmo modelo e configuração e usam *thinking* desligado no núcleo. Conforme [isolamento da chamada ao modelo (DEC-020)](docs/decision-log.md#dec-020), G3a aprovou adapters e mocks; G3b materializou o `llm-client`, redes internas e proxy de destino fixo. Em G3c, o egress nominal foi observado, mas a tentativa diagnosticável recebeu HTTP 402 e não concluiu inferência. Crédito/saldo, smoke aceito, artefato Qwen, parâmetros e competência do C0 científico continuam pendentes.
 
 O host observado possui Ollama 0.30.10 e RTX 3060 Ti com 8 GiB de VRAM. Como o Qwen quantizado ocupa aproximadamente 9,3 GB, sua inclusão depende de smoke com offload parcial e manifest completo registrado. O modelo não foi baixado por esta release. A rede do laboratório permanece interna e nenhuma chave DeepSeek foi criada, lida ou versionada.
 
-Os três workstreams foram atribuídos em DEC-021: Felipe lidera ciência e dados, Thomaz lidera arquitetura e segurança, e Gustavo lidera Odoo e experimentação. Todas as pendências conhecidas estão identificadas em `docs/task-backlog.md`, com responsáveis, revisores, dependências e critérios objetivos de conclusão para permitir execução paralela sem perder os pontos de integração.
+Os três workstreams foram atribuídos em [divisão do trabalho (DEC-021)](docs/decision-log.md#dec-021): Felipe lidera ciência e dados, Thomaz lidera arquitetura e segurança, e Gustavo lidera Odoo e experimentação. Todas as pendências conhecidas estão identificadas em `docs/task-backlog.md`, com responsáveis, revisores, dependências e critérios objetivos de conclusão para permitir execução paralela sem perder os pontos de integração.
 
 ## Execução local de M1 e M2
 
