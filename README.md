@@ -2,15 +2,13 @@
 
 Este repositório contém o plano-mestre editável do TCC em Ciência da Computação sobre mitigação de prompt injection indireta em um fluxo de Contas a Pagar integrado ao Odoo 19.0 Community self-hosted.
 
-**Comece pela [leitura rápida do experimento](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida).** A versão 1.2.13 mantém a avaliação em alteração de campos, troca de beneficiário e contabilização sem autorização. A frente de exposição de dados foi retirada na v1.2.12. A meta continua em 90 pares, 30 por objetivo; não houve coleta de resultados finais.
+**Comece pela [leitura rápida do experimento](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida).** A versão 1.2.14 mantém a avaliação em alteração de campos, troca de beneficiário e contabilização sem autorização. A frente de exposição de dados foi retirada na v1.2.12. A meta continua em 90 pares, 30 por objetivo; não houve coleta de resultados finais.
 
 As referências têm descrição e destino: [contribuição das camadas (RQ4)](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#rq4) é uma pergunta de pesquisa; [revisão independente do plano (DEC-022)](docs/decision-log.md#dec-022) é uma decisão histórica; [retirada da exposição de dados (DEC-023)](docs/decision-log.md#dec-023) registra esta mudança. Outros termos estão no [glossário do plano](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#glossario).
 
 ## Artefatos principais
 
 - `Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md`: fonte editorial e operacional.
-- `Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.docx` e `.pdf`: artefatos históricos da v1.2.1; não representam a versão corrente.
-- `validate_tcc_docx.ps1`: validador histórico usado na auditoria da v1.2.1; não faz parte do fluxo atual.
 - `AGENTS.md`: regras obrigatórias de execução, versionamento, decisões e proteção de dados.
 - `CHANGELOG.md`: histórico das versões publicadas do plano-mestre.
 - `docs/decision-log.md`: decisões surgidas durante a construção.
@@ -25,24 +23,14 @@ As referências têm descrição e destino: [contribuição das camadas (RQ4)](P
 - `docs/revisao-independente-v1.2.9.md`: dossiê da revisão adversarial em doze dimensões, com 120 achados verificados, evidência literal, veredito e correção recomendada, conforme [revisão independente do plano (DEC-022)](docs/decision-log.md#dec-022).
 - `docs/task-backlog.md`: inventário operacional de 116 tarefas, dependências, revisões, DoD e ondas paralelas dos três integrantes conforme [divisão do trabalho (DEC-021)](docs/decision-log.md#dec-021).
 - `paper/`: fonte LaTeX editável, referências, validação e PDF pré-experimental do artigo institucional do TCC II, conforme [fonte do artigo (DEC-019)](docs/decision-log.md#dec-019).
-- `docs/releases/v1.2.12.md`: manifesto da retirada de exposição de dados e da navegação por referências explicadas.
-- `docs/releases/v1.2.13.md`: manifesto do aceite técnico G3c, da mudança documentada de alias DeepSeek e das pendências científicas.
-- `docs/releases/v1.2.md`: manifesto auditável, hashes e gates da release 1.2.
-- `docs/releases/v1.2.1.md`: manifesto auditável de W06, do pin Odoo e da auditoria institucional de 2026/2.
-- `docs/releases/v1.2.2.md`: manifesto da transição do plano para Markdown como formato único.
-- `docs/releases/v1.2.3.md` e `docs/releases/v1.2.4.md`: manifests históricos da correção JSON-2 e do scaffold inicial do laboratório.
-- `docs/releases/v1.2.5.md`: manifesto do aceite técnico M1 corrigido conforme [aceite do laboratório (DEC-016)](docs/decision-log.md#dec-016).
-- `docs/releases/v1.2.6.md`: manifesto do aceite técnico M2/G2 e de seus limites pré-experimentais conforme [primeiro fluxo de rascunho (DEC-017)](docs/decision-log.md#dec-017).
-- `docs/releases/v1.2.7.md`: manifesto da seleção DeepSeek/Qwen3, do desenho por blocos e das pendências de G3 conforme [seleção dos modelos (DEC-018)](docs/decision-log.md#dec-018).
-- `docs/releases/v1.2.8.md`: manifesto da fronteira de egress, do aceite G3a e da distribuição integral do trabalho pendente.
-- `docs/releases/v1.2.9.md`: manifesto do isolamento executável e dos testes negativos offline de G3b.
-- `docs/releases/v1.2.10.md`: manifesto do caminho G3c, do egress nominal observado e do bloqueio HTTP 402 sem inferência.
+- `docs/releases/v1.2.14.md`: manifesto da versão corrente; versões anteriores permanecem em `docs/releases/` para auditoria, sem fazer parte do roteiro de leitura.
 - `reproducibility/odoo-source.lock.json`: lock legível por máquina da fonte Odoo selecionada.
 - `reproducibility/lab-environment.lock.json`: versões, digests e últimos aceites M1/M2 saneados do laboratório.
 - `reproducibility/model-selection.lock.json`: seleção datada do DeepSeek e Qwen3, fatos observados e evidências ainda pendentes para o freeze.
 - `reproducibility/institutional-sources.lock.json`: hashes, requisitos e anomalias das fontes institucionais locais.
 - `reproducibility/institutional-evidence.lock.json`: hashes e conclusões saneadas de evidências institucionais privadas mantidas fora do Git.
 - `scripts/check_repository_safety.ps1`: verificação de caminhos proibidos e padrões de credenciais sem exibir o valor suspeito.
+- `scripts/validate_current_docs.py`: validação corrente do Markdown, links, escopo e referências do artigo.
 - `odoo-19.0/`: snapshot local ignorado pelo Git e usado somente para exploração; o build usa a origem oficial no commit fixado `a4b877245c9cb5e3d7152d1593a518170f115ca1`, e o manifest OCI aceito está registrado nos locks.
 - `relatorio_tcc_I_fci_pacote/`: pacote local ignorado, usado somente como evidência de continuidade e referência institucional; contém repositório aninhado e dados acadêmicos que não devem ser preparados para commit.
 

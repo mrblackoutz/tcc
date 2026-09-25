@@ -18,7 +18,8 @@ PLAN = "Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md"
 FILES = (
     PLAN, "AGENTS.md", "README.md", "CHANGELOG.md",
     "docs/decision-log.md", "docs/task-backlog.md", "docs/ai-usage.md",
-    "docs/releases/v1.2.12.md", "docs/releases/v1.2.13.md", "paper/README.md",
+    "docs/releases/v1.2.12.md", "docs/releases/v1.2.13.md",
+    "docs/releases/v1.2.14.md", "paper/README.md",
     "paper/SUBMISSION_CHECKLIST.md",
 )
 LINK = re.compile(r"(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)")
@@ -103,6 +104,14 @@ def validate_markdown(relative: str) -> None:
 
 for name in FILES:
     validate_markdown(name)
+
+for obsolete in (
+    "Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.docx",
+    "Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.pdf",
+    "validate_tcc_docx.ps1",
+):
+    if (ROOT / obsolete).exists():
+        errors.append(f"Retired plan artifact still in current tree: {obsolete}")
 
 plan = (ROOT / PLAN).read_text(encoding="utf-8-sig")
 # Version history may mention a retired scope, but current specification cannot require it.

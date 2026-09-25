@@ -99,7 +99,7 @@ Revisar a lista preparada linha por linha. Arquivos binários gerados podem ser 
 ## Gate de artefatos e dados experimentais
 
 - Desde a v1.2.2, o plano-mestre corrente é publicado somente em Markdown. Não gerar nem preparar novos DOCX/PDF do plano sem nova decisão material.
-- O DOCX/PDF e o validador da v1.2.1 permanecem apenas como evidência histórica vinculada ao respectivo manifesto; não representam a versão corrente.
+- O DOCX/PDF do plano e o validador Word da v1.2.1 foram retirados da árvore corrente pela [DEC-025](docs/decision-log.md#dec-025). Seus hashes e o commit de origem permanecem em `docs/releases/v1.2.1.md` e no histórico Git; não restaurá-los ao checkout sem nova decisão. O PDF do artigo em `paper/` é outro artefato e segue seus gates próprios.
 - Em uma release do plano, validação, hashes e manifesto devem corresponder à mesma árvore e versão; o resultado `PASS` deve ser obtido antes do staging.
 - Se o artigo institucional ou um futuro artefato binário autorizado for gerado, sua fonte deve ser validada na mesma árvore. DOCX deve usar `creator` e `lastModifiedBy` institucionais ou genéricos e não pode conter comentários, alterações controladas, macros, objetos incorporados ou relacionamentos externos não revisados.
 - A inspeção visual do artigo institucional ou de futuro PDF autorizado deve cobrir capa, tabelas densas e transições entre capítulos; reprovar página intermediária formada apenas por cabeçalho ou linha residual de tabela.

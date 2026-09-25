@@ -11,7 +11,7 @@
 **Disciplina/atividade:** Trabalho de Conclusão de Curso II (TCC II)
 **Autores:** Felipe Ujvari Gasparino de Sousa; Gustavo Nascimento Siqueira; Thomaz de Souza Scopel
 **Orientador:** Mario Olimpio de Menezes
-**Versão:** 1.2.13
+**Versão:** 1.2.14
 **Data:** 24 de setembro de 2026
 **Status:** pré-congelamento. Laboratório, rascunho e isolamento de rede comprovados; o smoke G3c concluiu uma chamada real sintética tipada, sem retry, com manifesto saneado. A competência da [integração direta (C0)](#c0), a [integração protegida (C1)](#c1), o dataset, o piloto e o experimento final continuam pendentes. Permanecem vigentes a [retirada da exposição de dados (DEC-023)](docs/decision-log.md#dec-023) e o [roteamento atualizado do alias DeepSeek (DEC-024)](docs/decision-log.md#dec-024).
 
@@ -52,6 +52,7 @@
 | 1.2.11 | 05/09/2026 | Revisão adversarial independente em doze dimensões (124 achados, 120 sobreviventes) registrada em DEC-022 e em `docs/revisao-independente-v1.2.9.md`; fronteira entre resolução técnica e revalidação semântica fixada em C0; cascata marginal das fronteiras e regra de células zero pré-especificadas; pré-imagem do hash da ação e conteúdo do hash de estado definidos; SDR decomposta e quinta condição de ablação proposta; C1 nomeada como monitor de referência com base confiável declarada; quatro referências clássicas adotadas | Grupo |
 | 1.2.12 | 08/09/2026 | Exposição de dados retirada; 90 pares redistribuídos igualmente entre os três objetivos financeiros; controles e métricas dependentes removidos; ablação volta a quatro condições; referências passam a ter descrição e destino | Usuário / DEC-023 |
 | 1.2.13 | 24/09/2026 | DEC-024 registra a mudança documentada de roteamento do alias DeepSeek; G3c conclui uma chamada sintética tipada, sem retry, com manifesto saneado; G3-05 aceita tecnicamente sem antecipar C0/C1 ou o piloto | Grupo |
+| 1.2.14 | 24/09/2026 | DEC-025 remove do checkout o DOCX, o PDF do plano e o validador Word obsoletos; o histórico Git e os hashes da v1.2.1 preservam a recuperação, e a navegação corrente fica mais curta | Grupo |
 | 1.3 | [data] | Congelamento após piloto | [nome] |
 
 A v1.2.4 permanece preservada como release histórica do scaffold. A auditoria registrada em DEC-016 identificou que seu ID local de imagem não era evidência de manifest OCI, que os locks estavam incompletos, que o transporte usava a chave administrativa e que o smoke se limitava ao cadastro de fornecedor e ao descarte de volumes. O incremento corretivo `b9a96da33df83aabd75e95948cfbf202d7e73cf2` comprovou M1 com manifest OCI local `sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`, config digest distinto, identidade técnica C0 não administrativa, fixtures sintéticas completas, conta em rascunho ligada a PO/banco e reset por hash. O incremento M2 `fef3348` elevou a suíte a 41 testes e comprovou PDF benigno → proposta tipada → rascunho C0 → restauração, sob DEC-017. A DEC-018, registrada no commit `45b0216`, encerrou a seleção nominal de W04 sem alterar o tamanho amostral: DeepSeek será o modelo principal e Qwen3 o segundo bloco separado. A DEC-020 (`09edfb8`) fixou a fronteira mínima de egress e o contrato comum dos adapters. G3a foi implementada em `b2deec8` e comprovada em `9d0afd9`, com 82 testes executados em contêiner sem rede e sem chamadas reais. A DEC-021 (`b9b3c88`) atribuiu os três papéis nominais e o commit `7c311d9` publicou o backlog operacional completo. G3b foi implementada em `f2d7f5f` e sua evidência saneada foi registrada em `299a6f4`, sem chamada a provedor, chave ou download de modelo. O caminho real G3c foi implementado em `0fc66ce`, sua captura foi corrigida em `ffa155d` e o diagnóstico seguro foi ampliado em `ef956d2`. Tentativas autorizadas e sem retry observaram o túnel permitido, mas a tentativa diagnosticável recebeu HTTP 402; o estado saneado foi registrado em `9e6446e`. Isso não fixa os artefatos finais, não conclui o smoke G3c, o C0 científico/G3 ou as obrigações institucionais e de literatura de G1. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
@@ -126,7 +127,7 @@ Uma versão do plano-mestre só é considerada publicada quando, no mesmo ciclo:
 4. os arquivos preparados para commit passarem por revisão de escopo e varredura de segredos;
 5. for criado um commit Git dedicado à versão, no padrão `docs(plan): release vX.Y[.Z] — resumo`.
 
-O único artefato corrente do plano é `Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md`. O DOCX, o PDF e o validador preservados no repositório pertencem à evidência histórica da v1.2.1 e não devem ser apresentados como versão atual. Commits de versão publicados não devem ser reescritos com `amend`, squash, rebase ou force-push. Uma correção posterior gera nova versão e novo commit. Alterações de implementação usam commits separados, citando a versão do plano e o ID da decisão que as autorizou.
+O único artefato corrente do plano é `Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md`. Pela [limpeza de artefatos obsoletos (DEC-025)](docs/decision-log.md#dec-025), o DOCX, o PDF do plano e o validador Word da v1.2.1 não integram mais a árvore corrente; o manifesto daquela versão e o histórico Git preservam hashes e recuperação. Commits de versão publicados não devem ser reescritos com `amend`, squash, rebase ou force-push. Uma correção posterior gera nova versão e novo commit. Alterações de implementação usam commits separados, citando a versão do plano e o ID da decisão que as autorizou.
 
 Toda decisão ou modificação relevante surgida durante a construção deverá ser registrada antes da implementação em `docs/decision-log.md`, com contexto, alternativas, decisão, consequências, evidência e responsável. Depois do congelamento experimental, qualquer divergência também entra em `docs/deviation-log.md`, sem apagar a regra original e respeitando as exigências de reexecução ou nova amostra de [seção 14.4](#sec-14-4).
 
@@ -1566,8 +1567,6 @@ tcc/
 ├── CHANGELOG.md
 ├── README.md
 ├── Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md
-├── Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.{docx,pdf}  # histórico v1.2.1
-├── validate_tcc_docx.ps1                                  # histórico v1.2.1
 ├── compose.yaml                                        # orquestrador do laboratório
 ├── LICENSE                                             # PENDENTE
 ├── CITATION.cff                                        # PENDENTE

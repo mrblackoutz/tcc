@@ -2,6 +2,13 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.14] — 2026-09-24
+
+- aplicada a [limpeza de artefatos obsoletos (DEC-025)](docs/decision-log.md#dec-025): DOCX, PDF do plano e validador Word da v1.2.1 retirados do checkout corrente após conferência de caminhos e hashes;
+- preservados commits e manifestos históricos, incluindo os hashes da v1.2.1, sem reescrever releases publicadas; o PDF e os fontes do artigo institucional não foram removidos;
+- reduzido o índice do README: a versão atual e o changelog são os pontos de entrada, sem uma linha para cada release passada;
+- atualizado o validador corrente para exigir a ausência dos três arquivos obsoletos; nenhuma hipótese, amostra, condição C0/C1, dado ou resultado foi alterado.
+
 ## [1.2.13] — 2026-09-24
 
 - preservadas as versões remotas 1.2.11 e 1.2.12 e o escopo de três objetivos financeiros da DEC-023; a correção local ainda não publicada foi integrada como DEC-024, sem reutilizar IDs já publicados;
