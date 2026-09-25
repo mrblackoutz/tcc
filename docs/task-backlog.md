@@ -2,9 +2,9 @@
 
 **Decisão de ownership:** [divisão do trabalho (DEC-021)](decision-log.md#dec-021)
 
-**Data-base:** 08/09/2026
+**Data-base:** 24/09/2026
 
-**Estado científico:** pré-congelamento; laboratório, rascunho e isolamento de rede comprovados; inferência real, C1, dataset, piloto e resultados confirmatórios pendentes. Escopo atualizado por [retirada da exposição de dados (DEC-023)](decision-log.md#dec-023).
+**Estado científico:** pré-congelamento; laboratório, rascunho, isolamento de rede e uma inferência real sintética G3c comprovados; competência C0, C1, dataset, piloto e resultados confirmatórios pendentes. Escopo atualizado por [retirada da exposição de dados (DEC-023)](decision-log.md#dec-023); alias documentado em [DEC-024](decision-log.md#dec-024).
 
 **Leitura dos códigos:** [C0](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#c0) é a integração direta; [C1](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#c1), a integração protegida. RQ significa pergunta de pesquisa; H, hipótese; DEC, decisão registrada. Os links levam ao significado completo. Consulte a [leitura rápida](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida) antes de iniciar uma tarefa.
 
