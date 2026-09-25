@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "decisionId": "DEC-018",
   "observedOn": "2026-08-31",
-  "status": "models-selected-g3c-provider-http-402-artifacts-not-frozen",
+  "status": "models-selected-g3c-deepseek-smoke-passed-artifacts-not-frozen",
   "protocolFrozen": false,
   "primaryModel": {
     "role": "confirmatory-primary",
@@ -13,6 +13,11 @@
     "requestedModel": "deepseek-v4-flash",
     "providerDocumentedBackend": "DeepSeek-V4-Flash-0731",
     "backendMappingObservedOn": "2026-08-31",
+    "currentProviderDocumentedBackend": "DeepSeek-V4.1-Flash",
+    "currentBackendMappingObservedOn": "2026-09-24",
+    "currentMappingEffectiveOn": "2026-09-10",
+    "currentCanonicalAlias": "deepseek-flash",
+    "currentLegacyAliasRouting": "deepseek-v4-flash-temporarily-routes-to-v4.1-flash",
     "versionSemantics": "mobile-api-alias-with-dated-provider-mapping",
     "immutableSnapshotClaimed": false,
     "thinking": {
@@ -33,9 +38,17 @@
       "outputPeak": 1.32,
       "warning": "Pricing is observational and must be re-recorded for each experimental batch."
     },
+    "currentPricingSnapshotUsdPerMillionTokens": {
+      "observedOn": "2026-09-24",
+      "cacheMissInputOffPeak": 0.15,
+      "cacheMissInputPeak": 0.3,
+      "outputOffPeak": 0.6,
+      "outputPeak": 1.2,
+      "warning": "Observe fresh pricing before each experimental batch; old August prices are historical."
+    },
     "artifactDigest": null,
     "artifactStatus": "provider-hosted-alias",
-    "adapterStatus": "implemented-and-offline-tested-provider-endpoint-reached-inference-blocked-http-402"
+    "adapterStatus": "g3c-synthetic-real-call-passed-2026-09-24-not-scientific-c0"
   },
   "secondaryModel": {
     "role": "robustness-transportability",
@@ -113,11 +126,11 @@
     "rawRequestsAndResponsesInGit": false,
     "rawCustody": "external-encrypted-access-controlled-and-immutable-copy",
     "runtimeNetworkCurrentlyInternal": "lab-control-and-client-networks-internal-only-proxy-has-external-network",
-    "externalEgressDesignStatus": "implemented-offline-negative-tested-and-allowed-upstream-observed-provider-http-402",
+    "externalEgressDesignStatus": "implemented-offline-negative-tested-and-real-synthetic-call-passed",
     "deepSeekAllowedDestination": "api.deepseek.com:443",
     "gatewayOdooDatabaseEgress": "denied-by-design",
     "llmClientMode": "mock-in-g3b-explicit-deepseek-smoke-in-g3c",
-    "allowedDestinationUpstreamConnectivityObserved": "yes-provider-response-http-402-no-inference",
+    "allowedDestinationUpstreamConnectivityObserved": "yes-provider-response-and-typed-inference-passed",
     "realApiCallAuthorized": true
   },
   "g3aAdapterEvidence": {
@@ -220,7 +233,7 @@
     "automaticRetriesPerformed": 0,
     "orchestrationFailureCategory": "powershell-native-stderr-progress-promoted-to-terminating-error",
     "dockerEventObservation": "runner-started-then-died-exit-1-after-approximately-two-seconds-services-removed",
-    "localAttemptMarkerPath": ".runtime/evidence/g3c-deepseek-smoke.attempt.json",
+    "localAttemptMarkerPath": ".runtime/evidence/archive/g3c-deepseek-smoke.attempt-01-inconclusive.json",
     "localAttemptMarkerSha256": "7d11fb1648ec782b26ecaa352a58f16b4c765182ffefedb6d43f0e45c8c4a6d3",
     "localAttemptMarkerByteCount": 665,
     "rawRequestOrResponsePersisted": false,
@@ -264,13 +277,84 @@
       "successEvidenceWritten": false,
       "successfulInferences": 0,
       "automaticRetriesPerformed": 0,
-      "localAttemptMarkerPath": ".runtime/evidence/g3c-deepseek-smoke.attempt.json",
+      "localAttemptMarkerPath": ".runtime/evidence/archive/g3c-deepseek-smoke.attempt-03-http-402.json",
       "localAttemptMarkerSha256": "df6ca79a99d816ee585d82d9d157f7d8487b365dd59c2299fc45234bce2c1b7a",
       "localAttemptMarkerByteCount": 526,
       "rawRequestOrResponsePersisted": false,
-      "externalBlocker": "provider-account-credit-or-balance-required-before-new-authorized-attempt"
+      "externalBlockerAtAttemptTime": "provider-account-credit-or-balance-required"
+    },
+    {
+      "attemptNumber": 4,
+      "attemptedOn": "2026-09-24",
+      "implementationCommit": "4578e85867cde81ebd9969bd59215c1c79ed2b03",
+      "operatorAuthorization": true,
+      "status": "llm-client-http-502-category-not-preserved-no-automatic-retry",
+      "runnerErrorCategory": "llm_client_http_502",
+      "allowedTunnelCount": 1,
+      "successEvidenceWritten": false,
+      "automaticRetriesPerformed": 0,
+      "localAttemptMarkerPath": ".runtime/evidence/archive/g3c-deepseek-smoke.attempt-04-http-502.json",
+      "localAttemptMarkerSha256": "a0c93e97e373cd0efb7cb7659b26783b212bdedd1b7970859589739f787469f5",
+      "localAttemptMarkerByteCount": 500,
+      "rawRequestOrResponsePersisted": false
+    },
+    {
+      "attemptNumber": 5,
+      "attemptedOn": "2026-09-24",
+      "implementationCommit": "a6112de84f6f467906d1b92371f73e24240b507b",
+      "operatorAuthorization": true,
+      "status": "returned-model-rejected-by-outdated-allowlist-no-automatic-retry",
+      "runnerErrorCategory": "llm_client_model_mismatch",
+      "allowedTunnelCount": 1,
+      "successEvidenceWritten": false,
+      "automaticRetriesPerformed": 0,
+      "localAttemptMarkerPath": ".runtime/evidence/archive/g3c-deepseek-smoke.attempt-05-model-mismatch.json",
+      "localAttemptMarkerSha256": "997c228ddd5bf1a9bab2dd79209b161bbe200c2a3c747fc88a7bab01367a3818",
+      "localAttemptMarkerByteCount": 506,
+      "rawRequestOrResponsePersisted": false
     }
   ],
+  "g3cSmokeEvidence": {
+    "decisionIds": ["DEC-018", "DEC-020", "DEC-024"],
+    "taskId": "G3-05",
+    "executedOnLocalDate": "2026-09-24",
+    "executedAtUtc": "2026-09-25T00:55:20.736404+00:00",
+    "implementationCommit": "606771377e4ac5f8dfb6142f608f86f3aab0998a",
+    "attemptNumber": 6,
+    "status": "pass",
+    "scientificRun": false,
+    "syntheticData": true,
+    "fiscalValue": false,
+    "provider": "DeepSeek",
+    "requestedModel": "deepseek-v4-flash",
+    "returnedModel": "deepseek-flash",
+    "providerDocumentedBackendAtExecution": "DeepSeek-V4.1-Flash",
+    "responseIdSha256": "b6c46d1da8d112ed8dd583cc21dddfcc017378bafb18e5d741e13202b5a3d8b5",
+    "systemFingerprintSha256": "09af7682e7d983b1290cce4ece4f2ab063ea0b17e69d3954b6043ca20b0c4602",
+    "realProviderCallsInAcceptedAttempt": 1,
+    "automaticRetriesInAcceptedAttempt": 0,
+    "allowedTunnelCount": 1,
+    "gatewayAndClientTestsPassed": 102,
+    "proxyTestsPassed": 6,
+    "promptTokens": 685,
+    "completionTokens": 127,
+    "totalTokens": 812,
+    "adapterLatencyNs": 1217243088,
+    "runnerWallLatencyNs": 1403690861,
+    "sanitisedHashCount": 11,
+    "secretAndForbiddenLogScan": "pass",
+    "rawRequestOrResponsePersisted": false,
+    "localEvidencePath": ".runtime/evidence/g3c-deepseek-smoke.json",
+    "localEvidenceSha256": "5c6f48af59643475d824bb41acb6008658baff2e54e1beb254779a0f3d5e22bc",
+    "localEvidenceByteCount": 1957,
+    "localAttemptMarkerPath": ".runtime/evidence/g3c-deepseek-smoke.attempt.json",
+    "localAttemptMarkerSha256": "200619594c838927e22635dd0407c3667943e475a675d6787569563c0c1f73dd",
+    "localAttemptMarkerByteCount": 442,
+    "limitations": [
+      "The smoke used one synthetic document and did not exercise Odoo, C0 competence, C1 or attack resistance.",
+      "The requested legacy alias is mobile and now routes to V4.1 Flash; the group must review the canonical alias before freeze."
+    ]
+  },
   "requiredPerRunProvenance": [
     "provider",
     "api-base-and-endpoint",
@@ -287,7 +371,7 @@
     "latency-errors-and-retries"
   ],
   "pendingBeforeFreeze": [
-    "DeepSeek account credit or balance and a successful synthetic smoke under the already-observed egress boundary",
+    "Group review of the DeepSeek canonical alias and pilot parameters after the G3c synthetic smoke",
     "Qwen artifact download authorized by operator",
     "full Ollama manifest and blob digests",
     "Qwen hardware feasibility smoke",

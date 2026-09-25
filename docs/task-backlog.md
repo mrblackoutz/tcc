@@ -127,8 +127,8 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | G3-02 | P0 | Gustavo | Thomaz | G3-01 | materializar redes separadas e proxy TLS pass-through com allowlist `api.deepseek.com:443` | DONE |
 | G3-03 | P0 | Gustavo | Thomaz | G3-02 | testes negativos: gateway/Odoo/db sem Internet; cliente sem ERP/Internet direta; proxy nega host/IP/porta alternativos | DONE |
 | G3-04 | P0 | Gustavo | Felipe | G3-01 | harness de smoke sintético, manifest saneado e varredura de logs, ainda com transporte mock | DONE |
-| G3-05 | P0 | Gustavo | Thomaz | G3-03, G3-04, autorização | caminho e egress validados; tentativa diagnóstica autorizada alcançou o provedor, mas foi recusada com HTTP 402, sem inferência, manifesto de sucesso ou retry; requer crédito/saldo e nova autorização explícita. **Prazo de resposta 12/09/2026; escalonamento em 15/09**, por ser bloqueio único do caminho crítico sobre C0-04, DATA-05 e PILOT-01 | EXTERNAL |
-| G3-06 | P1 | Gustavo | Felipe | G3-05 | observar defaults/limites, propor timeout/backoff/max tokens e fechar parâmetros candidatos do piloto | WAIT |
+| G3-05 | P0 | Gustavo | Thomaz | G3-03, G3-04, autorização | smoke sintético aceito em 24/09: uma chamada sem retry, `deepseek-v4-flash` solicitado e `deepseek-flash` retornado, manifesto saneado e varredura de logs aprovados; [DEC-024](decision-log.md#dec-024) registra o novo roteamento. O prazo de resposta e escalonamento anteriores foram superados pelo aceite | DONE |
+| G3-06 | P1 | Gustavo | Felipe | G3-05 | observar defaults/limites, propor timeout/backoff/max tokens e fechar parâmetros candidatos do piloto; revisar alias canônico com o grupo antes do freeze | READY |
 | G3-07 | P2 | Gustavo | Thomaz | núcleo protegido, autorização | baixar Qwen3, registrar manifest/blobs/Ollama/Modelfile sem expor dados | CONDITIONAL |
 | G3-08 | P2 | Gustavo | Felipe | G3-07 | smoke Qwen: offload, CPU/GPU/RAM/VRAM, TTFT, tok/s, latência, contexto e OOM | CONDITIONAL |
 | C0-01 | P0 | Thomaz | Felipe | SCI-01, G3a | especificar prompt-base, ações e ferramentas plausíveis comuns; separar construção C0/C1 do transporte | READY |

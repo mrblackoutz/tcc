@@ -2,13 +2,13 @@
 
 **Decisão:** DEC-020
 
-**Estado:** desenho aceito; G3a e G3b offline comprovados; caminho G3c implementado e testado offline; endpoint DeepSeek alcançado, mas recusado com HTTP 402; crédito/saldo, smoke aceito, artefato/smoke Qwen3 e piloto pendentes
+**Estado:** G3a/G3b aprovados offline e G3c aceito em smoke sintético com `deepseek-flash` retornado; C0 científico, artefato/smoke Qwen3 e piloto pendentes
 
 **Data:** 31/08/2026
 
 ## 1. Objetivo e limite desta etapa
 
-Este documento transforma a seleção de modelos da DEC-018 em um desenho implementável sem abrir a rede do laboratório nem antecipar o piloto. G3a implementou adapters, schema, mocks e saneamento; G3b materializou `llm-client`, redes e proxy e aprovou os testes offline em 01/09/2026. Em 02/09/2026, o caminho G3c foi preparado com um serviço real separado, runner sem segredo, chave montada por arquivo exato read-only, recusa de repetição automática e manifesto saneado. A primeira tentativa foi inconclusiva por falha de captura do orquestrador. Depois da correção e de nova autorização, o túnel nominal foi observado; a telemetria sanitizada foi então aprimorada e uma terceira tentativa autorizada identificou resposta HTTP 402 do provedor. Nenhuma tentativa teve retry ou produziu manifesto de sucesso. A fronteira de egress está observada, mas inferência, modelo retornado e competência do C0 científico continuam pendentes até haver crédito/saldo e um smoke aceito.
+Este documento transforma a seleção de modelos da DEC-018 em um desenho implementável sem abrir a rede do laboratório nem antecipar o piloto. G3a implementou adapters, schema, mocks e saneamento; G3b materializou `llm-client`, redes e proxy e aprovou os testes offline em 01/09/2026. Em 02/09/2026, o caminho G3c foi preparado com serviço real separado, runner sem segredo, chave montada por arquivo exato somente para leitura, recusa de repetição automática e manifesto saneado. As três primeiras tentativas foram inconclusiva, diagnosticada como HTTP 502 e recusada com HTTP 402, respectivamente. Após a adição de saldo, a quarta expôs uma lacuna de telemetria e a quinta identificou divergência entre o alias solicitado e o modelo retornado. A DEC-024 registrou a mudança de roteamento documentada pelo provedor antes da correção. Em 24/09/2026, a sexta tentativa concluiu uma inferência sintética tipada, sem retry, com um túnel permitido e manifesto saneado. Isso conclui G3-05, mas não demonstra competência do C0 científico, eficácia C1 ou resultados experimentais; esses gates continuam pendentes.
 
 ## 2. Trust boundaries
 
@@ -121,11 +121,11 @@ O Git recebe hashes e metadados saneados. Requests/responses brutos pertencem ao
 
 - **G3a — código isolado:** adapters, schema e mocks passam; nenhuma rede real é usada.
 - **G3b — egress executável:** **atendido offline em 01/09/2026**; topologia, API mock, política e testes negativos passaram sem contato externo, conforme `docs/g3b-egress-topology.md`.
-- **G3c — smoke DeepSeek:** caminho executável preparado em `scripts/smoke_test_g3c.ps1`; capturador de `stderr` e diagnóstico sanitizado corrigidos; o endpoint respondeu HTTP 402. Permanece pendente até crédito/saldo, nova autorização e uma chamada produzir evidência saneada e passar a varredura de segredo/log.
+- **G3c — smoke DeepSeek:** concluído em 24/09/2026 com uma chamada sintética aceita, manifesto saneado, varredura de logs e DEC-024 para o roteamento V4.1 do alias legado; não mede competência científica do C0.
 - **G3d — smoke Qwen3:** download autorizado, manifest/blobs fixados e hardware aprovado sem OOM.
 - **G3e — piloto:** prompts, parâmetros, retry, competência, custo e latência aprovados antes do freeze.
 
-O transporte real só é acessível pelo serviço `llm-client-g3c`, profile `g3c` e modo explícito `deepseek-smoke`; G3b continua mock e rejeita a chave. Até a execução aceita de G3c/G3d, os respectivos provedores permanecem com estado `not-smoked` nos manifests.
+O transporte real só é acessível pelo serviço `llm-client-g3c`, profile `g3c` e modo explícito `deepseek-smoke`; G3b continua mock e rejeita a chave. DeepSeek passou o smoke sintético; Qwen3 permanece `not-smoked`.
 
 ## 10. Fontes oficiais observadas
 

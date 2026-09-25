@@ -1,8 +1,8 @@
 # Gate G3c — smoke DeepSeek
 
-**Decisões:** DEC-018 e DEC-020  
+**Decisões:** DEC-018, DEC-020 e DEC-024
 **Tarefa:** G3-05  
-**Estado:** caminho implementado e aprovado offline; endpoint alcançado, mas a chamada foi recusada com HTTP 402; aguardando crédito/saldo no provedor
+**Estado:** concluído tecnicamente em 24/09/2026; resposta tipada e manifesto saneado aprovados
 
 ## 1. Objetivo e limite
 
@@ -50,11 +50,17 @@ Após nova autorização do operador, uma segunda tentativa foi executada sobre 
 
 Para remover essa ambiguidade sem persistir corpo de erro, o runner passou a extrair somente a categoria normalizada e o status HTTP já saneados pelo `llm-client`. A mudança foi aprovada em 97 testes offline e versionada no commit `ef956d2014e08967882aa8d79b7f9307504617e0`.
 
-Uma terceira tentativa única, também autorizada, alcançou `api.deepseek.com:443` por exatamente um túnel permitido. O provedor recusou a requisição com HTTP 402, classificado como `llm_client_request_rejected_provider_http_402`. Isso comprova a fronteira de egress e uma resposta do endpoint, mas não comprova autenticação utilizável, inferência, modelo retornado, JSON estruturado ou competência. Nenhum manifesto de sucesso foi escrito e nenhum retry ocorreu. O marcador ativo possui SHA-256 `df6ca79a99d816ee585d82d9d157f7d8487b365dd59c2299fc45234bce2c1b7a` e 526 bytes.
+Uma terceira tentativa única, também autorizada, alcançou `api.deepseek.com:443` por exatamente um túnel permitido. O provedor recusou a requisição com HTTP 402, classificado como `llm_client_request_rejected_provider_http_402`. Isso comprova a fronteira de egress e uma resposta do endpoint, mas não comprova autenticação utilizável, inferência, modelo retornado, JSON estruturado ou competência. Nenhum manifesto de sucesso foi escrito e nenhum retry ocorreu. O marcador arquivado possui SHA-256 `df6ca79a99d816ee585d82d9d157f7d8487b365dd59c2299fc45234bce2c1b7a` e 526 bytes.
 
-G3-05 permanece `EXTERNAL`. Antes de nova tentativa, o operador deve disponibilizar crédito/saldo na conta DeepSeek e autorizar explicitamente uma nova chamada. Trocar modelo, endpoint, payload ou controles para contornar HTTP 402 é proibido.
+## 6. Retomada em 24/09 e aceite
 
-## 6. Comando autorizado
+Após a adição de saldo, a tentativa 4 abriu um túnel permitido, mas o runner registrou apenas HTTP 502; o marcador arquivado tem SHA-256 `a0c93e97e373cd0efb7cb7659b26783b212bdedd1b7970859589739f787469f5`. A telemetria foi corrigida para preservar a categoria segura sem depender de status HTTP upstream. A tentativa 5, também única e sem retry, identificou `llm_client_model_mismatch`, com um túnel permitido; o marcador arquivado tem SHA-256 `997c228ddd5bf1a9bab2dd79209b161bbe200c2a3c747fc88a7bab01367a3818`.
+
+A documentação oficial DeepSeek de 10/09 informa que o alias legado `deepseek-v4-flash` foi roteado para V4.1 Flash. A DEC-024 registrou o drift antes da correção; a allowlist do adapter e do runner passou a aceitar apenas os novos identificadores documentados, mantendo o alias solicitado e registrando o retorno real. A suíte offline passou em 102 testes do gateway/cliente e 6 do proxy na árvore da tentativa aceita.
+
+A tentativa 6, sobre o commit `606771377e4ac5f8dfb6142f608f86f3aab0998a`, **passou**. Houve uma chamada real sintética, zero retries, `deepseek-v4-flash` solicitado e `deepseek-flash` retornado. O manifesto local `.runtime/evidence/g3c-deepseek-smoke.json` possui 1.957 bytes e SHA-256 `5c6f48af59643475d824bb41acb6008658baff2e54e1beb254779a0f3d5e22bc`. O marcador local da tentativa aprovada possui 442 bytes e SHA-256 `200619594c838927e22635dd0407c3667943e475a675d6787569563c0c1f73dd`. Os logs e a evidência passaram na varredura de segredo e classes proibidas; o proxy registrou exatamente um túnel permitido. O manifesto contém 11 hashes, 685 tokens de entrada, 127 de saída e latência do adapter de aproximadamente 1,22 s. O smoke não é uma run científica nem substitui o piloto/C0 competente.
+
+## 7. Comando autorizado
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test_g3c.ps1 -ConfirmRealCall
@@ -62,17 +68,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test_g3c.ps1
 
 O comando só deve ser executado depois de o commit de implementação estar limpo. Ele valida as topologias G3b/G3c, executa as suítes em contêiner sem rede, sobe apenas proxy e cliente, cria o marcador e então realiza uma única chamada.
 
-## 7. Validação offline desta implementação
+## 8. Validação offline desta implementação
 
 - `scripts/test_g3b_topology.py`: `PASS`, sem chamada real;
 - `scripts/test_g3c_topology.py`: `PASS`, chave como bind exato read-only e somente proxy na rede externa;
-- gateway/llm-client 0.5.0: `97 passed` com `--network none`, filesystem read-only e tmpfs após a melhoria de diagnóstico;
+- gateway/llm-client 0.5.0: `102 passed` com `--network none`, filesystem read-only e tmpfs após a atualização controlada do modelo retornado;
 - proxy 0.1.0: `6 passed` com `--network none`;
 - smoke runtime G3b reexecutado: `PASS`, sem provedor, segredo ou download;
 - captura corrigida do `stderr` validada com runner inofensivo que apenas imprimiu texto, sem subir cliente/proxy ou ler chave: `PASS`;
 - contêineres temporários remanescentes: nenhum.
 
-## 8. Definition of Done de G3-05
+## 9. Definition of Done de G3-05
 
 G3-05 só passa para `DONE` quando:
 
@@ -85,7 +91,7 @@ G3-05 só passa para `DONE` quando:
 - [x] falha de captura do orquestrador corrigida sem nova chamada;
 - [x] endpoint permitido alcançado e HTTP 402 registrado sem corpo, chave ou payload;
 - [x] proxy registrou exatamente um túnel permitido na tentativa diagnóstica;
-- [ ] exatamente uma chamada real foi concluída, sem retry;
-- [ ] manifesto local saneado passou no validador;
-- [ ] logs/evidência foram verificados contra chave, `Authorization`, `Bearer`, documento, proposta e marcadores sensíveis;
+- [x] exatamente uma chamada real foi concluída na tentativa aceita, sem retry;
+- [x] manifesto local saneado passou no validador;
+- [x] logs/evidência foram verificados contra chave, `Authorization`, `Bearer`, documento, proposta e marcadores sensíveis;
 - [x] lock, documentação e backlog foram atualizados sem raw ou segredo.

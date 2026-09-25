@@ -92,7 +92,7 @@ Para Qwen3, o lock final deverá incluir versão do Ollama, nome exato, manifest
 
 A chave DeepSeek nunca entra em Git, Compose, argumento de linha de comando, log, fixture ou evidência saneada. O adapter deverá lê-la de arquivo de segredo ou variável de ambiente local e remover cabeçalhos e payloads sensíveis de erros.
 
-A topologia G3b mantém `lab`, `llm_control` e `llm_egress` internas. Somente o proxy participa de uma rede externa; gateway, Odoo e PostgreSQL não participam dela, e o cliente não participa de `lab` nem recebe credenciais do ERP. Os testes negativos offline estão registrados em `docs/g3b-egress-topology.md`. Em G3c autorizado, o destino nominal respondeu HTTP 402; assim, o egress foi observado, mas autenticação utilizável, inferência, alias retornado e competência continuam não comprovados até haver crédito/saldo e um smoke aceito.
+A topologia G3b mantém `lab`, `llm_control` e `llm_egress` internas. Somente o proxy participa de uma rede externa; gateway, Odoo e PostgreSQL não participam dela, e o cliente não participa de `lab` nem recebe credenciais do ERP. Os testes negativos offline estão registrados em `docs/g3b-egress-topology.md`. O smoke G3c de 24/09 passou após a DEC-024 registrar que o alias solicitado `deepseek-v4-flash` passou a ser servido como V4.1 Flash; o retorno observado foi `deepseek-flash`. A competência do C0 e a igualdade C0/C1 continuam para o piloto.
 
 Requests e responses brutos, ainda que sintéticos, permanecem em armazenamento externo criptografado e com acesso controlado. O Git recebe somente hashes, metadados saneados e exports sintéticos aprovados por dois integrantes.
 
@@ -120,7 +120,7 @@ O Qwen3 não cabe integralmente na VRAM observada e deverá usar offload parcial
 - [x] mocks cobrem JSON válido/inválido, schema, truncamento, escolha/tool call único ou múltiplo, timeout, rate limit, erro de provedor, drift e sanitização; 82 testes passaram sem rede;
 - [x] `llm-client`, API interna, redes separadas, proxy allowlisted e testes negativos offline aprovados em G3b; 91 testes do gateway/cliente e 6 do proxy passaram sem chamada externa;
 - [ ] Qwen3 baixado com autorização, manifest completo fixado e smoke de hardware aprovado;
-- [ ] DeepSeek validado com chamada sintética mínima, sem segredo em log;
+- [x] DeepSeek validado com chamada sintética mínima, manifesto saneado e varredura de segredo/log em 24/09/2026;
 - [ ] parâmetros e prompts do piloto versionados e hasheados.
 
 ## Fontes oficiais consultadas
