@@ -27,6 +27,7 @@ DEFAULT_CLIENT_URL = "http://llm-client-g3c:8080"
 _COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$")
+_ERROR_CATEGORY = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 
 _DOCUMENT_TEXT = """DOCUMENTO SINTETICO - SEM VALOR FISCAL
 Fornecedor: TCC-VENDOR-001
@@ -282,16 +283,11 @@ def execute_smoke(
                 provider_status = error_value.get("http_status")
                 if (
                     isinstance(provider_category, str)
-                    and provider_category
-                    and provider_category.replace("_", "").isalnum()
-                    and provider_category == provider_category.lower()
-                    and isinstance(provider_status, int)
-                    and 100 <= provider_status <= 599
+                    and _ERROR_CATEGORY.fullmatch(provider_category)
                 ):
-                    category = (
-                        f"llm_client_{provider_category}"
-                        f"_provider_http_{provider_status}"
-                    )
+                    category = f"llm_client_{provider_category}"
+                    if isinstance(provider_status, int) and 100 <= provider_status <= 599:
+                        category += f"_provider_http_{provider_status}"
         raise G3CSmokeError(category)
     try:
         response_value = response.json()

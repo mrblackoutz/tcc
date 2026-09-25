@@ -171,3 +171,32 @@ def test_execute_smoke_preserves_only_sanitised_provider_failure(tmp_path) -> No
         == "llm_client_request_rejected_provider_http_400"
     )
     assert SENSITIVE_MARKER not in str(captured.value)
+
+
+def test_execute_smoke_preserves_safe_category_without_provider_http_status(tmp_path) -> None:
+    transport = httpx.MockTransport(
+        lambda _: httpx.Response(
+            502,
+            json={
+                "schema_version": "llm-client-response/v1",
+                "status": "error",
+                "error": {
+                    "provider": "deepseek",
+                    "category": "model_mismatch",
+                    "retryable": False,
+                    "http_status": None,
+                    "detail": SENSITIVE_MARKER,
+                },
+            },
+        )
+    )
+    with pytest.raises(G3CSmokeError) as captured:
+        execute_smoke(
+            client_url=DEFAULT_CLIENT_URL,
+            evidence_path=tmp_path / "unused.json",
+            git_commit=GIT_COMMIT,
+            transport=transport,
+        )
+
+    assert captured.value.category == "llm_client_model_mismatch"
+    assert SENSITIVE_MARKER not in str(captured.value)
