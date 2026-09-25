@@ -12,6 +12,16 @@ from urllib.parse import urlsplit, urlunsplit
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 DEEPSEEK_MODEL = "deepseek-v4-flash"
 DEEPSEEK_DOCUMENTED_BACKEND = "DeepSeek-V4-Flash-0731"
+DEEPSEEK_CURRENT_ALIAS = "deepseek-flash"
+DEEPSEEK_CURRENT_BACKEND = "DeepSeek-V4.1-Flash"
+DEEPSEEK_ALLOWED_RETURNED_MODELS = frozenset(
+    {
+        DEEPSEEK_MODEL,
+        DEEPSEEK_DOCUMENTED_BACKEND,
+        DEEPSEEK_CURRENT_ALIAS,
+        DEEPSEEK_CURRENT_BACKEND,
+    }
+)
 OLLAMA_MODEL = "qwen3:14b-q4_K_M"
 OLLAMA_ALLOWED_BASE_URLS = frozenset(
     {

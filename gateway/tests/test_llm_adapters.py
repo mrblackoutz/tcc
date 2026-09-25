@@ -17,6 +17,8 @@ from tcc_gateway.llm_adapters import (
     OllamaProposalAdapter,
 )
 from tcc_gateway.llm_config import (
+    DEEPSEEK_CURRENT_ALIAS,
+    DEEPSEEK_CURRENT_BACKEND,
     DEEPSEEK_MODEL,
     OLLAMA_MODEL,
     DeepSeekConfig,
@@ -174,6 +176,17 @@ def test_deepseek_valid_json_is_normalised_with_sanitised_metadata() -> None:
     assert result.metadata.received_at_utc == FIXED_TIME.isoformat()
     assert dict(result.metadata.durations_ns)["total_duration"] > 0
     assert SYNTHETIC_KEY not in repr(result.metadata)
+
+
+@pytest.mark.parametrize("returned_model", [DEEPSEEK_CURRENT_ALIAS, DEEPSEEK_CURRENT_BACKEND])
+def test_deepseek_accepts_documented_v41_returned_model(returned_model: str) -> None:
+    with _deepseek_adapter(
+        lambda _: httpx.Response(200, json=_deepseek_response(model=returned_model))
+    ) as adapter:
+        result = adapter.propose(_request())
+
+    assert result.metadata.requested_model == DEEPSEEK_MODEL
+    assert result.metadata.returned_model == returned_model
 
 
 def test_ollama_valid_schema_output_uses_local_non_thinking_request() -> None:

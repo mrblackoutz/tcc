@@ -104,6 +104,22 @@ def test_manifest_contains_only_sanitised_metadata_and_hashes() -> None:
     assert SENSITIVE_MARKER not in encoded
 
 
+@pytest.mark.parametrize("returned_model", ["deepseek-flash", "DeepSeek-V4.1-Flash"])
+def test_manifest_preserves_documented_v41_model(returned_model: str) -> None:
+    response_value = _client_response()
+    response_value["metadata"]["returned_model"] = returned_model
+    manifest = build_sanitised_manifest(
+        build_synthetic_request(),
+        response_value,
+        wall_duration_ns=20_000,
+        git_commit=GIT_COMMIT,
+        executed_at_utc="2026-09-24T12:00:01+00:00",
+    )
+
+    assert manifest["provider"]["requested_model"] == "deepseek-v4-flash"
+    assert manifest["provider"]["returned_model"] == returned_model
+
+
 def test_execute_smoke_writes_manifest_without_raw_response(tmp_path) -> None:
     response_value = _client_response()
 
