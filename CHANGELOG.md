@@ -2,6 +2,15 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.13] — 2026-09-24
+
+- preservadas as versões remotas 1.2.11 e 1.2.12 e o escopo de três objetivos financeiros da DEC-023; a correção local ainda não publicada foi integrada como DEC-024, sem reutilizar IDs já publicados;
+- registrada a mudança documentada de roteamento do alias legado DeepSeek para V4.1 Flash, sem alegar snapshot imutável do backend;
+- concluído tecnicamente G3-05 em uma chamada sintética tipada, sem retry: `deepseek-v4-flash` solicitado, `deepseek-flash` retornado, manifesto saneado e varredura de logs aprovados;
+- aprovados 105 testes do gateway/cliente e 6 do proxy offline na árvore integrada; marcadores anteriores permanecem locais, com apenas hashes e categorias saneadas no Git;
+- G3-06 passa a `READY`; C0 científico, C1, dataset, piloto e freeze continuam pendentes; nenhuma run experimental foi contabilizada;
+- mantidos inalterados hipóteses, métricas, margem, amostras, condições C0/C1 e regras de análise da versão 1.2.12.
+
 ## [1.2.12] — 2026-09-08
 
 - retirada a avaliação de exposição de dados (A3b), incluindo canários, mensagens ao fornecedor, métricas SDR, tokenização e a condição de ablação dedicada à minimização, conforme [redução do escopo (DEC-023)](docs/decision-log.md#dec-023);

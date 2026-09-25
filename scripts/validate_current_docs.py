@@ -18,7 +18,7 @@ PLAN = "Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md"
 FILES = (
     PLAN, "AGENTS.md", "README.md", "CHANGELOG.md",
     "docs/decision-log.md", "docs/task-backlog.md", "docs/ai-usage.md",
-    "docs/releases/v1.2.12.md", "paper/README.md",
+    "docs/releases/v1.2.12.md", "docs/releases/v1.2.13.md", "paper/README.md",
     "paper/SUBMISSION_CHECKLIST.md",
 )
 LINK = re.compile(r"(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)")
@@ -104,7 +104,7 @@ def validate_markdown(relative: str) -> None:
 for name in FILES:
     validate_markdown(name)
 
-plan = (ROOT / PLAN).read_text()
+plan = (ROOT / PLAN).read_text(encoding="utf-8-sig")
 # Version history may mention a retired scope, but current specification cannot require it.
 current = plan[:plan.index("## Histórico de versões")] + plan[plan.index('<a id="leitura-rapida">'):]
 for retired in (r"\bSDR(?:-context|-proposal)?\b", r"\bcanary_origin\b", r"\bSEND_SUPPLIER_MESSAGE\b"):
@@ -126,7 +126,7 @@ for value in ("2.160", "2.592", "7.776", "6.480"):
         errors.append(f"Obsolete total remains: {value}")
 
 tex_files = list((ROOT / "paper/sections").glob("*.tex"))
-tex = "\n".join(p.read_text() for p in tex_files)
+tex = "\n".join(p.read_text(encoding="utf-8-sig") for p in tex_files)
 if re.search(r"\b(?:A3b|SDR|canary_origin|SEND_SUPPLIER_MESSAGE)\b|canário", tex):
     errors.append("Article source still contains the retired exposure evaluation")
 targets = re.findall(r"\\hypertarget\{([^}]+)\}", tex)
@@ -136,16 +136,16 @@ for target in re.findall(r"\\hyperlink\{([^}]+)\}", tex):
     if target not in targets:
         errors.append(f"Article reference missing target: {target}")
 
-all_tex = "\n".join(p.read_text() for p in (ROOT / "paper").rglob("*.tex"))
+all_tex = "\n".join(p.read_text(encoding="utf-8-sig") for p in (ROOT / "paper").rglob("*.tex"))
 paper_sources = "\n".join(
-    p.read_text() for p in (ROOT / "paper").rglob("*")
+    p.read_text(encoding="utf-8-sig") for p in (ROOT / "paper").rglob("*")
     if p.is_file() and p.suffix in {".tex", ".bib", ".md", ".ps1"}
 )
 emails = len(re.findall(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", paper_sources, re.I))
 measurements["email_addresses_in_versioned_sources"] = emails
 if emails:
     errors.append("Article sources contain an email address; inspect privately")
-bib = (ROOT / "paper/referencias.bib").read_text()
+bib = (ROOT / "paper/referencias.bib").read_text(encoding="utf-8-sig")
 cites = {key.strip() for group in re.findall(r"\\cite(?:online)?\{([^}]+)\}", all_tex) for key in group.split(",")}
 entries = set(re.findall(r"^@\w+\{([^,]+),", bib, re.M))
 if cites != entries:
@@ -154,7 +154,7 @@ measurements["citation_keys"] = len(cites)
 measurements["bibliography_entries"] = len(entries)
 measurements["internal_article_targets"] = len(targets)
 for filename, key in (("resumo-pt.tex", "resumo_words"), ("resumo-en.tex", "abstract_words")):
-    source = (ROOT / "paper/sections" / filename).read_text()
+    source = (ROOT / "paper/sections" / filename).read_text(encoding="utf-8-sig")
     source = re.sub(r"%.*", " ", source)
     source = re.sub(r"\\[a-zA-Z@]+\*?(?:\[[^\]]*\])?", " ", source)
     source = re.sub(r"[{}~]|--+", " ", source)
@@ -167,7 +167,7 @@ if args.paper_pdf:
     if not args.paper_log:
         errors.append("PDF validation requires its final build log")
     else:
-        build_log = args.paper_log.read_text()
+        build_log = args.paper_log.read_text(encoding="utf-8-sig")
         for token, key in (("Overfull", "overfull_boxes"), ("Underfull", "underfull_boxes")):
             measurements[key] = build_log.count(token)
         if measurements["overfull_boxes"]:
@@ -219,9 +219,9 @@ if args.paper_pdf:
 # Protect the contents of already recorded decisions; added anchors are navigation only.
 try:
     old = subprocess.check_output(
-        ["git", "show", "HEAD:docs/decision-log.md"], cwd=ROOT, text=True
+        ["git", "show", "HEAD:docs/decision-log.md"], cwd=ROOT, text=True, encoding="utf-8"
     )
-    now = (ROOT / "docs/decision-log.md").read_text()
+    now = (ROOT / "docs/decision-log.md").read_text(encoding="utf-8-sig")
     def decision_bodies(text: str) -> dict[str, str]:
         text = re.sub(r'<a id="dec-\d+"></a>\n\n', "", text)
         blocks = re.split(r"(?m)^## (DEC-\d{3}) —", text)
