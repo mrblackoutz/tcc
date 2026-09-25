@@ -14,7 +14,7 @@ from typing import Any, Protocol
 import httpx
 
 from .llm_config import (
-    DEEPSEEK_DOCUMENTED_BACKEND,
+    DEEPSEEK_ALLOWED_RETURNED_MODELS,
     DeepSeekConfig,
     OllamaConfig,
 )
@@ -340,10 +340,7 @@ class DeepSeekProposalAdapter(_HttpAdapter):
             raise LLMAdapterError(self.provider, "empty_response")
 
         returned_model = _sanitised_identifier(value.get("model"))
-        if returned_model not in {
-            self._config.model,
-            DEEPSEEK_DOCUMENTED_BACKEND,
-        }:
+        if returned_model not in DEEPSEEK_ALLOWED_RETURNED_MODELS:
             raise LLMAdapterError(self.provider, "model_mismatch")
         proposal = _parse_content(
             content,
