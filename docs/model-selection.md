@@ -83,12 +83,12 @@ A [configuração técnica pré-piloto (DEC-029)](decision-log.md#dec-029) foi r
 | `max_tokens` | 2.048 | valor atual do adapter, sujeito a truncamentos observados no piloto |
 | Timeout de conexão | 10 s | implementado como default DeepSeek; não altera o default Ollama |
 | Timeout de inatividade de leitura | 120 s | implementado como default DeepSeek; não equivale a prazo total por causa de keep-alives |
-| Prazo de parede por tentativa | 180 s | aprovado, mas requer supervisor no runner; não implementado pelo adapter |
-| Orçamento da chamada lógica | 300 s | aprovado, mas requer supervisor no runner; não implementado |
-| Retries | até 2 novas tentativas para timeout/conexão ou HTTP 408/429/5xx | aprovado para SCI-03/RUN-06; o adapter faz uma tentativa, sem retry automático; 409 é permanente |
-| Espera entre tentativas | 2 s, depois 4 s, sem jitter | aprovado para o futuro runner, igual em C0/C1; não repetir erros de modelo/schema/truncamento |
+| Prazo de parede por tentativa | 180 s | [estágio técnico pré-freeze (DEC-031)](decision-log.md#dec-031) limita e verifica a espera do runner; ainda não supervisiona o encerramento do processo remoto |
+| Orçamento da chamada lógica | 300 s | implementado no estágio técnico com relógio monotônico e testes offline; não integrado ao runner Odoo |
+| Retries | até 2 novas tentativas para timeout/conexão ou HTTP 408/429/5xx | política comum C0/C1 implementada e testada offline; o adapter faz uma tentativa; 409 é permanente e desfecho incerto não é repetido |
+| Espera entre tentativas | 2 s, depois 4 s, sem jitter | implementada no estágio técnico, igual em C0/C1; não repetir erros de modelo/schema/truncamento |
 
-Antes do piloto, ainda são necessários a revisão independente, a implementação verificável dos prazos de parede/orçamento e retries no runner e a validação de competência de C0. O grupo deverá conferir truncamentos, custo e classificação idêntica dos erros em C0/C1 sem usar o conjunto final. Não inferir que `httpx` com timeout de leitura de 120 s imponha sozinho um prazo total: keep-alives podem mantê-lo aberto. O smoke aprovado não autoriza chamadas pagas adicionais por si só.
+Antes do piloto, ainda são necessários a revisão independente, a integração do estágio técnico ao runner com captura de estado Odoo e supervisão de processo remoto, o contrato de `missing` de SCI-03 e a validação de competência de C0. O grupo deverá conferir truncamentos, custo e classificação idêntica dos erros em C0/C1 sem usar o conjunto final. O timeout de leitura de 120 s sozinho não impõe prazo total: keep-alives podem mantê-lo aberto. O smoke aprovado não autoriza chamadas pagas adicionais por si só.
 
 Um estudo de *thinking* ligado versus desligado não integra o núcleo. Se for executado, será exploratório, posterior e formalizado em decisão própria, sem substituir resultados confirmatórios.
 

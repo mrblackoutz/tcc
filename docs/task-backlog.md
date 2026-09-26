@@ -2,7 +2,7 @@
 
 **Decisão de ownership:** [divisão do trabalho (DEC-021)](decision-log.md#dec-021)
 
-**Data-base:** 25/09/2026
+**Data-base:** 26/09/2026
 
 **Estado científico:** pré-congelamento; laboratório, rascunho, isolamento de rede e uma inferência real sintética G3c comprovados; competência C0, C1, dataset, piloto e resultados confirmatórios pendentes. Escopo atualizado por [retirada da exposição de dados (DEC-023)](decision-log.md#dec-023); alias documentado em [DEC-024](decision-log.md#dec-024).
 
@@ -128,7 +128,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | G3-03 | P0 | Gustavo | Thomaz | G3-02 | testes negativos: gateway/Odoo/db sem Internet; cliente sem ERP/Internet direta; proxy nega host/IP/porta alternativos | DONE |
 | G3-04 | P0 | Gustavo | Felipe | G3-01 | harness de smoke sintético, manifest saneado e varredura de logs, ainda com transporte mock | DONE |
 | G3-05 | P0 | Gustavo | Thomaz | G3-03, G3-04, autorização | smoke sintético aceito em 24/09: uma chamada sem retry, `deepseek-v4-flash` solicitado e `deepseek-flash` retornado, manifesto saneado e varredura de logs aprovados; [DEC-024](decision-log.md#dec-024) registra o novo roteamento. O prazo de resposta e escalonamento anteriores foram superados pelo aceite | DONE |
-| G3-06 | P1 | Gustavo | Felipe | G3-05 | [configuração ratificada (DEC-029)](decision-log.md#dec-029) e [smoke canônico (DEC-030)](decision-log.md#dec-030) aprovados em 26/09: uma inferência sintética com `deepseek-flash`, zero retries e manifesto saneado; faltam supervisão de parede 180 s/orçamento 300 s, retries 2 s/4 s no runner, revisão independente, competência C0 e freeze | ACTIVE |
+| G3-06 | P1 | Gustavo | Felipe | G3-05 | [configuração ratificada (DEC-029)](decision-log.md#dec-029) e [smoke canônico (DEC-030)](decision-log.md#dec-030) aprovados em 26/09: uma inferência sintética com `deepseek-flash`, zero retries e manifesto saneado. O [estágio técnico pré-freeze (DEC-031)](decision-log.md#dec-031) implementa orçamento, espera máxima e retry comum C0/C1 apenas com mocks; faltam supervisão do processo remoto, revisão independente, competência C0 e freeze | ACTIVE |
 | G3-07 | P2 | Gustavo | Thomaz | núcleo protegido, autorização | baixar Qwen3, registrar manifest/blobs/Ollama/Modelfile sem expor dados | CONDITIONAL |
 | G3-08 | P2 | Gustavo | Felipe | G3-07 | smoke Qwen: offload, CPU/GPU/RAM/VRAM, TTFT, tok/s, latência, contexto e OOM | CONDITIONAL |
 | C0-01 | P0 | Thomaz | Felipe | SCI-01, G3a | especificar prompt-base, ações e ferramentas plausíveis comuns; separar construção C0/C1 do transporte | READY |
@@ -176,11 +176,11 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
 | RUN-01 | P0 | Gustavo | Felipe | SCI-03 | schema `RunRecord` com configuração, hashes, condição, modelo, tentativas, estado e outcomes | READY |
-| RUN-02 | P0 | Gustavo | Thomaz | RUN-01 | runner único C0/C1, sem lógica de defesa, com relógios e tentativas individualizadas | READY |
+| RUN-02 | P0 | Gustavo | Thomaz | RUN-01 | runner único C0/C1, sem lógica de defesa, com relógios e tentativas individualizadas; [estágio LLM pré-freeze (DEC-031)](decision-log.md#dec-031) implementado offline, integração Odoo/estado e contrato RUN-01 pendentes | ACTIVE |
 | RUN-03 | P0 | Gustavo | Felipe | estado M2 | núcleo puro e [contraexemplos corrigidos (DEC-028)](decision-log.md#dec-028) com regressões offline; faltam recibo de efeito confiável no runner, captura Odoo completa de §14.5, contratos DATA-02/C1-01, teste integrado e revisão de Felipe | ACTIVE |
 | RUN-04 | P0 | Gustavo | Thomaz | RUN-02 | reset/asserts de fixture, saúde, espaço, relógio e estado residual; verificar outbox vazio se a extensão secundária existir | READY |
 | RUN-05 | P0 | Gustavo | Felipe | RUN-01–04 | pareamento, ordem intercalada/randomizada, três repetições e seed/ordem registradas | WAIT |
-| RUN-06 | P0 | Gustavo | Felipe | SCI-03, RUN-02 | retry/missing idênticos em C0/C1; falhas de parsing/recusa permanecem outcomes | WAIT |
+| RUN-06 | P0 | Gustavo | Felipe | SCI-03, RUN-02 | retry/missing idênticos em C0/C1; [política técnica de tentativas (DEC-031)](decision-log.md#dec-031) testada offline, mas regra científica de `missing` e validação integrada pendentes; falhas de parsing/recusa permanecem outcomes | WAIT |
 | RUN-07 | P1 | Gustavo | Felipe | G3-05, RUN-01 | token/custo/latência por etapa, pricing datado e request ID saneado | WAIT |
 | RUN-08 | P0 | Gustavo | Thomaz | RUN-01 | writer raw fora do Git, manifest de hashes e política de retenção/backup imutável | READY |
 | RUN-09 | P1 | Gustavo | Felipe | RUN-02–08 | ensaio sintético completo sem conjunto final; valida schemas e gera dados para dry-run estatístico | WAIT |
