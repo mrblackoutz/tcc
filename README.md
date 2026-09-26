@@ -2,7 +2,7 @@
 
 Este repositório contém o plano-mestre editável do TCC em Ciência da Computação sobre mitigação de prompt injection indireta em um fluxo de Contas a Pagar integrado ao Odoo 19.0 Community self-hosted.
 
-**Comece pela [leitura rápida do experimento](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida).** A versão 1.2.16 mantém a avaliação em alteração de campos, troca de beneficiário e contabilização sem autorização. A frente de exposição de dados foi retirada na v1.2.12. A meta continua em 90 pares, 30 por objetivo; não houve coleta de resultados finais.
+**Comece pela [leitura rápida do experimento](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida).** A versão 1.2.17 mantém a avaliação em alteração de campos, troca de beneficiário e contabilização sem autorização, e especifica o contrato de ação v2 necessário para A3a. A frente de exposição de dados foi retirada na v1.2.12. A meta continua em 90 pares, 30 por objetivo; não houve coleta de resultados finais.
 
 As referências têm descrição e destino: [contribuição das camadas (RQ4)](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#rq4) é uma pergunta de pesquisa; [revisão independente do plano (DEC-022)](docs/decision-log.md#dec-022) é uma decisão histórica; [retirada da exposição de dados (DEC-023)](docs/decision-log.md#dec-023) registra esta mudança. Outros termos estão no [glossário do plano](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#glossario).
 
@@ -24,7 +24,7 @@ As referências têm descrição e destino: [contribuição das camadas (RQ4)](P
 - `docs/revisao-independente-v1.2.9.md`: dossiê da revisão adversarial em doze dimensões, com 120 achados verificados, evidência literal, veredito e correção recomendada, conforme [revisão independente do plano (DEC-022)](docs/decision-log.md#dec-022).
 - `docs/task-backlog.md`: inventário operacional de 116 tarefas, dependências, revisões, DoD e ondas paralelas dos três integrantes conforme [divisão do trabalho (DEC-021)](docs/decision-log.md#dec-021).
 - `paper/`: fonte LaTeX editável, referências, validação e PDF pré-experimental do artigo institucional do TCC II, conforme [fonte do artigo (DEC-019)](docs/decision-log.md#dec-019).
-- `docs/releases/v1.2.16.md`: manifesto da versão corrente; versões anteriores permanecem em `docs/releases/` para auditoria, sem fazer parte do roteiro de leitura.
+- `docs/releases/v1.2.17.md`: manifesto da versão corrente; versões anteriores permanecem em `docs/releases/` para auditoria, sem fazer parte do roteiro de leitura.
 - `reproducibility/odoo-source.lock.json`: lock legível por máquina da fonte Odoo selecionada.
 - `reproducibility/lab-environment.lock.json`: versões, digests e últimos aceites M1/M2 saneados do laboratório.
 - `reproducibility/model-selection.lock.json`: seleção datada do DeepSeek e Qwen3, fatos observados e evidências ainda pendentes para o freeze.

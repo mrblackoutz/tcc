@@ -11,9 +11,9 @@
 **Disciplina/atividade:** Trabalho de Conclusão de Curso II (TCC II)
 **Autores:** Felipe Ujvari Gasparino de Sousa; Gustavo Nascimento Siqueira; Thomaz de Souza Scopel
 **Orientador:** Mario Olimpio de Menezes
-**Versão:** 1.2.16
+**Versão:** 1.2.17
 **Data:** 26 de setembro de 2026
-**Status:** pré-congelamento. Laboratório, rascunho e isolamento de rede comprovados. O smoke G3c histórico usou o alias legado; o [smoke canônico G3-06 (DEC-030)](docs/decision-log.md#dec-030) concluiu uma chamada real sintética com `deepseek-flash`, sem retry e com manifesto saneado. A configuração técnica de [DEC-029](docs/decision-log.md#dec-029) não está congelada: supervisão de parede/retries, revisão independente, integração Odoo/runner, C0, C1, dataset, piloto e experimento final continuam pendentes. O [oráculo pré-freeze (DEC-028)](docs/decision-log.md#dec-028) passou por correções offline, ainda sem integração.
+**Status:** pré-congelamento. Laboratório, rascunho e isolamento de rede comprovados; smoke canônico sintético aprovado. O [contrato tipado v2 para A3a (DEC-035)](docs/decision-log.md#dec-035) foi especificado para implementação, preservando o v1 histórico. SCI-01 aguarda revisão; SCI-03, integração Odoo/runner, C0, C1, dataset, piloto e experimento final continuam pendentes. Nenhuma run científica foi executada.
 
 > Documento de trabalho. O relatório e o fonte editável do TCC I, o edital `EditalTCC_2026_2-V1` e o template FCI 2026 foram recuperados e auditados. Autores e orientador foram confirmados em 30 de agosto de 2026. As lacunas institucionais residuais estão no Gate 0 e em `docs/institutional-requirements.md`.
 
@@ -55,6 +55,7 @@
 | 1.2.14 | 24/09/2026 | DEC-025 remove do checkout o DOCX, o PDF do plano e o validador Word obsoletos; o histórico Git e os hashes da v1.2.1 preservam a recuperação, e a navegação corrente fica mais curta | Grupo |
 | 1.2.15 | 26/09/2026 | DEC-029 ratifica alias canônico DeepSeek e parâmetros técnicos pré-piloto, com conexão de 10 s; DEC-028 corrige falsos resultados do oráculo com recibo de efeito confiável e aprovação vinculada à conta exata; freeze, smoke novo e integração seguem pendentes | Gustavo |
 | 1.2.16 | 26/09/2026 | Smoke canônico G3-06 aprovado em uma chamada sintética sem retry, com alias solicitado/retornado e proveniência saneada; G3-06 segue ativo até runner, revisão e freeze | Gustavo |
+| 1.2.17 | 26/09/2026 | Estado `AWAITING_REVIEW` separa implementação de aceite; contrato de ação v2 fixa enum proposto pelo LLM para A3a, preservando schemas v1 históricos e atualizando a pré-imagem prevista para o fluxo científico | Gustavo / DEC-034–035 |
 | 1.3 | [data] | Congelamento após piloto | [nome] |
 
 A v1.2.4 permanece preservada como release histórica do scaffold. A auditoria registrada em DEC-016 identificou que seu ID local de imagem não era evidência de manifest OCI, que os locks estavam incompletos, que o transporte usava a chave administrativa e que o smoke se limitava ao cadastro de fornecedor e ao descarte de volumes. O incremento corretivo `b9a96da33df83aabd75e95948cfbf202d7e73cf2` comprovou M1 com manifest OCI local `sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392`, config digest distinto, identidade técnica C0 não administrativa, fixtures sintéticas completas, conta em rascunho ligada a PO/banco e reset por hash. O incremento M2 `fef3348` elevou a suíte a 41 testes e comprovou PDF benigno → proposta tipada → rascunho C0 → restauração, sob DEC-017. A DEC-018, registrada no commit `45b0216`, encerrou a seleção nominal de W04 sem alterar o tamanho amostral: DeepSeek será o modelo principal e Qwen3 o segundo bloco separado. A DEC-020 (`09edfb8`) fixou a fronteira mínima de egress e o contrato comum dos adapters. G3a foi implementada em `b2deec8` e comprovada em `9d0afd9`, com 82 testes executados em contêiner sem rede e sem chamadas reais. A DEC-021 (`b9b3c88`) atribuiu os três papéis nominais e o commit `7c311d9` publicou o backlog operacional completo. G3b foi implementada em `f2d7f5f` e sua evidência saneada foi registrada em `299a6f4`, sem chamada a provedor, chave ou download de modelo. O caminho real G3c foi implementado em `0fc66ce`, sua captura foi corrigida em `ffa155d` e o diagnóstico seguro foi ampliado em `ef956d2`. Tentativas autorizadas e sem retry observaram o túnel permitido, mas a tentativa diagnosticável recebeu HTTP 402; o estado saneado foi registrado em `9e6446e`. Isso não fixa os artefatos finais, não conclui o smoke G3c, o C0 científico/G3 ou as obrigações institucionais e de literatura de G1. A versão 1.3 permanece reservada para o congelamento posterior ao piloto, quando todos os itens obrigatórios da seção 30.1 estiverem atendidos.
@@ -685,7 +686,7 @@ O policy engine implementa deliberadamente a conciliação entre pedido e fatura
 - o mesmo arquivo de entrada e o mesmo extrator de texto;
 - o mesmo objetivo de negócio e prompt-base da tarefa;
 - o mesmo modelo, versão, parâmetros e limites;
-- o mesmo schema de `ProposedAction`;
+- o mesmo schema de `ProposedAction`: `vendor-bill-action-proposal/v2` no futuro fluxo científico, com `action` efetivamente proposta pelo LLM; o `vendor-bill-proposal/v1` permanece apenas no caminho histórico M2/G3c, conforme [correção do contrato A3a (DEC-035)](docs/decision-log.md#dec-035);
 - as mesmas fixtures e o mesmo estado inicial do Odoo;
 - o mesmo conjunto funcional de ações necessário ao processo;
 - o mesmo runner, relógio, coleta de tokens e avaliador de estado;
@@ -919,12 +920,21 @@ Procedimento:
   "vendor_ref": "VENDOR-017",
   "purchase_order_ref": "PO-2026-0041",
   "document_ref": "SYN-0041",
-  "currency": "BRL",
-  "amount": "8420.50",
-  "recipient_bank_ref": "BANK-017-A",
   "invoice_date": "2026-10-01",
+  "currency": "BRL",
+  "bank_account_ref": "BANK-017-A",
+  "lines": [
+    {
+      "item_code": "SERVICE-001",
+      "description": "SERVICO SINTETICO SEM VALOR FISCAL",
+      "quantity": "1.00",
+      "unit_price": "8420.50",
+      "line_total": "8420.50"
+    }
+  ],
+  "total": "8420.50",
   "evidence": [
-    {"field": "amount", "source_span": "Total: R$ 8.420,50"}
+    {"field": "total", "source_span": "TOTAL SINTETICO: BRL 8420.50"}
   ]
 }
 ```
@@ -932,6 +942,7 @@ Procedimento:
 Requisitos:
 
 - `action` é enum, não texto livre;
+- a saída do modelo no fluxo científico usa `vendor-bill-action-output/v2`; o gateway injeta proveniência e produz `vendor-bill-action-proposal/v2`. Para `POST_VENDOR_BILL`, o modelo descreve a conta, mas não fornece `target_move_id`: o executor o resolve pelo estado e manifesto confiáveis. O modelo não recebe permissão implícita para contabilizar por ter emitido a ação;
 - valores monetários são decimais canonicalizados, nunca `float` binário no oráculo;
 - referências são identificadores sintéticos;
 - campos extras são rejeitados;
@@ -986,7 +997,7 @@ Sem uma pré-imagem enumerada, C08, C10, R-POL-09 e o invariante I4 não são fa
 
 `canonical_bytes` é produzido por:
 
-1. montar o objeto `CanonicalAction` com exatamente estes campos, e nenhum outro: `canonicalization_version` (`canon/v1`), `action_schema_version` (`vendor-bill-proposal/v1`), `policy_version`, `action`, `executor_mode` (`CREATE_DRAFT` ou `POST_APPROVED`), `scenario_id`, `document_sha256`, `vendor_ref`, `purchase_order_ref`, `document_ref`, `invoice_date`, `currency`, `amount`, `recipient_bank_ref`, `lines` e, quando `executor_mode` é `POST_APPROVED`, `target_move_id`;
+1. montar o objeto `CanonicalAction` com exatamente estes campos, e nenhum outro: `canonicalization_version` (`canon/v1`), `action_schema_version` (`vendor-bill-action-proposal/v2` no fluxo científico), `policy_version`, `action`, `executor_mode` (`CREATE_DRAFT` ou `POST_APPROVED`), `scenario_id`, `document_sha256`, `vendor_ref`, `purchase_order_ref`, `document_ref`, `invoice_date`, `currency`, `amount` (derivado de `total`), `recipient_bank_ref` (derivado de `bank_account_ref`), `lines` e, quando `executor_mode` é `POST_APPROVED`, `target_move_id` resolvido do estado confiável; os spans de `evidence` são auditivos e não integram esta pré-imagem, pois não são escritos nem usados para autorizar;
 2. representar cada item de `lines` com `item_code`, `quantity` e `unit_price`, e ordenar a lista por `item_code` em ordem de code point;
 3. normalizar todo texto em NFC, sem alteração de caixa, e rejeitar caracteres de controle, espaços de largura zero e marcas de direção — a rejeição é explícita, não silenciosa;
 4. representar valores monetários e quantidades como decimais canônicos em string, com a escala fixada no protocolo, de modo que `8420.5` e `8420.50` tenham exatamente uma representação;
@@ -1070,6 +1081,8 @@ A meta continua sendo 90 pares. Os 15 pares anteriormente destinados à exposiç
 | **Total** | **90** | — | — | **30 casos** | — |
 
 `POST_VENDOR_BILL` é a ação crítica confirmatória. `REQUEST_SIMULATED_PAYMENT`, se o vertical slice a suportar com estabilidade, permanecerá extensão secundária observada somente no outbox local; não criará registros de pagamento no Odoo nem alterará a matriz ou o tamanho do teste v1.
+
+Nos pares A3a, a ação `POST_VENDOR_BILL` deve estar no output tipado do modelo, nunca ser fabricada a partir de `attack_family` ou `expected_action` do manifesto. O rascunho alvo é identificado pelo runner/executor a partir de chaves confiáveis e seu `target_move_id` entra na autorização exata; o documento não fornece ID interno. O schema v1 dos smokes M2/G3c não satisfaz este contrato; o v2 definido pela [DEC-035](docs/decision-log.md#dec-035) deverá ser integrado e testado antes do piloto.
 
 <a id="sec-12-4"></a>
 
@@ -1525,7 +1538,7 @@ Aumentar repetições não substitui criar mais cenários independentes.
 - arquivos de configuração versionados, secrets somente por ambiente;
 - dependências e imagens fixadas por versão e digest no congelamento.
 
-O fornecedor do LLM ficará atrás de um adapter e não dependerá de recurso nativo de IA do Odoo. A [seleção dos modelos (DEC-018)](docs/decision-log.md#dec-018) adotou DeepSeek como bloco principal, e o [pacote técnico pré-piloto (DEC-029)](docs/decision-log.md#dec-029) agora solicita `deepseek-flash` à API; o alias legado selecionado em agosto tinha `DeepSeek-V4-Flash-0731` como backend então documentado, sem garantia de snapshot imutável. O bloco separado solicita `qwen3:14b-q4_K_M` ao Ollama e só será considerado reproduzível depois do lock do manifest e dos blobs locais. Ambos usam o contrato semântico `vendor-bill-proposal/v1`, *thinking* desligado e `temperature=0` quando aceita. O piloto valida os parâmetros e a competência; limites de parede e retries ainda exigem implementação no runner. Temperatura zero reduz variação, mas não garante determinismo.
+O fornecedor do LLM ficará atrás de um adapter e não dependerá de recurso nativo de IA do Odoo. A [seleção dos modelos (DEC-018)](docs/decision-log.md#dec-018) adotou DeepSeek como bloco principal, e o [pacote técnico pré-piloto (DEC-029)](docs/decision-log.md#dec-029) solicita `deepseek-flash` à API; o alias legado selecionado em agosto tinha `DeepSeek-V4-Flash-0731` como backend então documentado, sem garantia de snapshot imutável. O bloco separado solicita `qwen3:14b-q4_K_M` ao Ollama e só será considerado reproduzível depois do lock do manifest e dos blobs locais. M2/G3c preservam `vendor-bill-proposal/v1` como evidência histórica; os futuros blocos científicos usarão o mesmo `vendor-bill-action-proposal/v2` em C0/C1, após implementação e revisão, com *thinking* desligado e `temperature=0` quando aceita. O piloto valida parâmetros e competência; a integração completa de prazos, retries e Odoo no runner ainda está pendente. Temperatura zero reduz variação, mas não garante determinismo.
 
 | Papel | Identificador solicitado | Versão/artefato | Estado pré-freeze |
 |---|---|---|---|
@@ -1934,7 +1947,7 @@ A revisão da distribuição considera esforço, não contagem de tarefas. Nenhu
 
 P3 conduz o red team defense-aware e P1 aceita o resultado. P2, que implementa C1, não participa da autoria adversarial. A separação é deliberada: P1 coordena a autoria confirmatória dos ataques e do codebook, conforme [seção 12.6](#sec-12-6), e concentrar as duas autorias na mesma pessoa reduziria a independência entre o conjunto congelado e o adaptativo. Se houver um quarto integrante, ele assume a execução. O limite residual correspondente consta em [seção 22.2](#sec-22-2).
 
-O backlog operacional normativo está em `docs/task-backlog.md`. Ele contém 120 tarefas identificadas, organizadas em ondas W0–W7, com prioridade, proprietário, revisor, dependências, entregável, Definition of Done e estado. A distribuição por proprietário representa quantidade de tarefas, não estimativa de esforço; o balanceamento operacional deve ser revisto nas integrações semanais sem transferir silenciosamente a responsabilidade primária.
+O backlog operacional normativo está em `docs/task-backlog.md`. Ele contém 120 tarefas identificadas, organizadas em ondas W0–W7, com prioridade, proprietário, revisor, dependências, entregável, Definition of Done e estado. O estado `AWAITING_REVIEW`, definido na [regra de aceite intermediário (DEC-034)](docs/decision-log.md#dec-034), permite continuar implementação dependente sobre contrato versionado, mas não satisfaz gates de piloto ou freeze. A distribuição por proprietário representa quantidade de tarefas, não estimativa de esforço; o balanceamento operacional deve ser revisto nas integrações semanais sem transferir silenciosamente a responsabilidade primária.
 
 <a id="sec-19-3"></a>
 

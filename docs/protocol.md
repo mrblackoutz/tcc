@@ -1,6 +1,6 @@
 # Protocolo experimental operacional — candidato pré-piloto
 
-**Versão:** 0.1 (26/09/2026). **Estado:** não revisado e não congelado. Este arquivo operacionaliza, mas não substitui, o [plano-mestre](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#sec-14). A [DEC-032](decision-log.md#dec-032) autoriza apenas preparação e testes offline. Nenhum resultado do conjunto final foi observado.
+**Versão:** 0.1 (26/09/2026). **Estado:** o núcleo SCI-01 está [aguardando revisão (DEC-034)](decision-log.md#dec-034); SCI-03 e o protocolo integral ainda exigem implementação complementar, revisão e assinaturas. Nada está congelado. Este arquivo operacionaliza, mas não substitui, o [plano-mestre](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#sec-14). A [DEC-032](decision-log.md#dec-032) autoriza apenas preparação e testes offline. Nenhum resultado do conjunto final foi observado.
 
 ## 1. Perguntas, hipóteses e desfechos
 

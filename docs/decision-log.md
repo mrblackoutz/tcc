@@ -529,3 +529,31 @@ Substitui ou é substituída por:
 - **Evidência:** `gateway/src/tcc_gateway/schemas/vendor_bill_model_output_v1.schema.json`, `vendor_bill_proposal_v1.schema.json` e plano §§8.3, 9.1, 12.4 e 16.5.
 - **Responsável:** Gustavo registra a divergência; contrato a ser revisado por Thomaz e Felipe antes do freeze.
 - **Seções e artefatos afetados:** C0-01/02/03, C1-01, DATA-02, RUN-03 e piloto; nenhuma run final foi afetada.
+
+<a id="dec-034"></a>
+
+## DEC-034 — Estado AWAITING_REVIEW sem antecipar aceite científico
+
+- **Data:** 26/09/2026.
+- **Status:** aceita para o backlog pré-freeze.
+- **Contexto:** tarefas implementadas durante a indisponibilidade temporária do owner/reviewer ficavam `ACTIVE`, confundindo falta de construção com falta de revisão, ou eram marcadas `DONE` sem aceite independente. O usuário solicitou um estado intermediário que permita avançar sem dispensar a revisão.
+- **Alternativas consideradas:** manter `ACTIVE` até aceite; chamar trabalho não revisado de `DONE`; criar `AWAITING_REVIEW` com critérios de entrada e limites de dependência. Adota-se a última. O nome evita confusão com a decisão de política `REVIEW` de C1.
+- **Decisão:** `AWAITING_REVIEW` significa que artefato, testes, documentação, verificação de segurança e evidência não dependente de revisão estão completos e commitados; apenas revisão/assinatura independente prevista no DoD falta. O checklist do item deve apontar commit, testes e reviewer. Tarefas descendentes podem usar o contrato como base **provisória** para implementar e testar, com versão/hash identificados; se a revisão exigir mudança, os consumidores devem ser revalidados. `AWAITING_REVIEW` não satisfaz gates de piloto, freeze, abertura de dataset final, release 1.3 nem afirmação confirmatória. Reprovação devolve a tarefa a `ACTIVE`; aceite documentado leva a `DONE`. Itens com implementação ou evidência técnica faltante permanecem `ACTIVE`/`WAIT`.
+- **Consequências:** progresso paralelo fica visível sem fabricar aceite; dependências de engenharia podem iniciar sob risco explícito, mas a cadeia científica e institucional continua exigindo `DONE`/assinatura. SCI-01 pode ir para `AWAITING_REVIEW` após conferência do seu escopo; SCI-03, RUN-02 e G3-06 ainda não atendem ao critério.
+- **Evidência:** pedido do usuário nesta conversa, [protocolo candidato (DEC-032)](#dec-032), regras de ownership do backlog e gates pré-piloto do plano §§14.1 e 19.2.
+- **Responsável:** Gustavo registra e coordena; reviewers nominais permanecem responsáveis pelo aceite independente.
+- **Seções e artefatos afetados:** estados do backlog, SCI-01 e dependências de implementação; nenhuma run ou hipótese é alterada.
+
+<a id="dec-035"></a>
+
+## DEC-035 — Contrato tipado v2 para ação A3a proposta pelo modelo
+
+- **Data:** 26/09/2026.
+- **Status:** aceita para implementação pré-freeze e release 1.2.17; integração C0/C1 e revisão independentes permanecem pendentes.
+- **Contexto:** [lacuna de ação crítica (DEC-033)](#dec-033) impede testar A3a: o LLM emite apenas campos e `CREATE_DRAFT_BILL` é inserido pelo normalizador v1. O plano exige que o próprio modelo possa propor `POST_VENDOR_BILL` sem que o label do manifesto determine a ação.
+- **Alternativas consideradas:** modificar o schema v1 em silêncio; inferir a ação do cenário; usar tool/RPC genérico; criar v2 fechado que preserva v1 histórico e adiciona enum de ação à saída do modelo. Adota-se a última. Tool/RPC genérico ampliaria a superfície e não é necessário para as duas capacidades do caso de uso.
+- **Decisão:** criar `vendor-bill-action-output/v2` com `action` obrigatório e enum fechado `CREATE_DRAFT_BILL`/`POST_VENDOR_BILL`, acompanhado dos mesmos campos financeiros v1 e de evidências opcionais limitadas a oito spans de até 200 caracteres; spans são dados não confiáveis usados só na auditoria, nunca na autorização. O modelo não fornece `scenario_id`, IDs internos, autorização ou metadados de confiança. A normalização injeta proveniência confiável e produz `vendor-bill-action-proposal/v2`, validando tipos e reconciliação monetária. Para `POST_VENDOR_BILL`, os campos descrevem a conta alvo; `target_move_id` será resolvido apenas do estado/manifesto confiável e vinculado ao hash de autorização, nunca aceito do documento. O contrato v1 permanece imutável para M2/G3c; o fluxo científico futuro usará v2 **igualmente** em C0/C1. A pré-imagem `CanonicalAction.action_schema_version` passa a `vendor-bill-action-proposal/v2` para esse fluxo, sem alterar `canon/v1` nem os demais campos. O schema v2 não autoriza a execução: C1 ainda exige política, gate vinculado e executor restrito.
+- **Consequências:** a ação A3a torna-se representável e testável offline sem quebrar evidências históricas; adapters, prompt-base, executor C0, policy/add-on C1 e runner ainda devem optar explicitamente pelo v2 e provar que não leem o label para decidir ação. Nenhuma run científica será executada com v1. Revisão de Thomaz/Felipe e teste E2E são gates, não presumidos pelo schema.
+- **Evidência:** plano §§8.2, 9.1, 11.2, 11.4.1 e 12.4; schemas v1 e [divergência (DEC-033)](#dec-033); testes offline do v2 serão anexados ao commit técnico.
+- **Responsável:** Gustavo implementa o contrato de contingência; Thomaz revisa segurança/ações e Felipe revisa aderência A3a antes do piloto.
+- **Seções e artefatos afetados:** plano §11.4.1, schemas/modelo, C0-01/02/03, C1-01, DATA-02 e backlog; não altera amostra, hipótese, endpoint ou margem.

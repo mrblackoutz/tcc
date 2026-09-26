@@ -2,6 +2,13 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.17] — 2026-09-26
+
+- criada a [regra de aceite intermediário (DEC-034)](docs/decision-log.md#dec-034): `AWAITING_REVIEW` identifica implementação completa aguardando revisão independente; desenvolvimento dependente pode avançar com contrato versionado, mas piloto e freeze exigem aceite `DONE`;
+- a [correção do contrato A3a (DEC-035)](docs/decision-log.md#dec-035) preserva os schemas v1 históricos de M2/G3c e especifica `vendor-bill-action-output/v2`/`vendor-bill-action-proposal/v2` para que a ação crítica seja proposta pelo modelo em ambos C0/C1;
+- atualizados o exemplo de `ProposedAction`, a pré-imagem `CanonicalAction.action_schema_version` e a matriz A3a para separar dados não confiáveis, alvo resolvido em estado confiável e autorização vinculada;
+- esta release documenta o contrato antes do código. Implementação, integração, revisão, piloto e freeze permanecem pendentes; hipóteses, margem e tamanhos amostrais não mudam.
+
 ## [1.2.16] — 2026-09-26
 
 - executado o [smoke canônico G3-06 (DEC-030)](docs/decision-log.md#dec-030) em uma chamada real sintética, sem retry: `deepseek-flash` solicitado/retornado, proposta tipada, um túnel permitido e manifesto saneado com SHA-256 `45f7722115020ec445ef89cf0cde2d7e96448315bdb9d595ddabc01caa6af5be`;

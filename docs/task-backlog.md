@@ -16,6 +16,7 @@ Estados permitidos:
 
 - `READY`: pode começar sem aguardar outra tarefa;
 - `ACTIVE`: possui owner trabalhando e próximo checkpoint definido;
+- `AWAITING_REVIEW`: artefato, testes, documentação e evidência técnica não dependente de revisão estão completos e commitados; falta somente revisão/assinatura independente. Permite iniciar dependentes de engenharia sobre contrato versionado, mas **não** satisfaz gates de piloto, freeze ou resultado científico; ver [regra de aceite intermediário (DEC-034)](decision-log.md#dec-034);
 - `WAIT`: depende de outro ID interno;
 - `EXTERNAL`: depende de orientador, Oriente, credencial ou autorização do operador;
 - `CONDITIONAL`: só entra se o núcleo estiver protegido em prazo/recursos;
@@ -108,7 +109,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| SCI-01 | P0 | Felipe | Thomaz | — | [protocolo candidato pré-piloto (DEC-032)](decision-log.md#dec-032) criado com RQs, hipóteses e endpoint primário; faltam revisão independente e assinaturas pré-piloto | ACTIVE |
+| SCI-01 | P0 | Felipe | Thomaz | — | [protocolo candidato pré-piloto (DEC-032)](decision-log.md#dec-032) commitado em `d0f11d6`, com RQs, hipóteses, endpoint primário e validação Markdown; falta revisão independente/assinatura, conforme [DEC-034](decision-log.md#dec-034) | AWAITING_REVIEW |
 | SCI-02 | P0 | Felipe | Gustavo | — | justificar operacionalmente a margem BTSR de 10 p.p. sem usar piloto/final | READY |
 | SCI-03 | P0 | Felipe | Thomaz | — | [regras candidatas e classificador puro (DEC-032)](decision-log.md#dec-032) testados offline; faltam parâmetros de retry da observação Odoo, integração, revisão independente e assinatura antes do freeze | ACTIVE |
 | SCI-04 | P0 | Felipe | Gustavo | — | definir procedimento prévio de [limites de custo operacional (H4)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h4) para latência, custo e demanda potencial de revisão | READY |
@@ -271,7 +272,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 
 Antes de integrar as três trilhas, os seguintes contratos devem estar versionados e revisados:
 
-1. `vendor-bill-model-output/v1` e `vendor-bill-proposal/v1` — já existentes;
+1. `vendor-bill-model-output/v1` e `vendor-bill-proposal/v1` — históricos M2/G3c, imutáveis; `vendor-bill-action-output/v2` e `vendor-bill-action-proposal/v2` — contrato candidato para o fluxo científico C0/C1 conforme [DEC-035](decision-log.md#dec-035), sujeito a revisão antes do piloto;
 2. `dataset-manifest/v1`, `pair/scenario ground-truth/v1` — P1, revisão P3/P2 apenas de schema;
 3. `policy-input/v1`, `policy-decision/v1`, reason codes e capability command — P2, revisão P1/P3;
 4. `run-record/v1` e oracle outcome — P3, revisão P1/P2;
@@ -286,6 +287,7 @@ Nenhuma integração deve contornar um contrato com dicionário livre, ID intern
 - toda tarefa `P0` possui data-limite explícita, conforme §19.3 do plano; tarefa `EXTERNAL` recebe data-limite de resposta e data de escalonamento;
 - ultrapassada a data de escalonamento, o assunto vai ao orientador na reunião seguinte e o fato é registrado; tarefa que passou da data-limite sem mudar de estado é reportada como atrasada no checkpoint semanal e obriga replanejamento explícito da onda, nunca prorrogação silenciosa;
 - o estado `ACTIVE` é usado de fato: tarefa com owner trabalhando não permanece `READY`, sob pena de o backlog deixar de detectar atraso;
+- `AWAITING_REVIEW` só é usado quando o item aponta commit e testes, e resta apenas a revisão independente. Implementações dependentes podem avançar com o hash do contrato; uma reprovação reabre o item e obriga revalidar consumidores. Piloto, freeze e aceite científico exigem `DONE`, não `AWAITING_REVIEW`;
 - um owner não aprova sozinho tarefa crítica própria;
 - P2 não recebe o conjunto final completo antes do freeze da defesa;
 - mudanças nos contratos I1 geram decisão e reexecução dos consumidores afetados;
