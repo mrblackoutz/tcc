@@ -16,6 +16,7 @@ from tcc_gateway.llm_client_service import (
     parse_client_request,
     process_client_request,
 )
+from tcc_gateway.llm_config import DEEPSEEK_MODEL
 from tcc_gateway.proposal import VendorBillProposal
 
 
@@ -138,7 +139,7 @@ def test_g3c_mode_performs_one_deepseek_call_and_rejects_ollama(tmp_path) -> Non
             200,
             json={
                 "id": "synthetic-g3c-response",
-                "model": "deepseek-v4-flash",
+                    "model": DEEPSEEK_MODEL,
                 "system_fingerprint": "fp_synthetic_g3c",
                 "choices": [
                     {

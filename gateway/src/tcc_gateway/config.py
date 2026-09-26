@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from math import isfinite
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -30,7 +31,7 @@ def _positive_float(environ: Mapping[str, str], name: str, default: float) -> fl
     except ValueError:
         raise OdooConfigError(f"configuration must be a number: {name}") from None
 
-    if value <= 0:
+    if not isfinite(value) or value <= 0:
         raise OdooConfigError(f"configuration must be greater than zero: {name}")
     return value
 
@@ -115,4 +116,3 @@ class OdooConfig:
                 source, "ODOO_REQUEST_TIMEOUT_SECONDS", 30.0
             ),
         )
-

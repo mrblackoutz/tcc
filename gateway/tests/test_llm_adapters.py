@@ -189,6 +189,14 @@ def test_deepseek_accepts_documented_v41_returned_model(returned_model: str) -> 
     assert result.metadata.returned_model == returned_model
 
 
+def test_active_adapter_rejects_historical_v40_returned_model() -> None:
+    with _deepseek_adapter(
+        lambda _: httpx.Response(200, json=_deepseek_response(model="DeepSeek-V4-Flash-0731"))
+    ) as adapter:
+        with pytest.raises(LLMAdapterError, match="model_mismatch"):
+            adapter.propose(_request())
+
+
 def test_ollama_valid_schema_output_uses_local_non_thinking_request() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.url == httpx.URL("http://127.0.0.1:11434/api/chat")
@@ -349,8 +357,10 @@ def test_multiple_tool_calls_are_classified_explicitly() -> None:
 @pytest.mark.parametrize(
     ("status", "category", "retryable"),
     [
+        (408, "provider_unavailable", True),
         (429, "rate_limit", True),
         (503, "provider_unavailable", True),
+        (409, "request_rejected", False),
         (400, "request_rejected", False),
     ],
 )

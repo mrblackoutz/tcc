@@ -17,7 +17,7 @@ import httpx
 from .proposal import ProposalValueError, VendorBillProposal
 from .proposal_schema import ProposalSchemaError
 from .state import canonical_json_bytes, canonical_json_sha256
-from .llm_config import DEEPSEEK_ALLOWED_RETURNED_MODELS
+from .llm_config import DEEPSEEK_G3C_HISTORICAL_RETURNED_MODELS
 
 
 SCHEMA_VERSION = "g3c-deepseek-smoke/v1"
@@ -156,7 +156,7 @@ def build_sanitised_manifest(
     )
     if requested_model != "deepseek-v4-flash":
         raise G3CSmokeError("requested_model_mismatch")
-    if returned_model not in DEEPSEEK_ALLOWED_RETURNED_MODELS:
+    if returned_model not in DEEPSEEK_G3C_HISTORICAL_RETURNED_MODELS:
         raise G3CSmokeError("returned_model_mismatch")
     if metadata.get("endpoint") != "https://api.deepseek.com/chat/completions":
         raise G3CSmokeError("endpoint_mismatch")

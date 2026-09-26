@@ -82,7 +82,7 @@ def test_deepseek_rejects_endpoint_outside_allowlist(base_url: str) -> None:
 
 
 def test_configs_reject_model_drift() -> None:
-    with pytest.raises(LLMConfigError, match="DEC-018"):
+    with pytest.raises(LLMConfigError, match="DEC-026"):
         DeepSeekConfig(api_key=SYNTHETIC_KEY, model="unselected-model")
     with pytest.raises(LLMConfigError, match="DEC-018"):
         OllamaConfig(model="unselected-model")
@@ -124,3 +124,17 @@ def test_ollama_rejects_undeclared_or_cloud_endpoint(base_url: str) -> None:
 def test_g3a_rejects_unrecorded_temperature_change() -> None:
     with pytest.raises(LLMConfigError, match="temperature=0"):
         GenerationSettings(temperature=0.1)
+
+
+def test_deepseek_pilot_defaults_use_ten_second_connect_and_two_minute_read() -> None:
+    config = DeepSeekConfig.from_env({"DEEPSEEK_API_KEY": SYNTHETIC_KEY})
+    assert config.model == "deepseek-flash"
+    assert config.generation.connect_timeout_seconds == 10.0
+    assert config.generation.request_timeout_seconds == 120.0
+    assert DeepSeekConfig(api_key=SYNTHETIC_KEY).generation == config.generation
+
+
+@pytest.mark.parametrize("value", ["nan", "inf", "-inf"])
+def test_nonfinite_deepseek_timeout_is_rejected(value: str) -> None:
+    with pytest.raises(LLMConfigError):
+        DeepSeekConfig.from_env({"DEEPSEEK_API_KEY": SYNTHETIC_KEY, "DEEPSEEK_CONNECT_TIMEOUT_SECONDS": value})

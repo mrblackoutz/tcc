@@ -240,7 +240,7 @@ class _HttpAdapter:
                 retryable=True,
                 http_status=429,
             )
-        if response.status_code in {408, 409} or response.status_code >= 500:
+        if response.status_code == 408 or response.status_code >= 500:
             raise LLMAdapterError(
                 self.provider,
                 "provider_unavailable",

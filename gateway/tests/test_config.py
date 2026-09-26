@@ -32,6 +32,16 @@ def test_loads_inline_token_without_exposing_it_in_repr() -> None:
     assert TOKEN not in repr(config)
 
 
+@pytest.mark.parametrize("value", ["nan", "inf", "-inf"])
+def test_rejects_nonfinite_odoo_timeout(value: str) -> None:
+    environment = _base_environment() | {
+        "ODOO_API_TOKEN": TOKEN,
+        "ODOO_CONNECT_TIMEOUT_SECONDS": value,
+    }
+    with pytest.raises(OdooConfigError, match="greater than zero"):
+        OdooConfig.from_env(environment)
+
+
 def test_loads_token_from_secret_file(tmp_path) -> None:
     token_file = tmp_path / "odoo-api-token"
     token_file.write_text(f"{TOKEN}\n", encoding="utf-8")
@@ -88,4 +98,3 @@ def test_secret_file_error_does_not_include_path_or_token(tmp_path) -> None:
 
     assert TOKEN not in str(captured.value)
     assert str(missing_file) not in str(captured.value)
-

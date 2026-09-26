@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from math import isfinite
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -10,17 +11,19 @@ from urllib.parse import urlsplit, urlunsplit
 
 
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
-DEEPSEEK_MODEL = "deepseek-v4-flash"
+DEEPSEEK_MODEL = "deepseek-flash"
+DEEPSEEK_LEGACY_MODEL = "deepseek-v4-flash"
 DEEPSEEK_DOCUMENTED_BACKEND = "DeepSeek-V4-Flash-0731"
 DEEPSEEK_CURRENT_ALIAS = "deepseek-flash"
 DEEPSEEK_CURRENT_BACKEND = "DeepSeek-V4.1-Flash"
 DEEPSEEK_ALLOWED_RETURNED_MODELS = frozenset(
     {
         DEEPSEEK_MODEL,
-        DEEPSEEK_DOCUMENTED_BACKEND,
-        DEEPSEEK_CURRENT_ALIAS,
         DEEPSEEK_CURRENT_BACKEND,
     }
+)
+DEEPSEEK_G3C_HISTORICAL_RETURNED_MODELS = frozenset(
+    {DEEPSEEK_LEGACY_MODEL, DEEPSEEK_DOCUMENTED_BACKEND, *DEEPSEEK_ALLOWED_RETURNED_MODELS}
 )
 OLLAMA_MODEL = "qwen3:14b-q4_K_M"
 OLLAMA_ALLOWED_BASE_URLS = frozenset(
@@ -58,7 +61,7 @@ def _positive_float(environ: Mapping[str, str], name: str, default: float) -> fl
         value = float(raw_value)
     except ValueError:
         raise LLMConfigError(f"configuration must be numeric: {name}") from None
-    if value <= 0:
+    if not isfinite(value) or value <= 0:
         raise LLMConfigError(f"configuration must be greater than zero: {name}")
     return value
 
@@ -108,11 +111,12 @@ class GenerationSettings:
     request_timeout_seconds: float = 60.0
 
     def __post_init__(self) -> None:
-        if self.temperature != 0.0:
+        if not isfinite(self.temperature) or self.temperature != 0.0:
             raise LLMConfigError("G3a requires temperature=0 until the pilot decides otherwise")
         if self.max_output_tokens <= 0:
             raise LLMConfigError("max output tokens must be greater than zero")
-        if self.connect_timeout_seconds <= 0 or self.request_timeout_seconds <= 0:
+        if (not isfinite(self.connect_timeout_seconds) or not isfinite(self.request_timeout_seconds)
+                or self.connect_timeout_seconds <= 0 or self.request_timeout_seconds <= 0):
             raise LLMConfigError("timeouts must be greater than zero")
 
     @classmethod
@@ -129,16 +133,18 @@ class GenerationSettings:
             raise LLMConfigError(
                 f"configuration must be numeric: {prefix}_TEMPERATURE"
             ) from None
+        connect_default = 10.0 if prefix == "DEEPSEEK" else 5.0
+        read_default = 120.0 if prefix == "DEEPSEEK" else 60.0
         return cls(
             temperature=temperature,
             max_output_tokens=_positive_int(
                 environ, f"{prefix}_MAX_OUTPUT_TOKENS", 2_048
             ),
             connect_timeout_seconds=_positive_float(
-                environ, f"{prefix}_CONNECT_TIMEOUT_SECONDS", 5.0
+                environ, f"{prefix}_CONNECT_TIMEOUT_SECONDS", connect_default
             ),
             request_timeout_seconds=_positive_float(
-                environ, f"{prefix}_REQUEST_TIMEOUT_SECONDS", 60.0
+                environ, f"{prefix}_REQUEST_TIMEOUT_SECONDS", read_default
             ),
         )
 
@@ -148,7 +154,9 @@ class DeepSeekConfig:
     api_key: str = field(repr=False)
     base_url: str = DEEPSEEK_BASE_URL
     model: str = DEEPSEEK_MODEL
-    generation: GenerationSettings = field(default_factory=GenerationSettings)
+    generation: GenerationSettings = field(default_factory=lambda: GenerationSettings(
+        connect_timeout_seconds=10.0, request_timeout_seconds=120.0
+    ))
 
     def __post_init__(self) -> None:
         if not self.api_key.strip():
@@ -158,7 +166,7 @@ class DeepSeekConfig:
             raise LLMConfigError("DeepSeek endpoint is outside the DEC-020 allowlist")
         object.__setattr__(self, "base_url", normalised)
         if self.model != DEEPSEEK_MODEL:
-            raise LLMConfigError("DeepSeek model differs from DEC-018")
+            raise LLMConfigError("DeepSeek model differs from DEC-026")
 
     @classmethod
     def from_env(
