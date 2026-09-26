@@ -132,8 +132,9 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | G3-06 | P1 | Gustavo | Felipe | G3-05 | [configuração ratificada (DEC-029)](decision-log.md#dec-029) e [smoke canônico (DEC-030)](decision-log.md#dec-030) aprovados em 26/09: uma inferência sintética com `deepseek-flash`, zero retries e manifesto saneado. O [estágio técnico pré-freeze (DEC-031)](decision-log.md#dec-031) implementa orçamento, espera máxima e retry comum C0/C1 apenas com mocks; faltam supervisão do processo remoto, revisão independente, competência C0 e freeze | ACTIVE |
 | G3-07 | P2 | Gustavo | Thomaz | núcleo protegido, autorização | baixar Qwen3, registrar manifest/blobs/Ollama/Modelfile sem expor dados | CONDITIONAL |
 | G3-08 | P2 | Gustavo | Felipe | G3-07 | smoke Qwen: offload, CPU/GPU/RAM/VRAM, TTFT, tok/s, latência, contexto e OOM | CONDITIONAL |
+| A3A-01 | P0 | Gustavo | Thomaz e Felipe | [contrato de ação v2 (DEC-035)](decision-log.md#dec-035) | schemas fechados, normalização tipada e adapters com opção explícita `v2` para ambos os provedores; commit `84f2c44`, 207 testes offline do gateway em 26/09 e verificação de segurança aprovados. Faltam revisão independente do contrato e aceite da semântica A3a; o serviço/runner continuam no v1 histórico | AWAITING_REVIEW |
 | C0-01 | P0 | Thomaz | Felipe | SCI-01, G3a | especificar prompt-base, ações e ferramentas plausíveis comuns; separar construção C0/C1 do transporte | READY |
-| C0-02 | P0 | Thomaz | Gustavo | C0-01, [lacuna de ação crítica (DEC-033)](decision-log.md#dec-033) | integrar adapter LLM ao fluxo direto C0 sem policy C1; valores tipados chegam ao executor; schema atual não representa `POST_VENDOR_BILL` | WAIT |
+| C0-02 | P0 | Thomaz | Gustavo | C0-01, A3A-01 | integrar adapter v2 ao fluxo direto C0 sem policy C1; valores tipados chegam ao executor. Desenvolvimento pode usar `84f2c44` provisoriamente; piloto exige revisão e teste fim a fim | WAIT |
 | C0-03 | P0 | Thomaz | Gustavo | C0-01 | definir capacidades mínimas: rascunho e contabilização autorizada; solicitação simulada de pagamento continua extensão secundária, sem pagamento/e-mail real | READY |
 | C0-04 | P0 | Thomaz | Felipe | C0-02, DATA-05, G3-05 | medir competência benigna no piloto e corrigir apenas falhas funcionais pré-freeze | WAIT |
 | C0-05 | P0 | Felipe | Gustavo | C0-04 | revisão independente de plausibilidade; documentar diferenças não relacionadas à segurança | WAIT |
@@ -157,7 +158,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| C1-01 | P0 | Thomaz | Felipe | SCI-01, [lacuna de ação crítica (DEC-033)](decision-log.md#dec-033) | contratos `PolicyInput`, `PolicyDecision`, reason codes e capability request, schemas fechados; antes da implementação, versionar ação crítica proposta pelo modelo | WAIT |
+| C1-01 | P0 | Thomaz | Felipe | SCI-01, A3A-01 | contratos `PolicyInput`, `PolicyDecision`, reason codes e capability request, schemas fechados; construir sobre o contrato v2 commitado em `84f2c44`, com revalidação se a revisão o alterar | READY |
 | C1-02 | P0 | Thomaz | Felipe | C1-01 | policy engine puro para PO/fornecedor/moeda/valor/beneficiário/duplicidade/fase/fail-closed | WAIT |
 | C1-03 | P0 | Thomaz | Gustavo | C1-01 | canonicalização e resolução por chaves confiáveis, nunca IDs do documento | READY |
 | C1-04 | P0 | Thomaz | Gustavo | C1-01 | scaffold `ap_security_executor`, modelo de serviço e único método `execute(command)` | READY |
