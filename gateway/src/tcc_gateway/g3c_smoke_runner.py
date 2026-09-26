@@ -17,10 +17,16 @@ import httpx
 from .proposal import ProposalValueError, VendorBillProposal
 from .proposal_schema import ProposalSchemaError
 from .state import canonical_json_bytes, canonical_json_sha256
-from .llm_config import DEEPSEEK_G3C_HISTORICAL_RETURNED_MODELS
+from .llm_config import (
+    DEEPSEEK_ALLOWED_RETURNED_MODELS,
+    DEEPSEEK_G3C_HISTORICAL_RETURNED_MODELS,
+    DEEPSEEK_MODEL,
+    DEEPSEEK_LEGACY_MODEL,
+)
 
 
 SCHEMA_VERSION = "g3c-deepseek-smoke/v1"
+PILOT_SCHEMA_VERSION = "g306-deepseek-smoke/v1"
 CLIENT_REQUEST_SCHEMA_VERSION = "llm-client-request/v1"
 CLIENT_RESPONSE_SCHEMA_VERSION = "llm-client-response/v1"
 SCENARIO_ID = "G3C-DEEPSEEK-BENIGN-001"
@@ -113,6 +119,7 @@ def build_sanitised_manifest(
     wall_duration_ns: int,
     git_commit: str,
     executed_at_utc: str,
+    canonical_pilot: bool = False,
 ) -> dict[str, Any]:
     if not _COMMIT.fullmatch(git_commit):
         raise G3CSmokeError("invalid_git_commit")
@@ -154,9 +161,14 @@ def build_sanitised_manifest(
     response_id = _required_identifier(
         metadata.get("response_id"), "missing_response_id"
     )
-    if requested_model != "deepseek-v4-flash":
+    expected_model = DEEPSEEK_MODEL if canonical_pilot else DEEPSEEK_LEGACY_MODEL
+    allowed_returned = (
+        DEEPSEEK_ALLOWED_RETURNED_MODELS
+        if canonical_pilot else DEEPSEEK_G3C_HISTORICAL_RETURNED_MODELS
+    )
+    if requested_model != expected_model:
         raise G3CSmokeError("requested_model_mismatch")
-    if returned_model not in DEEPSEEK_G3C_HISTORICAL_RETURNED_MODELS:
+    if returned_model not in allowed_returned:
         raise G3CSmokeError("returned_model_mismatch")
     if metadata.get("endpoint") != "https://api.deepseek.com/chat/completions":
         raise G3CSmokeError("endpoint_mismatch")
@@ -208,9 +220,9 @@ def build_sanitised_manifest(
     )
 
     return {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": PILOT_SCHEMA_VERSION if canonical_pilot else SCHEMA_VERSION,
         "status": "pass",
-        "task_id": "G3-05",
+        "task_id": "G3-06" if canonical_pilot else "G3-05",
         "scientific_run": False,
         "real_provider_calls": 1,
         "retry_count": 0,
@@ -253,6 +265,7 @@ def execute_smoke(
     evidence_path: Path,
     git_commit: str,
     transport: httpx.BaseTransport | None = None,
+    canonical_pilot: bool = False,
 ) -> dict[str, Any]:
     if client_url.rstrip("/") != DEFAULT_CLIENT_URL:
         raise G3CSmokeError("client_url_outside_allowlist")
@@ -261,7 +274,10 @@ def execute_smoke(
     try:
         with httpx.Client(
             base_url=client_url,
-            timeout=httpx.Timeout(90.0, connect=5.0),
+            timeout=httpx.Timeout(
+                130.0 if canonical_pilot else 90.0,
+                connect=10.0 if canonical_pilot else 5.0,
+            ),
             transport=transport,
             trust_env=False,
         ) as client:
@@ -301,6 +317,7 @@ def execute_smoke(
         wall_duration_ns=wall_duration_ns,
         git_commit=git_commit,
         executed_at_utc=datetime.now(timezone.utc).isoformat(),
+        canonical_pilot=canonical_pilot,
     )
     evidence_path.parent.mkdir(parents=True, exist_ok=True)
     evidence_bytes = canonical_json_bytes(manifest) + b"\n"
@@ -321,6 +338,9 @@ def execute_smoke(
 
 
 def main() -> None:
+    mode = os.environ.get("TCC_G3C_CANONICAL_PILOT", "0")
+    if mode not in {"0", "1"}:
+        raise SystemExit("invalid smoke mode")
     evidence_file = os.environ.get(
         "TCC_G3C_EVIDENCE_FILE", "/run/tcc-evidence/g3c-deepseek-smoke.json"
     )
@@ -331,6 +351,7 @@ def main() -> None:
             client_url=client_url,
             evidence_path=Path(evidence_file),
             git_commit=git_commit,
+            canonical_pilot=(mode == "1"),
         )
     except G3CSmokeError as error:
         print(

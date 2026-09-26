@@ -473,3 +473,17 @@ Substitui ou é substituída por:
 - **Evidência:** aprovação explícita de Gustavo em 26/09/2026; 134 testes offline do gateway aprovados; [atualização oficial do DeepSeek](https://api-docs.deepseek.com/updates/) e [modelos documentados](https://api-docs.deepseek.com/quick_start/pricing/) consultados em 25/09/2026. O smoke G3c histórico continua registrado sob DEC-024/G3-05.
 - **Responsável:** Gustavo; Felipe mantém revisão independente pendente para o protocolo e freeze.
 - **Seções e artefatos afetados:** W04, G3-06, `docs/model-selection.md`, `reproducibility/model-selection.lock.json`, configuração DeepSeek, RUN-02/RUN-06 e release 1.2.15.
+
+<a id="dec-030"></a>
+
+## DEC-030 — Smoke canônico G3-06 sem sobrescrever a evidência G3c
+
+- **Data:** 26/09/2026.
+- **Status:** aceita para implementação e uma tentativa sintética autorizada pelo usuário; resultado ainda não observado neste registro.
+- **Contexto:** G3c preserva uma chamada com `deepseek-v4-flash` e marcadores locais de não repetição. O código ativo agora solicita `deepseek-flash` sob DEC-029. Reusar o nome de arquivo ou o marcador histórico misturaria evidências; editar a resposta histórica para parecer uma chamada nova seria inválido.
+- **Alternativas consideradas:** substituir o manifesto G3c; usar o runner histórico sem verificar o alias solicitado; criar uma segunda trilha com marcador/manifesto próprios e reutilizar a topologia de rede testada. Adota-se a terceira; as duas primeiras perderiam proveniência ou aceitariam um resultado de modelo errado.
+- **Decisão:** acrescentar modo G3-06 ao harness, fixando `deepseek-flash` na chamada e no manifesto, arquivo/marcador distintos em `.runtime/evidence`, commit Git limpo, chave local ignorada e exatamente uma tentativa real sem retry automático. O runner deverá rejeitar modelo solicitado/retornado fora da allowlist ativa e não persistir request, response ou segredo. Antes da chamada, executar topologia e testes offline; depois, conferir hashes, logs saneados, túnel único e status. Se houver falha ou resultado incerto, manter o marcador e interromper, sem nova chamada implícita.
+- **Consequências:** a topologia `g3c` e o cliente são reutilizados como infraestrutura, mas o novo manifesto identifica G3-06; o resultado não é run científica, não prova competência C0/C1 nem implementa limites de parede/retries de RUN-02/RUN-06. Um smoke aprovado libera somente a verificação do alias e do caminho de inferência sintética.
+- **Evidência:** autorização explícita do usuário nesta conversa; [changelog oficial do DeepSeek](https://api-docs.deepseek.com/updates/) consultado em 26/09/2026; G3c histórico em `docs/g3c-deepseek-smoke.md` e DEC-029.
+- **Responsável:** Gustavo; execução técnica pelo assistente; revisão independente de Felipe permanece pendente para freeze.
+- **Seções e artefatos afetados:** G3-06, `scripts/smoke_test_g3c.ps1`, `gateway/src/tcc_gateway/g3c_smoke_runner.py`, testes, lock e documentação pós-smoke; nenhuma run experimental foi afetada.

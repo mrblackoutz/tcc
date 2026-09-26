@@ -111,6 +111,8 @@ def main() -> None:
         "/run/tcc-secrets/deepseek_api_key"
     ):
         raise RuntimeError("G3c key file configuration is missing")
+    if client_environment.get("DEEPSEEK_MODEL") != "deepseek-flash":
+        raise RuntimeError("G3-06 canonical smoke model configuration is missing")
     if "DEEPSEEK_API_KEY" in client_environment:
         raise RuntimeError("inline DeepSeek key is forbidden")
     if client_environment.get("HTTPS_PROXY") != "http://egress-proxy:8888":

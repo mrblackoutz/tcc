@@ -8,6 +8,7 @@ import pytest
 from tcc_gateway.g3c_smoke_runner import (
     DEFAULT_CLIENT_URL,
     G3CSmokeError,
+    PILOT_SCHEMA_VERSION,
     SCENARIO_ID,
     build_sanitised_manifest,
     build_synthetic_request,
@@ -120,6 +121,41 @@ def test_manifest_preserves_documented_v41_model(returned_model: str) -> None:
     assert manifest["provider"]["returned_model"] == returned_model
 
 
+@pytest.mark.parametrize("returned_model", ["deepseek-flash", "DeepSeek-V4.1-Flash"])
+def test_canonical_pilot_manifest_is_separate_and_sanitised(returned_model: str) -> None:
+    response_value = _client_response()
+    response_value["metadata"]["requested_model"] = "deepseek-flash"
+    response_value["metadata"]["returned_model"] = returned_model
+    manifest = build_sanitised_manifest(
+        build_synthetic_request(), response_value,
+        wall_duration_ns=20_000, git_commit=GIT_COMMIT,
+        executed_at_utc="2026-09-26T12:00:01+00:00", canonical_pilot=True,
+    )
+    assert manifest["schema_version"] == PILOT_SCHEMA_VERSION
+    assert manifest["task_id"] == "G3-06"
+    assert manifest["provider"]["requested_model"] == "deepseek-flash"
+    assert manifest["provider"]["returned_model"] == returned_model
+    assert "DOCUMENTO SINTETICO" not in json.dumps(manifest)
+
+
+def test_canonical_pilot_rejects_legacy_request_or_backend() -> None:
+    response_value = _client_response()
+    with pytest.raises(G3CSmokeError, match="requested_model_mismatch"):
+        build_sanitised_manifest(
+            build_synthetic_request(), response_value,
+            wall_duration_ns=20_000, git_commit=GIT_COMMIT,
+            executed_at_utc="2026-09-26T12:00:01+00:00", canonical_pilot=True,
+        )
+    response_value["metadata"]["requested_model"] = "deepseek-flash"
+    response_value["metadata"]["returned_model"] = "DeepSeek-V4-Flash-0731"
+    with pytest.raises(G3CSmokeError, match="returned_model_mismatch"):
+        build_sanitised_manifest(
+            build_synthetic_request(), response_value,
+            wall_duration_ns=20_000, git_commit=GIT_COMMIT,
+            executed_at_utc="2026-09-26T12:00:01+00:00", canonical_pilot=True,
+        )
+
+
 def test_execute_smoke_writes_manifest_without_raw_response(tmp_path) -> None:
     response_value = _client_response()
 
@@ -139,6 +175,22 @@ def test_execute_smoke_writes_manifest_without_raw_response(tmp_path) -> None:
     evidence = evidence_path.read_text(encoding="utf-8")
     assert "DOCUMENTO SINTETICO" not in evidence
     assert "vendor_ref" not in evidence
+
+
+def test_execute_canonical_pilot_uses_separate_manifest(tmp_path) -> None:
+    response_value = _client_response()
+    response_value["metadata"]["requested_model"] = "deepseek-flash"
+    response_value["metadata"]["returned_model"] = "deepseek-flash"
+    evidence_path = tmp_path / "g306-deepseek-smoke.json"
+    transport = httpx.MockTransport(lambda _: httpx.Response(200, json=response_value))
+    manifest = execute_smoke(
+        client_url=DEFAULT_CLIENT_URL, evidence_path=evidence_path,
+        git_commit=GIT_COMMIT, transport=transport, canonical_pilot=True,
+    )
+    assert manifest["schema_version"] == PILOT_SCHEMA_VERSION
+    assert manifest["task_id"] == "G3-06"
+    assert evidence_path.is_file()
+    assert not (tmp_path / "g3c-deepseek-smoke.json").exists()
 
 
 def test_execute_smoke_classifies_http_failure_without_body_echo(tmp_path) -> None:

@@ -1,5 +1,6 @@
 param(
     [switch]$ConfirmRealCall,
+    [switch]$CanonicalPilotSmoke,
     [switch]$KeepRunning
 )
 
@@ -25,7 +26,7 @@ if (-not $ConfirmRealCall) {
 }
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$projectName = 'tcc-g3c-deepseek'
+$projectName = if ($CanonicalPilotSmoke) { 'tcc-g306-deepseek' } else { 'tcc-g3c-deepseek' }
 $composePrefix = @(
     'compose',
     '--project-name', $projectName,
@@ -34,8 +35,13 @@ $composePrefix = @(
 )
 $keyPath = Join-Path $repositoryRoot '.runtime\secrets\deepseek_api_key'
 $evidenceDirectory = Join-Path $repositoryRoot '.runtime\evidence'
-$evidencePath = Join-Path $evidenceDirectory 'g3c-deepseek-smoke.json'
-$attemptPath = Join-Path $evidenceDirectory 'g3c-deepseek-smoke.attempt.json'
+$evidenceName = if ($CanonicalPilotSmoke) { 'g306-deepseek-smoke.json' } else { 'g3c-deepseek-smoke.json' }
+$attemptName = if ($CanonicalPilotSmoke) { 'g306-deepseek-smoke.attempt.json' } else { 'g3c-deepseek-smoke.attempt.json' }
+$expectedSchema = if ($CanonicalPilotSmoke) { 'g306-deepseek-smoke/v1' } else { 'g3c-deepseek-smoke/v1' }
+$expectedTask = if ($CanonicalPilotSmoke) { 'G3-06' } else { 'G3-05' }
+$expectedModel = if ($CanonicalPilotSmoke) { 'deepseek-flash' } else { 'deepseek-v4-flash' }
+$evidencePath = Join-Path $evidenceDirectory $evidenceName
+$attemptPath = Join-Path $evidenceDirectory $attemptName
 $servicesStarted = $false
 $attemptStarted = $false
 
@@ -91,7 +97,7 @@ try {
     $attempt = [ordered]@{
         schema_version = 'g3c-deepseek-attempt/v1'
         status = 'started-call-outcome-unknown-until-evidence-validation'
-        task_id = 'G3-05'
+        task_id = $expectedTask
         implementation_git_commit = $gitCommit
         started_at_utc = (Get-Date).ToUniversalTime().ToString('o')
         automatic_retry_allowed = $false
@@ -106,8 +112,14 @@ try {
     $previousPreference = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
     try {
-        $runnerOutput = (& docker @composePrefix run --rm --no-deps `
-            -e "TCC_GIT_COMMIT=$gitCommit" g3c-runner 2>&1) -join "`n"
+        $runnerOptions = @('--rm', '--no-deps', '-e', "TCC_GIT_COMMIT=$gitCommit")
+        if ($CanonicalPilotSmoke) {
+            $runnerOptions += @(
+                '-e', 'TCC_G3C_CANONICAL_PILOT=1',
+                '-e', "TCC_G3C_EVIDENCE_FILE=/run/tcc-evidence/$evidenceName"
+            )
+        }
+        $runnerOutput = (& docker @composePrefix run @runnerOptions g3c-runner 2>&1) -join "`n"
         $runnerExitCode = $LASTEXITCODE
     }
     finally {
@@ -148,7 +160,8 @@ try {
 
     $evidenceText = Get-Content -Raw -Encoding utf8 -LiteralPath $evidencePath
     $evidence = $evidenceText | ConvertFrom-Json
-    if ($evidence.schema_version -ne 'g3c-deepseek-smoke/v1' -or $evidence.status -ne 'pass') {
+    if ($evidence.schema_version -ne $expectedSchema -or $evidence.status -ne 'pass' -or `
+        $evidence.task_id -ne $expectedTask) {
         throw 'A evidencia G3c possui schema ou status invalido.'
     }
     if ($evidence.real_provider_calls -ne 1 -or $evidence.retry_count -ne 0) {
@@ -166,8 +179,11 @@ try {
     if ($evidence.provider.name -ne 'deepseek') {
         throw 'A evidencia G3c identifica provedor inesperado.'
     }
-    if ($evidence.provider.requested_model -ne 'deepseek-v4-flash') {
+    if ($evidence.provider.requested_model -ne $expectedModel) {
         throw 'A evidencia G3c identifica alias solicitado inesperado.'
+    }
+    if ($CanonicalPilotSmoke -and $evidence.provider.returned_model -notin @('deepseek-flash', 'DeepSeek-V4.1-Flash')) {
+        throw 'A evidencia G3-06 identifica modelo retornado inesperado.'
     }
     if ($evidence.provider.thinking -ne 'disabled' -or $evidence.provider.temperature -ne 0) {
         throw 'A evidencia G3c diverge dos parametros nucleares pre-piloto.'
@@ -214,7 +230,7 @@ try {
     $attempt.evidence_sha256 = $evidenceSha256
     Write-JsonFile -Path $attemptPath -Value $attempt
 
-    Write-Host 'G3c DeepSeek safety smoke: PASS' -ForegroundColor Green
+    Write-Host "$expectedTask DeepSeek safety smoke: PASS" -ForegroundColor Green
     Write-Host 'Real provider calls: 1; retries: 0; raw request/response persisted: false'
     Write-Host "Requested model: $($evidence.provider.requested_model)"
     Write-Host "Returned model:  $($evidence.provider.returned_model)"
@@ -224,7 +240,7 @@ catch {
     if ($attemptStarted -and (Test-Path -LiteralPath $attemptPath)) {
         Write-Warning 'Uma tentativa G3c foi iniciada. Nao execute novamente sem revisar o marcador local.'
     }
-    Write-Host 'G3c DeepSeek safety smoke: FAILED' -ForegroundColor Red
+    Write-Host "$expectedTask DeepSeek safety smoke: FAILED" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
     throw
 }
