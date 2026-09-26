@@ -2,6 +2,13 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.16] — 2026-09-26
+
+- executado o [smoke canônico G3-06 (DEC-030)](docs/decision-log.md#dec-030) em uma chamada real sintética, sem retry: `deepseek-flash` solicitado/retornado, proposta tipada, um túnel permitido e manifesto saneado com SHA-256 `45f7722115020ec445ef89cf0cde2d7e96448315bdb9d595ddabc01caa6af5be`;
+- preservado o smoke G3c com alias legado, marcador e manifesto distintos; nenhum request/response bruto ou segredo entrou no Git;
+- validados 138 testes offline do gateway/cliente, 6 do proxy, topologia G3c/G3-06, sintaxe PowerShell, Markdown e segurança do repositório;
+- mantidos `G3-06` e `RUN-03` ativos: prazos de parede/retries no runner, integração Odoo, competência C0, revisão independente, piloto e freeze não foram comprovados.
+
 ## [1.2.15] — 2026-09-26
 
 - ratificado o [pacote técnico pré-piloto (DEC-029)](docs/decision-log.md#dec-029): alias solicitado `deepseek-flash`, *thinking* desligado, temperatura zero, JSON object, 2.048 tokens, conexão de **10 s** e inatividade de leitura de 120 s;

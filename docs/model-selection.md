@@ -4,7 +4,7 @@
 
 **Data da seleção:** 31/08/2026
 
-**Estado:** modelos e papéis selecionados; G3-05 concluiu um smoke real sintético com alias legado; Gustavo ratificou os parâmetros técnicos pré-piloto de G3-06 em 26/09. Novo smoke do alias canônico, supervisão do runner, revisão independente, piloto, Qwen3 e freeze continuam pendentes.
+**Estado:** modelos e papéis selecionados; G3-05 concluiu um smoke real sintético com alias legado e G3-06 concluiu outro com alias canônico em 26/09. Supervisão do runner, revisão independente, piloto, Qwen3 e freeze continuam pendentes.
 
 ## Decisão operacional
 
@@ -14,7 +14,7 @@
 | Robustez e transportabilidade | Ollama, `qwen3:14b-q4_K_M` | repetição separada de 72 documentos em C0 × C1 | planejado após o núcleo; não sustenta as hipóteses confirmatórias |
 | Contingência não ativa | `llama3.1:8b` | somente se Qwen3 for inviável e houver nova decisão anterior ao freeze | não selecionado para as runs atuais |
 
-O código ativo está configurado para solicitar `deepseek-flash`, mas **ainda não há inferência real validada com esse alias**. `DeepSeek-V4-Flash-0731` identifica apenas o backend associado ao alias legado na data da seleção. Desde 10/09/2026, o nome legado é roteado temporariamente para V4.1 Flash, conforme [DEC-024](decision-log.md#dec-024). O smoke histórico de 24/09 solicitou `deepseek-v4-flash` e recebeu `deepseek-flash`; nenhum desses nomes identifica um snapshot imutável.
+O código ativo solicita `deepseek-flash`, validado em **uma inferência real sintética**, sem Odoo ou comparação C0/C1. `DeepSeek-V4-Flash-0731` identifica apenas o backend associado ao alias legado na data da seleção. Desde 10/09/2026, o nome legado é roteado temporariamente para V4.1 Flash, conforme [DEC-024](decision-log.md#dec-024). O smoke histórico de 24/09 solicitou `deepseek-v4-flash` e recebeu `deepseek-flash`; o smoke G3-06 solicitou e recebeu `deepseek-flash`. Nenhum desses nomes identifica um snapshot imutável.
 
 No Ollama, a tag escolhida é a quantização explícita `qwen3:14b-q4_K_M`. A tag curta `qwen3:14b` não será usada nas runs, pois pode mudar de alvo. Mesmo a tag explícita só ficará congelada depois de registrar localmente seu manifest completo e os digests dos blobs.
 
@@ -71,11 +71,11 @@ Ainda serão fixados no piloto, antes do freeze:
 
 ### G3-06 — configuração técnica ratificada para o pré-piloto, não freeze final
 
-A [configuração técnica pré-piloto (DEC-029)](decision-log.md#dec-029) foi ratificada por Gustavo com conexão de 10 s. O único smoke real bem-sucedido usou o alias legado e teve uma resposta: não estima percentis de latência, taxa de erro ou custo em escala. A troca de alias foi testada offline com mocks; nenhuma chamada adicional foi feita com o alias novo.
+A [configuração técnica pré-piloto (DEC-029)](decision-log.md#dec-029) foi ratificada por Gustavo com conexão de 10 s. Um [smoke canônico (DEC-030)](decision-log.md#dec-030) separado passou em 26/09/2026: uma chamada sintética, `deepseek-flash` solicitado e retornado, 685 tokens de entrada, 127 de saída, aproximadamente 1,28 s no adapter, zero retries, um túnel e manifesto saneado. O SHA-256 do manifesto local é `45f7722115020ec445ef89cf0cde2d7e96448315bdb9d595ddabc01caa6af5be`; o lock guarda proveniência e limitações. Uma resposta não estima cauda de latência, taxa de erro, custo em escala ou competência C0.
 
 | Parâmetro | Valor aprovado para o pré-piloto | Situação |
 |---|---|---|
-| Alias solicitado | `deepseek-flash` | configurado no adapter e Compose; novo smoke sintético real e revisão independente pendentes |
+| Alias solicitado | `deepseek-flash` | configurado no adapter e Compose; smoke sintético real passou; revisão independente pendente |
 | `thinking` | `disabled` | fixado para o núcleo; padrão do provedor é ligado |
 | `temperature` | `0` | candidato já aceito no smoke; manter igual em C0/C1 |
 | `top_p`, penalidades e seed | omitidos | `top_p` é ignorado no modo sem thinking; os demais não são pressupostos como controles de reprodutibilidade |
@@ -88,7 +88,7 @@ A [configuração técnica pré-piloto (DEC-029)](decision-log.md#dec-029) foi r
 | Retries | até 2 novas tentativas para timeout/conexão ou HTTP 408/429/5xx | aprovado para SCI-03/RUN-06; o adapter faz uma tentativa, sem retry automático; 409 é permanente |
 | Espera entre tentativas | 2 s, depois 4 s, sem jitter | aprovado para o futuro runner, igual em C0/C1; não repetir erros de modelo/schema/truncamento |
 
-Antes do piloto, ainda são necessários o smoke sintético autorizado com o alias novo, a revisão independente, a implementação verificável dos prazos de parede/orçamento e retries no runner e a validação de competência de C0. O grupo deverá conferir truncamentos, custo e classificação idêntica dos erros em C0/C1 sem usar o conjunto final. Não inferir que `httpx` com timeout de leitura de 120 s imponha sozinho um prazo total: keep-alives podem mantê-lo aberto. A configuração não autoriza nova chamada paga por si só.
+Antes do piloto, ainda são necessários a revisão independente, a implementação verificável dos prazos de parede/orçamento e retries no runner e a validação de competência de C0. O grupo deverá conferir truncamentos, custo e classificação idêntica dos erros em C0/C1 sem usar o conjunto final. Não inferir que `httpx` com timeout de leitura de 120 s imponha sozinho um prazo total: keep-alives podem mantê-lo aberto. O smoke aprovado não autoriza chamadas pagas adicionais por si só.
 
 Um estudo de *thinking* ligado versus desligado não integra o núcleo. Se for executado, será exploratório, posterior e formalizado em decisão própria, sem substituir resultados confirmatórios.
 

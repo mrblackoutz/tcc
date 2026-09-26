@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "decisionId": "DEC-018",
   "observedOn": "2026-08-31",
-  "status": "g3-06-canonical-pilot-config-offline-tested-new-alias-smoke-pending-not-frozen",
+  "status": "g3-06-canonical-synthetic-real-smoke-passed-runner-and-freeze-pending",
   "protocolFrozen": false,
   "primaryModel": {
     "role": "confirmatory-primary",
@@ -15,7 +15,7 @@
     "providerDocumentedBackend": "DeepSeek-V4-Flash-0731",
     "backendMappingObservedOn": "2026-08-31",
     "currentProviderDocumentedBackend": "DeepSeek-V4.1-Flash",
-    "currentBackendMappingObservedOn": "2026-09-24",
+    "currentBackendMappingObservedOn": "2026-09-26",
     "currentMappingEffectiveOn": "2026-09-10",
     "currentCanonicalAlias": "deepseek-flash",
     "currentLegacyAliasRouting": "deepseek-v4-flash-temporarily-routes-to-v4.1-flash",
@@ -49,12 +49,12 @@
     },
     "artifactDigest": null,
     "artifactStatus": "provider-hosted-alias",
-    "adapterStatus": "canonical-alias-and-10s-connect-120s-read-offline-tested-2026-09-26-real-new-alias-smoke-pending"
+    "adapterStatus": "canonical-alias-real-synthetic-smoke-passed-2026-09-26-not-scientific-c0"
   },
   "g3_06PilotConfiguration": {
     "decisionId": "DEC-029",
     "approvedOn": "2026-09-26",
-    "status": "offline-tested-not-real-smoked-not-frozen",
+    "status": "canonical-smoke-passed-wall-budget-and-retries-not-enforced-not-frozen",
     "requestedModel": "deepseek-flash",
     "thinking": "disabled",
     "temperature": 0,
@@ -70,7 +70,8 @@
     "retryableHttpStatuses": [408, 429, "5xx"],
     "nonRetryableHttpStatus": 409,
     "wallBudgetAndRetriesEnforced": false,
-    "rawRealRequestWithCanonicalAliasObserved": false
+    "realCanonicalAliasCallObserved": true,
+    "rawRequestOrResponsePersisted": false
   },
   "secondaryModel": {
     "role": "robustness-transportability",
@@ -381,6 +382,45 @@
     "limitations": [
       "The smoke used one synthetic document and did not exercise Odoo, C0 competence, C1 or attack resistance.",
       "The requested legacy alias is mobile and now routes to V4.1 Flash; the group must review the canonical alias before freeze."
+    ]
+  },
+  "g306CanonicalSmokeEvidence": {
+    "decisionId": "DEC-030",
+    "taskId": "G3-06",
+    "status": "pass",
+    "scientificRun": false,
+    "syntheticData": true,
+    "fiscalValue": false,
+    "executedAtUtc": "2026-09-26T06:59:29.543996+00:00",
+    "implementationCommit": "a20f68ca18abd4d61a3e9a9a0911e4cbde78b39d",
+    "requestedModel": "deepseek-flash",
+    "returnedModel": "deepseek-flash",
+    "providerDocumentedBackendAtExecution": "DeepSeek-V4.1-Flash",
+    "responseIdSha256": "177f55ecebe66effdfa14c658a9695c4ae6ed5415d22927ace7bbf48bcb1290f",
+    "systemFingerprintSha256": "09af7682e7d983b1290cce4ece4f2ab063ea0b17e69d3954b6043ca20b0c4602",
+    "realProviderCalls": 1,
+    "automaticRetries": 0,
+    "allowedTunnelCount": 1,
+    "gatewayAndClientTestsPassed": 138,
+    "proxyTestsPassed": 6,
+    "promptTokens": 685,
+    "completionTokens": 127,
+    "totalTokens": 812,
+    "adapterLatencyNs": 1279701010,
+    "runnerWallLatencyNs": 1506469383,
+    "sanitisedHashCount": 11,
+    "secretAndForbiddenLogScan": "pass",
+    "rawRequestOrResponsePersisted": false,
+    "localEvidencePath": ".runtime/evidence/g306-deepseek-smoke.json",
+    "localEvidenceSha256": "45f7722115020ec445ef89cf0cde2d7e96448315bdb9d595ddabc01caa6af5be",
+    "localEvidenceByteCount": 1955,
+    "localAttemptMarkerPath": ".runtime/evidence/g306-deepseek-smoke.attempt.json",
+    "localAttemptMarkerSha256": "831b06773414d0b5b274a001dc4f57f21f5a8293aa5e25cba2a7f4e861a9dee3",
+    "localAttemptMarkerByteCount": 442,
+    "limitations": [
+      "One successful synthetic extraction does not establish C0/C1 competence or attack resistance.",
+      "The provider alias is mobile and the returned alias does not prove an immutable backend snapshot.",
+      "Wall deadlines and retries were not exercised; the smoke intentionally made one call."
     ]
   },
   "requiredPerRunProvenance": [

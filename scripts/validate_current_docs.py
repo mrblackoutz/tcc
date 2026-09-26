@@ -19,7 +19,8 @@ FILES = (
     PLAN, "AGENTS.md", "README.md", "CHANGELOG.md",
     "docs/decision-log.md", "docs/task-backlog.md", "docs/ai-usage.md",
     "docs/releases/v1.2.12.md", "docs/releases/v1.2.13.md",
-    "docs/releases/v1.2.14.md", "docs/releases/v1.2.15.md", "paper/README.md",
+    "docs/releases/v1.2.14.md", "docs/releases/v1.2.15.md",
+    "docs/releases/v1.2.16.md", "paper/README.md",
     "paper/SUBMISSION_CHECKLIST.md",
 )
 LINK = re.compile(r"(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)")
