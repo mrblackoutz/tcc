@@ -2,6 +2,14 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.15] — 2026-09-26
+
+- ratificado o [pacote técnico pré-piloto (DEC-029)](docs/decision-log.md#dec-029): alias solicitado `deepseek-flash`, *thinking* desligado, temperatura zero, JSON object, 2.048 tokens, conexão de **10 s** e inatividade de leitura de 120 s;
+- separados os limites aprovados ainda não implementados: 180 s de parede por tentativa, 300 s por chamada lógica e até duas novas tentativas com esperas 2 s/4 s, somente para timeout/conexão e HTTP 408/429/5xx;
+- preservado o smoke G3c com alias legado como evidência histórica; novo smoke real com o alias canônico e revisão independente permanecem pendentes;
+- corrigidos [contraexemplos do oráculo (DEC-028)](docs/decision-log.md#dec-028): aprovação vinculada à conta e campos exatos, recibo confiável para pontuar A1/A2 e erro de contrato para mutação não atribuída; 134 testes offline passaram, sem integração Odoo/runner nem run científica;
+- atualizados plano, backlog, lock e documentação corrente sem alterar amostras, hipóteses, métricas, margens ou protocolo congelado (ainda inexistente).
+
 ## [1.2.14] — 2026-09-24
 
 - aplicada a [limpeza de artefatos obsoletos (DEC-025)](docs/decision-log.md#dec-025): DOCX, PDF do plano e validador Word da v1.2.1 retirados do checkout corrente após conferência de caminhos e hashes;

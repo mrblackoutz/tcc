@@ -3,14 +3,15 @@
   "schemaVersion": 1,
   "decisionId": "DEC-018",
   "observedOn": "2026-08-31",
-  "status": "models-selected-g3c-deepseek-smoke-passed-artifacts-not-frozen",
+  "status": "g3-06-canonical-pilot-config-offline-tested-new-alias-smoke-pending-not-frozen",
   "protocolFrozen": false,
   "primaryModel": {
     "role": "confirmatory-primary",
     "provider": "DeepSeek",
     "transport": "official-api-openai-compatible",
     "apiBaseUrl": "https://api.deepseek.com",
-    "requestedModel": "deepseek-v4-flash",
+    "requestedModel": "deepseek-flash",
+    "selectionOriginalRequestedModel": "deepseek-v4-flash",
     "providerDocumentedBackend": "DeepSeek-V4-Flash-0731",
     "backendMappingObservedOn": "2026-08-31",
     "currentProviderDocumentedBackend": "DeepSeek-V4.1-Flash",
@@ -48,7 +49,28 @@
     },
     "artifactDigest": null,
     "artifactStatus": "provider-hosted-alias",
-    "adapterStatus": "g3c-synthetic-real-call-passed-2026-09-24-not-scientific-c0"
+    "adapterStatus": "canonical-alias-and-10s-connect-120s-read-offline-tested-2026-09-26-real-new-alias-smoke-pending"
+  },
+  "g3_06PilotConfiguration": {
+    "decisionId": "DEC-029",
+    "approvedOn": "2026-09-26",
+    "status": "offline-tested-not-real-smoked-not-frozen",
+    "requestedModel": "deepseek-flash",
+    "thinking": "disabled",
+    "temperature": 0,
+    "maxOutputTokens": 2048,
+    "responseFormat": "json_object",
+    "stream": false,
+    "connectTimeoutSeconds": 10,
+    "readInactivityTimeoutSeconds": 120,
+    "wallDeadlinePerAttemptSeconds": 180,
+    "logicalCallBudgetSeconds": 300,
+    "maxAdditionalRetries": 2,
+    "retryDelaysSeconds": [2, 4],
+    "retryableHttpStatuses": [408, 429, "5xx"],
+    "nonRetryableHttpStatus": 409,
+    "wallBudgetAndRetriesEnforced": false,
+    "rawRealRequestWithCanonicalAliasObserved": false
   },
   "secondaryModel": {
     "role": "robustness-transportability",
@@ -73,14 +95,14 @@
   },
   "experimentalAllocation": {
     "pilot": {
-      "model": "deepseek-v4-flash",
+      "model": "deepseek-flash",
       "documents": 24,
       "conditions": 2,
       "repetitions": 3,
       "plannedRuns": 144
     },
     "confirmatoryPrimary": {
-      "model": "deepseek-v4-flash",
+      "model": "deepseek-flash",
       "documentsPrePilotTarget": 180,
       "conditions": 2,
       "repetitions": 3,

@@ -4,17 +4,17 @@
 
 **Data da seleção:** 31/08/2026
 
-**Estado:** modelos e papéis selecionados; G3-05 concluiu um smoke real sintético; G3-06 propõe alias e parâmetros para revisão do grupo. Piloto, Qwen3 e freeze continuam pendentes.
+**Estado:** modelos e papéis selecionados; G3-05 concluiu um smoke real sintético com alias legado; Gustavo ratificou os parâmetros técnicos pré-piloto de G3-06 em 26/09. Novo smoke do alias canônico, supervisão do runner, revisão independente, piloto, Qwen3 e freeze continuam pendentes.
 
 ## Decisão operacional
 
 | Papel | Modelo selecionado | Uso | Obrigatoriedade |
 |---|---|---|---|
-| Bloco confirmatório principal | API DeepSeek, `model=deepseek-v4-flash`; versão documentada em 31/08/2026: `DeepSeek-V4-Flash-0731` | piloto, competência de C0 e experimento principal C0 × C1 | obrigatório |
+| Bloco confirmatório principal | API DeepSeek, `model=deepseek-flash` no piloto aprovado em [DEC-029](decision-log.md#dec-029); seleção histórica de 31/08: `deepseek-v4-flash`/`DeepSeek-V4-Flash-0731` | piloto, competência de C0 e experimento principal C0 × C1 | obrigatório |
 | Robustez e transportabilidade | Ollama, `qwen3:14b-q4_K_M` | repetição separada de 72 documentos em C0 × C1 | planejado após o núcleo; não sustenta as hipóteses confirmatórias |
 | Contingência não ativa | `llama3.1:8b` | somente se Qwen3 for inviável e houver nova decisão anterior ao freeze | não selecionado para as runs atuais |
 
-O nome atualmente enviado à API DeepSeek é `deepseek-v4-flash`. `DeepSeek-V4-Flash-0731` identifica apenas o backend associado pelo provedor ao alias na data da seleção. Desde 10/09/2026, esse nome legado é roteado temporariamente para V4.1 Flash e o nome canônico recomendado é `deepseek-flash`, conforme [DEC-024](decision-log.md#dec-024). O smoke de 24/09 solicitou o legado e recebeu `deepseek-flash`; nenhum desses nomes identifica um snapshot imutável.
+O código ativo está configurado para solicitar `deepseek-flash`, mas **ainda não há inferência real validada com esse alias**. `DeepSeek-V4-Flash-0731` identifica apenas o backend associado ao alias legado na data da seleção. Desde 10/09/2026, o nome legado é roteado temporariamente para V4.1 Flash, conforme [DEC-024](decision-log.md#dec-024). O smoke histórico de 24/09 solicitou `deepseek-v4-flash` e recebeu `deepseek-flash`; nenhum desses nomes identifica um snapshot imutável.
 
 No Ollama, a tag escolhida é a quantização explícita `qwen3:14b-q4_K_M`. A tag curta `qwen3:14b` não será usada nas runs, pois pode mudar de alvo. Mesmo a tag explícita só ficará congelada depois de registrar localmente seu manifest completo e os digests dos blobs.
 
@@ -69,25 +69,26 @@ Ainda serão fixados no piloto, antes do freeze:
 
 <a id="g3-06"></a>
 
-### G3-06 — proposta operacional para revisão, não configuração final
+### G3-06 — configuração técnica ratificada para o pré-piloto, não freeze final
 
-A [proposta de parâmetros (DEC-026)](decision-log.md#dec-026) é deliberadamente anterior ao piloto. O único smoke bem-sucedido teve uma resposta e não permite estimar percentis de latência, taxa de erro ou custo em escala. Nenhuma chamada adicional foi feita para elaborar esta proposta.
+A [configuração técnica pré-piloto (DEC-029)](decision-log.md#dec-029) foi ratificada por Gustavo com conexão de 10 s. O único smoke real bem-sucedido usou o alias legado e teve uma resposta: não estima percentis de latência, taxa de erro ou custo em escala. A troca de alias foi testada offline com mocks; nenhuma chamada adicional foi feita com o alias novo.
 
-| Parâmetro | Valor candidato | Situação |
+| Parâmetro | Valor aprovado para o pré-piloto | Situação |
 |---|---|---|
-| Alias solicitado | `deepseek-flash` | recomendado pelo provedor; aguarda decisão do grupo, atualização do adapter/lock e novo smoke autorizado |
+| Alias solicitado | `deepseek-flash` | configurado no adapter e Compose; novo smoke sintético real e revisão independente pendentes |
 | `thinking` | `disabled` | fixado para o núcleo; padrão do provedor é ligado |
 | `temperature` | `0` | candidato já aceito no smoke; manter igual em C0/C1 |
 | `top_p`, penalidades e seed | omitidos | `top_p` é ignorado no modo sem thinking; os demais não são pressupostos como controles de reprodutibilidade |
 | Formato e transporte | `json_object`, `stream=false`, uma escolha | manter schema estrito local; JSON válido não basta para autorização |
 | `max_tokens` | 2.048 | valor atual do adapter, sujeito a truncamentos observados no piloto |
-| Timeout de conexão | 5 s | valor atual do adapter |
-| Timeout de inatividade de leitura | 120 s | candidato; o atual é 60 s; keep-alive do provedor torna esse limite diferente do prazo total |
-| Prazo total por tentativa | 180 s | candidato; requer supervisor externo, ainda não implementado |
-| Retries | até 2 novas tentativas para falha transitória pré-classificada | candidato para SCI-03/RUN-06; adapter atual executa exatamente uma tentativa |
-| Espera entre tentativas | 2 s, depois 4 s, sem jitter | candidato determinístico, idêntico em C0/C1; nenhuma tentativa para erro 4xx permanente, schema ou recusa |
+| Timeout de conexão | 10 s | implementado como default DeepSeek; não altera o default Ollama |
+| Timeout de inatividade de leitura | 120 s | implementado como default DeepSeek; não equivale a prazo total por causa de keep-alives |
+| Prazo de parede por tentativa | 180 s | aprovado, mas requer supervisor no runner; não implementado pelo adapter |
+| Orçamento da chamada lógica | 300 s | aprovado, mas requer supervisor no runner; não implementado |
+| Retries | até 2 novas tentativas para timeout/conexão ou HTTP 408/429/5xx | aprovado para SCI-03/RUN-06; o adapter faz uma tentativa, sem retry automático; 409 é permanente |
+| Espera entre tentativas | 2 s, depois 4 s, sem jitter | aprovado para o futuro runner, igual em C0/C1; não repetir erros de modelo/schema/truncamento |
 
-Antes de alterar o alias ou rodar o piloto, Felipe e o grupo precisam confirmar: (1) alias canônico versus legado; (2) teto por tentativa e teto total de uma run, inclusive retries; (3) limite de saída à luz de truncamentos e custo do piloto; (4) quais erros são transitórios e como serão classificados igualmente em C0/C1. A aceitação exigirá smoke sintético autorizado, testes, manifesto saneado e atualização do lock. Não inferir que `httpx` com timeout de leitura de 120 s imponha sozinho um prazo total: keep-alives podem mantê-lo aberto.
+Antes do piloto, ainda são necessários o smoke sintético autorizado com o alias novo, a revisão independente, a implementação verificável dos prazos de parede/orçamento e retries no runner e a validação de competência de C0. O grupo deverá conferir truncamentos, custo e classificação idêntica dos erros em C0/C1 sem usar o conjunto final. Não inferir que `httpx` com timeout de leitura de 120 s imponha sozinho um prazo total: keep-alives podem mantê-lo aberto. A configuração não autoriza nova chamada paga por si só.
 
 Um estudo de *thinking* ligado versus desligado não integra o núcleo. Se for executado, será exploratório, posterior e formalizado em decisão própria, sem substituir resultados confirmatórios.
 
