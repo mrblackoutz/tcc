@@ -82,7 +82,7 @@ def test_deepseek_rejects_endpoint_outside_allowlist(base_url: str) -> None:
 
 
 def test_configs_reject_model_drift() -> None:
-    with pytest.raises(LLMConfigError, match="DEC-026"):
+    with pytest.raises(LLMConfigError, match="DEC-029"):
         DeepSeekConfig(api_key=SYNTHETIC_KEY, model="unselected-model")
     with pytest.raises(LLMConfigError, match="DEC-018"):
         OllamaConfig(model="unselected-model")

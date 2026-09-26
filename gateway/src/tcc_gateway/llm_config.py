@@ -166,7 +166,7 @@ class DeepSeekConfig:
             raise LLMConfigError("DeepSeek endpoint is outside the DEC-020 allowlist")
         object.__setattr__(self, "base_url", normalised)
         if self.model != DEEPSEEK_MODEL:
-            raise LLMConfigError("DeepSeek model differs from DEC-026")
+            raise LLMConfigError("DeepSeek model differs from DEC-029")
 
     @classmethod
     def from_env(
