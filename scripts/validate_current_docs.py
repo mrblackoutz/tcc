@@ -18,6 +18,7 @@ PLAN = "Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md"
 FILES = (
     PLAN, "AGENTS.md", "README.md", "CHANGELOG.md",
     "docs/decision-log.md", "docs/task-backlog.md", "docs/ai-usage.md",
+    "docs/protocol.md",
     "docs/releases/v1.2.12.md", "docs/releases/v1.2.13.md",
     "docs/releases/v1.2.14.md", "docs/releases/v1.2.15.md",
     "docs/releases/v1.2.16.md", "paper/README.md",

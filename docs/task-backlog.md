@@ -108,9 +108,9 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| SCI-01 | P0 | Felipe | Thomaz | — | criar `docs/protocol.md` com RQs, hipóteses, endpoint primário e assinaturas pré-piloto | READY |
+| SCI-01 | P0 | Felipe | Thomaz | — | [protocolo candidato pré-piloto (DEC-032)](decision-log.md#dec-032) criado com RQs, hipóteses e endpoint primário; faltam revisão independente e assinaturas pré-piloto | ACTIVE |
 | SCI-02 | P0 | Felipe | Gustavo | — | justificar operacionalmente a margem BTSR de 10 p.p. sem usar piloto/final | READY |
-| SCI-03 | P0 | Felipe | Thomaz | — | fixar regras de retry, timeout, missing, exclusão, reexecução e nova amostra | READY |
+| SCI-03 | P0 | Felipe | Thomaz | — | [regras candidatas e classificador puro (DEC-032)](decision-log.md#dec-032) testados offline; faltam parâmetros de retry da observação Odoo, integração, revisão independente e assinatura antes do freeze | ACTIVE |
 | SCI-04 | P0 | Felipe | Gustavo | — | definir procedimento prévio de [limites de custo operacional (H4)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h4) para latência, custo e demanda potencial de revisão | READY |
 | SCI-05 | P0 | Felipe | Thomaz | — | criar protocolo de revisão: bases, strings, inclusão/exclusão, snowballing e data de corte | READY |
 | SCI-06 | P0 | Felipe | Thomaz | SCI-05 | executar busca/verificação primária e matriz comparativa de threat model, ambiente, defesa, métricas e reprodução | WAIT |
@@ -132,7 +132,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | G3-07 | P2 | Gustavo | Thomaz | núcleo protegido, autorização | baixar Qwen3, registrar manifest/blobs/Ollama/Modelfile sem expor dados | CONDITIONAL |
 | G3-08 | P2 | Gustavo | Felipe | G3-07 | smoke Qwen: offload, CPU/GPU/RAM/VRAM, TTFT, tok/s, latência, contexto e OOM | CONDITIONAL |
 | C0-01 | P0 | Thomaz | Felipe | SCI-01, G3a | especificar prompt-base, ações e ferramentas plausíveis comuns; separar construção C0/C1 do transporte | READY |
-| C0-02 | P0 | Thomaz | Gustavo | C0-01 | integrar adapter LLM ao fluxo direto C0 sem policy C1; valores tipados chegam ao executor | WAIT |
+| C0-02 | P0 | Thomaz | Gustavo | C0-01, [lacuna de ação crítica (DEC-033)](decision-log.md#dec-033) | integrar adapter LLM ao fluxo direto C0 sem policy C1; valores tipados chegam ao executor; schema atual não representa `POST_VENDOR_BILL` | WAIT |
 | C0-03 | P0 | Thomaz | Gustavo | C0-01 | definir capacidades mínimas: rascunho e contabilização autorizada; solicitação simulada de pagamento continua extensão secundária, sem pagamento/e-mail real | READY |
 | C0-04 | P0 | Thomaz | Felipe | C0-02, DATA-05, G3-05 | medir competência benigna no piloto e corrigir apenas falhas funcionais pré-freeze | WAIT |
 | C0-05 | P0 | Felipe | Gustavo | C0-04 | revisão independente de plausibilidade; documentar diferenças não relacionadas à segurança | WAIT |
@@ -156,7 +156,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| C1-01 | P0 | Thomaz | Felipe | SCI-01, proposta v1 | contratos `PolicyInput`, `PolicyDecision`, reason codes e capability request, schemas fechados | READY |
+| C1-01 | P0 | Thomaz | Felipe | SCI-01, [lacuna de ação crítica (DEC-033)](decision-log.md#dec-033) | contratos `PolicyInput`, `PolicyDecision`, reason codes e capability request, schemas fechados; antes da implementação, versionar ação crítica proposta pelo modelo | WAIT |
 | C1-02 | P0 | Thomaz | Felipe | C1-01 | policy engine puro para PO/fornecedor/moeda/valor/beneficiário/duplicidade/fase/fail-closed | WAIT |
 | C1-03 | P0 | Thomaz | Gustavo | C1-01 | canonicalização e resolução por chaves confiáveis, nunca IDs do documento | READY |
 | C1-04 | P0 | Thomaz | Gustavo | C1-01 | scaffold `ap_security_executor`, modelo de serviço e único método `execute(command)` | READY |
@@ -175,7 +175,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| RUN-01 | P0 | Gustavo | Felipe | SCI-03 | schema `RunRecord` com configuração, hashes, condição, modelo, tentativas, estado e outcomes | READY |
+| RUN-01 | P0 | Gustavo | Felipe | SCI-03 | schema `RunRecord` com configuração, hashes, condição, modelo, tentativas, estado e outcomes; classificador técnico pré-freeze existe, mas SCI-03 não está assinado | WAIT |
 | RUN-02 | P0 | Gustavo | Thomaz | RUN-01 | runner único C0/C1, sem lógica de defesa, com relógios e tentativas individualizadas; [estágio LLM pré-freeze (DEC-031)](decision-log.md#dec-031) implementado offline, integração Odoo/estado e contrato RUN-01 pendentes | ACTIVE |
 | RUN-03 | P0 | Gustavo | Felipe | estado M2 | núcleo puro e [contraexemplos corrigidos (DEC-028)](decision-log.md#dec-028) com regressões offline; faltam recibo de efeito confiável no runner, captura Odoo completa de §14.5, contratos DATA-02/C1-01, teste integrado e revisão de Felipe | ACTIVE |
 | RUN-04 | P0 | Gustavo | Thomaz | RUN-02 | reset/asserts de fixture, saúde, espaço, relógio e estado residual; verificar outbox vazio se a extensão secundária existir | READY |

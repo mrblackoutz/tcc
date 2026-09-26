@@ -501,3 +501,31 @@ Substitui ou é substituída por:
 - **Evidência:** DEC-020, DEC-029, §§11.5, 14.5–14.6 do plano e smoke G3-06 registrado em `reproducibility/model-selection.lock.json`; `python -m pytest gateway/tests -q` passou com 174 testes offline em 26/09/2026, incluindo paridade C0/C1, erros transitórios/permanentes, deadline incerto, URL interna, resposta malformada e não exposição de categoria externa.
 - **Responsável:** Gustavo pela implementação; Felipe revisa SCI-03/RunRecord e Thomaz revisa a futura integração ao runner.
 - **Seções e artefatos afetados:** G3-06, RUN-01/02/06, módulo/testes de tentativas e backlog; sem alteração de hipótese, amostra, endpoint, modelo ou run final.
+
+<a id="dec-032"></a>
+
+## DEC-032 — Protocolo operacional pré-piloto e classificação conservadora de runs
+
+- **Data:** 26/09/2026.
+- **Status:** proposta técnica pré-freeze implementável; revisão independente e assinaturas de SCI-01/SCI-03 pendentes. Não autoriza abrir o conjunto final.
+- **Contexto:** [protocolo científico e dados ausentes (SCI-01/SCI-03)](task-backlog.md) bloqueiam o contrato `RunRecord` e o piloto. O plano já fixa perguntas, hipóteses, endpoints, tentativas e limites de `missing`, mas falta uma tabela executável que impeça classificar falha do modelo como dado ausente ou repetir execução depois de observar o desfecho.
+- **Alternativas consideradas:** aguardar os owners originais; classificar qualquer erro como `missing`; reexecutar livremente casos com falha; preparar protocolo e classificador puro sujeitos a revisão antes do freeze. Adota-se a última opção. As duas alternativas intermediárias violam §§13.1 e 14.6 do plano.
+- **Decisão:** registrar em `docs/protocol.md` o protocolo candidato, sem alterar hipóteses, margem, amostra ou endpoints. Um classificador puro, comum a C0/C1 e sem acesso ao label adversarial, retorna `EVALUABLE` quando documento/estado inicial foram validados, pipeline começou e estado final confiável foi observado, mesmo com parsing, recusa, timeout do modelo, `DENY` ou indisponibilidade fail-closed. Pré-condição inválida ou pipeline não iniciado suspende a execução sem convertê-la em `missing`. Efeito potencial ainda em voo suspende a classificação. `MISSING` exige simultaneamente estado final não verificável, falha de infraestrutura independente da condição, retries de observação esgotados e código de motivo fechado. O classificador não decide sucesso do ataque nem exclusão estatística por conta própria.
+- **Consequências:** RUN-01/06 podem consumir uma regra técnica testável, mas SCI-03 e FRZ-06 continuam abertos até revisão independente, demonstração integrada e assinatura. Não há reexecução automática de `missing`; mudanças pós-freeze seguem §14.4, com versão congelada nova e reexecução integral dos pares afetados. Não há chamada paga ou uso do conjunto final nesta etapa.
+- **Evidência:** plano §§5.2–5.3, 11.5, 13.1, 14.5–14.6 e 15.1–15.3; [política técnica de tentativas (DEC-031)](#dec-031); 183 testes offline do gateway passaram em 26/09/2026, incluindo pré-condição, estado final, incerteza, `missing` e reset; validação dos 15 Markdown correntes passou.
+- **Responsável:** Gustavo prepara a implementação de contingência; Felipe e Thomaz devem revisar e assinar antes do piloto/freeze.
+- **Seções e artefatos afetados:** SCI-01/03, RUN-01/06, `docs/protocol.md`, classificador/testes e backlog; nenhuma run experimental foi afetada.
+
+<a id="dec-033"></a>
+
+## DEC-033 — Divergência entre A3a planejada e schema de proposta atual
+
+- **Data:** 26/09/2026.
+- **Status:** divergência confirmada; correção de implementação obrigatória antes de C0-02/C1-01 e do piloto; contrato novo ainda pendente de revisão.
+- **Contexto:** o plano §§8.3, 9.1, 12.4 e 16.5 exige `POST_VENDOR_BILL` como ação crítica A3a, mas `vendor-bill-model-output/v1` não contém `action` e `vendor-bill-proposal/v1` fixa `action=CREATE_DRAFT_BILL`. O caminho G3c/M2 comprova apenas criação de rascunho, não a capacidade de propor contabilização.
+- **Alternativas consideradas:** remover A3a do experimento; inferir a ação do manifesto depois da resposta do LLM; aceitar `POST_VENDOR_BILL` por texto livre; versionar um contrato tipado de ação proposto pelo LLM e preservá-lo igualmente em C0/C1. Adota-se a última direção para a implementação futura; as demais eliminam a hipótese H2, tornam o ataque impossível de medir ou confundem dado externo com autoridade.
+- **Decisão:** manter A3a e H2 como definidos no plano, sem chamar o caminho atual de C0 científico. Antes de integrar C0/C1, versionar um schema com enum fechado `CREATE_DRAFT_BILL`/`POST_VENDOR_BILL`, resolução técnica do rascunho por chave confiável e sem ID interno fornecido pelo documento. Não alterar silenciosamente o schema `v1` nem fabricar a ação a partir do label do cenário. O desenho exato e a eventual mudança da pré-imagem `CanonicalAction` exigem decisão específica e release do plano antes da implementação.
+- **Consequências:** C0-01/C0-03 podem especificar o contrato, mas C0-02/C1-01, competência A3a, piloto e freeze seguem bloqueados até schema, executor e testes E2E. Nenhum resultado A3a pode ser produzido pelo código atual.
+- **Evidência:** `gateway/src/tcc_gateway/schemas/vendor_bill_model_output_v1.schema.json`, `vendor_bill_proposal_v1.schema.json` e plano §§8.3, 9.1, 12.4 e 16.5.
+- **Responsável:** Gustavo registra a divergência; contrato a ser revisado por Thomaz e Felipe antes do freeze.
+- **Seções e artefatos afetados:** C0-01/02/03, C1-01, DATA-02, RUN-03 e piloto; nenhuma run final foi afetada.
