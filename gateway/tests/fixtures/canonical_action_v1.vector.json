@@ -1,0 +1,26 @@
+{
+  "schema_version": "canonical-action-test-vector/v1",
+  "status": "candidate-pre-freeze",
+  "synthetic_data": true,
+  "fiscal_value": false,
+  "quantity_scale": 2,
+  "action": {
+    "canonicalization_version": "canon/v1",
+    "action_schema_version": "vendor-bill-action-proposal/v2",
+    "policy_version": "policy-v1.0.0",
+    "action": "CREATE_DRAFT_BILL",
+    "executor_mode": "CREATE_DRAFT",
+    "scenario_id": "TCC-SCN-001",
+    "document_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "vendor_ref": "TCC-VENDOR-001",
+    "purchase_order_ref": "TCC-PO-001",
+    "document_ref": "TCC-NF-001-SEM-VALOR-FISCAL",
+    "invoice_date": "2026-09-30",
+    "currency": "BRL",
+    "amount": "125.50",
+    "recipient_bank_ref": "TCC-BANK-001",
+    "lines": [{"item_code": "TCC-SERVICE-001", "quantity": "1.00", "unit_price": "125.50"}]
+  },
+  "canonical_utf8": "{\"action\":\"CREATE_DRAFT_BILL\",\"action_schema_version\":\"vendor-bill-action-proposal/v2\",\"amount\":\"125.50\",\"canonicalization_version\":\"canon/v1\",\"currency\":\"BRL\",\"document_ref\":\"TCC-NF-001-SEM-VALOR-FISCAL\",\"document_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"executor_mode\":\"CREATE_DRAFT\",\"invoice_date\":\"2026-09-30\",\"lines\":[{\"item_code\":\"TCC-SERVICE-001\",\"quantity\":\"1.00\",\"unit_price\":\"125.50\"}],\"policy_version\":\"policy-v1.0.0\",\"purchase_order_ref\":\"TCC-PO-001\",\"recipient_bank_ref\":\"TCC-BANK-001\",\"scenario_id\":\"TCC-SCN-001\",\"vendor_ref\":\"TCC-VENDOR-001\"}",
+  "canonical_action_hash": "sha256:5e0612f524a05fe7b849c304e5aef05ff82206a1b1dbe727f4559cd188241918"
+}

@@ -158,7 +158,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| C1-01 | P0 | Thomaz | Felipe | SCI-01, A3A-01 | contratos `PolicyInput`, `PolicyDecision`, reason codes e capability request, schemas fechados; construir sobre o contrato v2 commitado em `84f2c44`, com revalidação se a revisão o alterar | READY |
+| C1-01 | P0 | Thomaz | Felipe | SCI-01, A3A-01 | Gustavo implementa em contingência os contratos `PolicyInput`, `PolicyDecision`, reason codes e capability command sob [contratos fechados (DEC-036)](decision-log.md#dec-036); próximo checkpoint: tipos/schemas e regressões de vínculos, sem integração Odoo | ACTIVE |
 | C1-02 | P0 | Thomaz | Felipe | C1-01 | policy engine puro para PO/fornecedor/moeda/valor/beneficiário/duplicidade/fase/fail-closed | WAIT |
 | C1-03 | P0 | Thomaz | Gustavo | C1-01 | canonicalização e resolução por chaves confiáveis, nunca IDs do documento | READY |
 | C1-04 | P0 | Thomaz | Gustavo | C1-01 | scaffold `ap_security_executor`, modelo de serviço e único método `execute(command)` | READY |

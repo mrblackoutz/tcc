@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tcc.local/schemas/policy-contracts-v1.schema.json",
+  "title": "C1 policy and capability contracts v1",
+  "$defs": {
+    "reference": {"type": "string", "minLength": 1, "maxLength": 96, "pattern": "^[A-Z0-9][A-Z0-9._ /-]*$"},
+    "scenarioId": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9._-]{0,63}$"},
+    "version": {"type": "string", "pattern": "^[a-z][a-z0-9._/-]{0,63}$"},
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "rawDigest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "money": {"type": "string", "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$"},
+    "quantity": {"type": "string", "pattern": "^(0|[1-9][0-9]{0,5})\\.[0-9]{2,4}$"},
+    "date": {"type": "string", "format": "date"},
+    "utcTime": {"type": "string", "format": "date-time", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z$"},
+    "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+    "canonicalLine": {
+      "type": "object", "additionalProperties": false,
+      "required": ["item_code", "quantity", "unit_price"],
+      "properties": {
+        "item_code": {"$ref": "#/$defs/reference"},
+        "quantity": {"$ref": "#/$defs/quantity"},
+        "unit_price": {"$ref": "#/$defs/money"}
+      }
+    },
+    "canonicalAction": {
+      "type": "object", "additionalProperties": false,
+      "required": ["canonicalization_version", "action_schema_version", "policy_version", "action", "executor_mode", "scenario_id", "document_sha256", "vendor_ref", "purchase_order_ref", "document_ref", "invoice_date", "currency", "amount", "recipient_bank_ref", "lines"],
+      "properties": {
+        "canonicalization_version": {"const": "canon/v1"},
+        "action_schema_version": {"const": "vendor-bill-action-proposal/v2"},
+        "policy_version": {"$ref": "#/$defs/version"},
+        "action": {"enum": ["CREATE_DRAFT_BILL", "POST_VENDOR_BILL"]},
+        "executor_mode": {"enum": ["CREATE_DRAFT", "POST_APPROVED"]},
+        "scenario_id": {"$ref": "#/$defs/scenarioId"},
+        "document_sha256": {"$ref": "#/$defs/rawDigest"},
+        "vendor_ref": {"$ref": "#/$defs/reference"},
+        "purchase_order_ref": {"$ref": "#/$defs/reference"},
+        "document_ref": {"$ref": "#/$defs/reference"},
+        "invoice_date": {"$ref": "#/$defs/date"},
+        "currency": {"$ref": "#/$defs/currency"},
+        "amount": {"$ref": "#/$defs/money"},
+        "recipient_bank_ref": {"$ref": "#/$defs/reference"},
+        "lines": {"type": "array", "minItems": 1, "maxItems": 50, "items": {"$ref": "#/$defs/canonicalLine"}},
+        "target_move_id": {"type": "integer", "minimum": 1}
+      },
+      "oneOf": [
+        {"properties": {"action": {"const": "CREATE_DRAFT_BILL"}, "executor_mode": {"const": "CREATE_DRAFT"}}, "not": {"required": ["target_move_id"]}},
+        {"properties": {"action": {"const": "POST_VENDOR_BILL"}, "executor_mode": {"const": "POST_APPROVED"}}, "required": ["target_move_id"]}
+      ]
+    },
+    "purchaseLine": {
+      "type": "object", "additionalProperties": false,
+      "required": ["item_code", "quantity", "unit_price", "quantity_to_invoice"],
+      "properties": {
+        "item_code": {"$ref": "#/$defs/reference"},
+        "quantity": {"$ref": "#/$defs/quantity"},
+        "unit_price": {"$ref": "#/$defs/money"},
+        "quantity_to_invoice": {"$ref": "#/$defs/quantity"}
+      }
+    },
+    "purchaseOrder": {
+      "type": "object", "additionalProperties": false,
+      "required": ["purchase_order_ref", "vendor_ref", "currency", "confirmed", "amount", "lines"],
+      "properties": {
+        "purchase_order_ref": {"$ref": "#/$defs/reference"},
+        "vendor_ref": {"$ref": "#/$defs/reference"},
+        "currency": {"$ref": "#/$defs/currency"},
+        "confirmed": {"type": "boolean"},
+        "amount": {"$ref": "#/$defs/money"},
+        "lines": {"type": "array", "minItems": 1, "maxItems": 50, "items": {"$ref": "#/$defs/purchaseLine"}}
+      }
+    },
+    "targetBill": {
+      "type": "object", "additionalProperties": false,
+      "required": ["move_id", "state", "action"],
+      "properties": {
+        "move_id": {"type": "integer", "minimum": 1},
+        "state": {"enum": ["draft", "posted", "cancel"]},
+        "action": {"$ref": "#/$defs/canonicalAction"}
+      }
+    },
+    "trustedState": {
+      "type": "object", "additionalProperties": false,
+      "required": ["company_ref", "scenario_id", "document_sha256", "phase", "purchase_order", "allowed_bank_refs", "duplicate_detected", "invoice_date_min", "invoice_date_max", "accounting_period_open", "monetary_tolerance", "quantity_scale", "dependencies", "target_bill"],
+      "properties": {
+        "company_ref": {"$ref": "#/$defs/reference"},
+        "scenario_id": {"$ref": "#/$defs/scenarioId"},
+        "document_sha256": {"$ref": "#/$defs/rawDigest"},
+        "phase": {"enum": ["DRAFT_INTAKE", "POST_REVIEW"]},
+        "purchase_order": {"$ref": "#/$defs/purchaseOrder"},
+        "allowed_bank_refs": {"type": "array", "maxItems": 50, "uniqueItems": true, "items": {"$ref": "#/$defs/reference"}},
+        "duplicate_detected": {"type": "boolean"},
+        "invoice_date_min": {"$ref": "#/$defs/date"},
+        "invoice_date_max": {"$ref": "#/$defs/date"},
+        "accounting_period_open": {"type": "boolean"},
+        "monetary_tolerance": {"$ref": "#/$defs/money"},
+        "quantity_scale": {"type": "integer", "enum": [2, 3, 4]},
+        "dependencies": {
+          "type": "object", "additionalProperties": false,
+          "required": ["state", "policy", "audit"],
+          "properties": {
+            "state": {"enum": ["AVAILABLE", "UNAVAILABLE"]},
+            "policy": {"enum": ["AVAILABLE", "UNAVAILABLE"]},
+            "audit": {"enum": ["AVAILABLE", "UNAVAILABLE"]}
+          }
+        },
+        "target_bill": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/targetBill"}]}
+      }
+    },
+    "policyInput": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "action", "trusted_state", "evaluated_at", "expires_at"],
+      "properties": {
+        "schema_version": {"const": "policy-input/v1"},
+        "action": {"$ref": "#/$defs/canonicalAction"},
+        "trusted_state": {"$ref": "#/$defs/trustedState"},
+        "evaluated_at": {"$ref": "#/$defs/utcTime"},
+        "expires_at": {"$ref": "#/$defs/utcTime"}
+      }
+    },
+    "reasonCode": {
+      "enum": ["SCHEMA_INVALID", "ACTION_NOT_ALLOWED", "PHASE_MISMATCH", "VENDOR_MISMATCH", "PURCHASE_ORDER_MISMATCH", "PURCHASE_ORDER_NOT_CONFIRMED", "CURRENCY_MISMATCH", "AMOUNT_MISMATCH", "LINE_MISMATCH", "TARGET_BILL_MISMATCH", "BANK_NOT_ALLOWED", "FORBIDDEN_MUTATION", "DUPLICATE_DOCUMENT", "IDEMPOTENCY_CONFLICT", "DRAFT_CONSISTENT", "CRITICAL_ACTION_REQUIRES_APPROVAL", "APPROVAL_INVALID", "APPROVAL_EXPIRED", "APPROVAL_REPLAY", "APPROVAL_HASH_MISMATCH", "APPROVAL_SCENARIO_MISMATCH", "DEPENDENCY_UNAVAILABLE", "POLICY_UNAVAILABLE", "AUDIT_UNAVAILABLE", "DATE_OUTSIDE_WINDOW", "ACCOUNTING_PERIOD_CLOSED"]
+    },
+    "policyDecision": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "decision", "reason_codes", "proposed_action_hash", "input_sha256", "policy_version", "allowed_executor", "deny_class", "evaluated_at", "expires_at"],
+      "properties": {
+        "schema_version": {"const": "policy-decision/v1"},
+        "decision": {"enum": ["ALLOW", "REVIEW", "DENY"]},
+        "reason_codes": {"type": "array", "minItems": 1, "maxItems": 16, "uniqueItems": true, "items": {"$ref": "#/$defs/reasonCode"}},
+        "proposed_action_hash": {"$ref": "#/$defs/digest"},
+        "input_sha256": {"$ref": "#/$defs/digest"},
+        "policy_version": {"$ref": "#/$defs/version"},
+        "allowed_executor": {"enum": [null, "create_bill_executor", "post_bill_executor"]},
+        "deny_class": {"enum": [null, "POLICY_RULE", "FAIL_CLOSED_UNAVAILABILITY"]},
+        "evaluated_at": {"$ref": "#/$defs/utcTime"},
+        "expires_at": {"$ref": "#/$defs/utcTime"}
+      },
+      "oneOf": [
+        {"properties": {"decision": {"const": "ALLOW"}, "allowed_executor": {"const": "create_bill_executor"}, "deny_class": {"type": "null"}, "reason_codes": {"const": ["DRAFT_CONSISTENT"]}}},
+        {"properties": {"decision": {"const": "REVIEW"}, "allowed_executor": {"const": "post_bill_executor"}, "deny_class": {"type": "null"}, "reason_codes": {"const": ["CRITICAL_ACTION_REQUIRES_APPROVAL"]}}},
+        {"properties": {"decision": {"const": "DENY"}, "allowed_executor": {"type": "null"}, "deny_class": {"enum": ["POLICY_RULE", "FAIL_CLOSED_UNAVAILABILITY"]}}}
+      ]
+    },
+    "approvalFixture": {
+      "type": "object", "additionalProperties": false,
+      "required": ["fixture_id", "scenario_id", "approver_ref", "decision", "canonical_action_hash", "nonce", "issued_at", "expires_at", "key_id", "signature"],
+      "properties": {
+        "fixture_id": {"$ref": "#/$defs/reference"},
+        "scenario_id": {"$ref": "#/$defs/scenarioId"},
+        "approver_ref": {"$ref": "#/$defs/reference"},
+        "decision": {"const": "APPROVE"},
+        "canonical_action_hash": {"$ref": "#/$defs/digest"},
+        "nonce": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9_-]+$"},
+        "issued_at": {"$ref": "#/$defs/utcTime"},
+        "expires_at": {"$ref": "#/$defs/utcTime"},
+        "key_id": {"$ref": "#/$defs/version"},
+        "signature": {"type": "string", "minLength": 1, "maxLength": 4096}
+      }
+    },
+    "capabilityCommand": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "action", "policy_decision", "idempotency_key"],
+      "properties": {
+        "schema_version": {"const": "capability-command/v1"},
+        "action": {"$ref": "#/$defs/canonicalAction"},
+        "policy_decision": {"$ref": "#/$defs/policyDecision"},
+        "idempotency_key": {"$ref": "#/$defs/digest"},
+        "approval": {"$ref": "#/$defs/approvalFixture"}
+      },
+      "oneOf": [
+        {"properties": {"action": {"properties": {"executor_mode": {"const": "CREATE_DRAFT"}}}, "policy_decision": {"properties": {"decision": {"const": "ALLOW"}}}}, "not": {"required": ["approval"]}},
+        {"properties": {"action": {"properties": {"executor_mode": {"const": "POST_APPROVED"}}}, "policy_decision": {"properties": {"decision": {"const": "REVIEW"}}}}, "required": ["approval"]}
+      ]
+    }
+  }
+}
