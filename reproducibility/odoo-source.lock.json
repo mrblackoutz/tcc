@@ -36,21 +36,48 @@
     "image":  {
                   "build_source_commit":  "a4b877245c9cb5e3d7152d1593a518170f115ca1",
                   "reference":  "tcc-odoo:19.0-a4b8772",
-                  "oci_digest":  "sha256:3d884b3892356624e4997b431a5a6ccb215fe6da57b05bed7dbb4d326beeba2b",
+                  "oci_digest":  "sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392",
                   "digest_scope":  "local_buildkit_oci_layout_manifest",
                   "runtime_platform":  "linux/amd64",
                   "dockerfile_sha256":  "76649dc11669dc39ca1f12f169c33ceef7afee8b74767a165b3db57752e3ea09",
                   "base_image_reference":  "python:3.12-slim-bookworm@sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab",
                   "base_image_oci_digest":  "sha256:4427763a1ba36f5aa8f656a03e5d00f3b8d61f5dd950c73df6c14f8c7640f8ab",
-                  "built_at":  "2026-09-07T07:31:29.6424306Z",
+                  "built_at":  "2026-08-31T10:02:25.2783887Z",
+                  "build_record_commit":  "b9a96da",
+                  "selected_on":  "2026-09-30",
+                  "selection_decision":  "DEC-040",
+                  "verified_on":  "2026-09-30",
+                  "verification":  {
+                                       "status":  "pass",
+                                       "verified_at":  "2026-09-30T17:56:25.7491439Z",
+                                       "oci_layers_verified":  8,
+                                       "base_rootfs_prefix_layers_verified":  4,
+                                       "loaded_image_id_kind":  "config_digest",
+                                       "new_build_performed":  false,
+                                       "oci_archive_sha256":  "02004641a801229e38b4ef04a605968241ae9d29ddfe8f3a8f8aee1c2e4bfdfa",
+                                       "docker_archive_sha256":  "d947761be010f1684146dbd0b83ea6dab8d6d3457d905ad98830424176ffad23",
+                                       "metadata_sha256":  "558c608d09166f0be549bc22f28ad8f9169d2affa1d8d070b654a7f8875c974b",
+                                       "checks":  ["oci-index-manifest-config-layer-bytes-and-sizes", "oci-uncompressed-layer-diffids", "docker-export-config-and-layer-rootfs-linkage", "loaded-image-rootfs-labels-platform-user", "locked-base-rootfs-prefix-from-official-registry", "dockerfile-hash", "source-commit-marker"]
+                                   },
                   "source_image_linkage":  {
                                                "status":  "verified",
                                                "evidence":  "OCI manifest bytes, config digest, loaded image labels, and /opt/odoo/.tcc-source-commit verified"
                                            },
                   "status":  "built-and-source-verified",
                   "required_digest_format":  "sha256:\u003c64-hex\u003e",
-                  "local_config_digest":  "sha256:91bbde645d7a80219dc78c911d164b3354c6a95d8e86252b0c76668c699f5631",
+                  "local_config_digest":  "sha256:c85221764b096dde2df68c50e2da634147b10c14dcfb98bf57f71f62a14bd1f2",
                   "manifest_media_type":  "application/vnd.oci.image.manifest.v1+json"
               },
+    "previous_image_selections":  [
+                                      {
+                                          "record_commit":  "58a0caa",
+                                          "built_at":  "2026-09-07T07:31:29.6424306Z",
+                                          "source_commit":  "a4b877245c9cb5e3d7152d1593a518170f115ca1",
+                                          "oci_digest":  "sha256:3d884b3892356624e4997b431a5a6ccb215fe6da57b05bed7dbb4d326beeba2b",
+                                          "local_config_digest":  "sha256:91bbde645d7a80219dc78c911d164b3354c6a95d8e86252b0c76668c699f5631",
+                                          "status":  "historical-m1-m2-evidence-preserved-not-locally-available",
+                                          "superseded_by_decision":  "DEC-040"
+                                      }
+                                  ],
     "policy":  "The moving branch never updates selected_commit automatically. Any source change requires a documented plan version; any post-freeze change also requires a deviation record and affected reruns."
 }

@@ -2,7 +2,7 @@
     "$schema":  "https://json-schema.org/draft/2020-12/schema",
     "schemaVersion":  2,
     "observedOn":  "2026-08-31",
-    "status":  "m2-smoke-passed-pre-freeze",
+    "status":  "historical-image-reselected-current-m1-m2-revalidation-pending-pre-freeze",
     "platform":  "linux/amd64",
     "components":  {
                        "python":  {
@@ -27,13 +27,18 @@
                                     "repository":  "https://github.com/odoo/odoo.git",
                                     "commit":  "a4b877245c9cb5e3d7152d1593a518170f115ca1",
                                     "localImageTag":  "tcc-odoo:19.0-a4b8772",
-                                    "imageDigest":  "sha256:3d884b3892356624e4997b431a5a6ccb215fe6da57b05bed7dbb4d326beeba2b",
+                                    "imageDigest":  "sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392",
                                     "imageDigestKind":  "oci_manifest",
-                                    "localConfigDigest":  "sha256:91bbde645d7a80219dc78c911d164b3354c6a95d8e86252b0c76668c699f5631",
+                                    "localConfigDigest":  "sha256:c85221764b096dde2df68c50e2da634147b10c14dcfb98bf57f71f62a14bd1f2",
                                     "buildStatus":  "built-and-source-verified",
                                     "buildPlatform":  "linux/amd64",
                                     "dockerfileSha256":  "76649dc11669dc39ca1f12f169c33ceef7afee8b74767a165b3db57752e3ea09",
-                                    "builtAt":  "2026-09-07T07:31:29.6424306Z",
+                                    "builtAt":  "2026-08-31T10:02:25.2783887Z",
+                                    "buildRecordCommit":  "b9a96da",
+                                    "selectedOn":  "2026-09-30",
+                                    "selectionDecision":  "DEC-040",
+                                    "artifactVerifiedOn":  "2026-09-30",
+                                    "loadedImageIdKind":  "config_digest",
                                     "sourceCommitEvidencePath":  "/opt/odoo/.tcc-source-commit",
                                     "manifestMediaType":  "application/vnd.oci.image.manifest.v1+json",
                                     "digestScope":  "local_buildkit_oci_layout_manifest",
@@ -64,6 +69,9 @@
                      "syntheticDataOnly":  true
                  },
     "m1Smoke":  {
+                    "imageDigest":  "sha256:3d884b3892356624e4997b431a5a6ccb215fe6da57b05bed7dbb4d326beeba2b",
+                    "localConfigDigest":  "sha256:91bbde645d7a80219dc78c911d164b3354c6a95d8e86252b0c76668c699f5631",
+                    "evidenceRecordCommit":  "58a0caa",
                     "status":  "pass",
                     "scenarioId":  "M1-SYNTHETIC-001",
                     "initialStateSha256":  "ec1b067d08610e5f615b801b716c5647ccac4e6e79a3f2c8db114f7cf16c1cf6",
@@ -72,9 +80,13 @@
                     "completedAt":  "2026-09-07T07:32:16.3891220Z"
                 },
     "pendingEvidence":  [
+                            "Revalidar M1/M2 com codigo e artefato correntes antes do piloto/freeze; smokes historicos continuam vinculados a imagem de 07/09, conforme DEC-040.",
                             "Pendencias normativas de G3c, C0 cientifico competente, C1, dataset, piloto e freeze estao no plano-mestre e em docs/decision-log.md; este lock registra somente evidencia executada."
                         ],
     "m2Smoke":  {
+                    "imageDigest":  "sha256:3d884b3892356624e4997b431a5a6ccb215fe6da57b05bed7dbb4d326beeba2b",
+                    "localConfigDigest":  "sha256:91bbde645d7a80219dc78c911d164b3354c6a95d8e86252b0c76668c699f5631",
+                    "evidenceRecordCommit":  "58a0caa",
                     "status":  "pass",
                     "scenarioId":  "M2-BENIGN-001",
                     "adapterId":  "deterministic-development/v1",
