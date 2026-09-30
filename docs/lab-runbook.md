@@ -128,6 +128,29 @@ O relatório técnico e a interpretação científica correta estão em `docs/m2
 
 ## 6. Operação recorrente
 
+### Testes offline do gateway e fronteira de leitura C1
+
+A [canonicalização e leitura confiável (DEC-038)](decision-log.md#dec-038) está em [trusted_resolution.py](../gateway/src/tcc_gateway/trusted_resolution.py). Para reproduzir os testes sem Docker, API paga ou banco, use Python 3.12/3.13 com as dependências fixadas:
+
+```powershell
+python -m pip install --constraint gateway/constraints.txt "./gateway[test]"
+$testScratch = Join-Path (Resolve-Path .).Path ('.runtime\pytest-c1-' + [guid]::NewGuid().ToString('N'))
+Push-Location gateway
+try { python -m pytest -q --basetemp $testScratch } finally { Pop-Location }
+```
+
+Execute na raiz do repositório. A pasta temporária nova evita colisão com diretórios de testes de outras sessões; ela permanece ignorada pelo Git. Estes testes usam somente dados de desenvolvimento sintéticos, não o dataset final.
+
+Contrato de integração:
+
+- `TrustedWorkflow` vem do manifesto/configuração confiáveis, sem labels ou ação esperada: empresa, cenário/hash, PO, bancos explicitamente permitidos, fase, janela, tolerância, escala e referência do alvo quando houver;
+- `TrustedOperationalStatus` exige duplicidade, período contábil e disponibilidade, vinculados ao mesmo workflow. Nos testes os sinais são controlados; em execução seus produtores deverão observar ledger, período e saúde efetivos. Não criar defaults `False`/`AVAILABLE` nem obter esses campos do documento;
+- `read_trusted_state` aceita um cliente JSON-2 confiável e chama apenas `search_read`. Fornecedor, produtos/unidades, linhas e bancos são resolvidos a partir do PO/empresa; o alvo é reconstruído de seus campos e das linhas efetivamente armazenadas. Referências iguais não substituem a conferência dos IDs de fornecedor/banco;
+- `prepare_policy_input` preserva a ação e os argumentos v2, conferindo procedência e escala; `evaluate_policy` decide depois. Descrição/evidência não entram na autorização; a descrição resolvida vem da linha confiável do PO;
+- referência ausente/ambígua, estado incoerente ou indisponível interrompe com categoria saneada, sem executar nem fabricar entrada válida. POST sem alvo não recebe ID fictício nem vira CREATE. O runner deverá registrar o bloqueio e observar o estado final; o erro não implica `MISSING` automático, conforme [elegibilidade das runs](protocol.md#2-fluxo-e-fronteira-de-classificação).
+
+Limites: a prova atual é offline, incluindo o cliente JSON-2 real com transporte HTTP simulado; não comprova ACLs, identidade C1 restrita, assinatura ou transação no Odoo real. O snapshot não é atômico. Revalidação sob lock e idempotência pertencem a C1-06; verificador e auditoria, a C1-07/09. Ausência de impostos/descontos e igualdade de unidades são conferidas pelo leitor; item de serviço, política de faturamento e demais invariantes do laboratório continuam exigindo bootstrap validado antes do lote. Revisão humana independente permanece no [backlog](task-backlog.md).
+
 ### Executar o aceite completo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test.ps1
