@@ -186,6 +186,28 @@ Cobertura: acesso sem grupo/ACL, usuário inativo/público/superusuário, contex
 
 Resultado de 30/09/2026: **720 testes offline** (533 do gateway e 187 do contrato independente) e **17 testes no Odoo real**, todos aprovados. Add-on e harness permaneceram vinculados aos hashes da árvore testada; a limpeza isolada passou, sem efeitos financeiros ou inferência paga. A conclusão saneada está em `c104Scaffold` no lock de ambiente. Esses números comprovam o scaffold, não a integração C1 completa ou eficácia contra ataques.
 
+### Identidade restrita e prova HTTP C1-05
+
+A [identidade mínima (DEC-041)](decision-log.md#dec-041) usa o [gate administrativo](../odoo/addons/ap_security_executor/identity.py), sem mudar ACLs globais ou criar credenciais automaticamente. Os grupos explícitos são `base.group_user` e `ap_security_executor.group_executor`. Os dois grupos implicados do fonte fixado são conferidos separadamente. A identidade tem uma única empresa e parceiro pessoal exclusivo, sem bancos, contatos-filhos, outros usuários ou uso financeiro, inclusive vínculos arquivados.
+
+`provision_executor_identity(env, login=..., company=...)` cria uma identidade sem senha/chave ou confere a existente. `assert_executor_identity(env, user, company=...)` confere deriva e retorna o inventário saneado. Ambos exigem ambiente administrativo confiável; não são métodos RPC. Login e empresa devem vir da configuração administrativa, nunca do documento/LLM. Não há reparo automático: grupo, empresa, parceiro ou permissão crítica divergentes interrompem; reprovação de identidade nova desfaz sua criação no savepoint. O chamador controla a transação. A integração desse gate ao bootstrap e ao pré-lote continua pendente; **não instalamos esta identidade no laboratório existente**.
+
+Para reproduzir a prova com as mesmas imagens do modo C1-04:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_c1_scaffold.ps1 -WithHttpAcl
+```
+
+Esse modo executa os testes ORM e um `HttpCase` com controller JSON-2, bearer e ACLs reais, sem sessão administrativa nas requisições. HTTP fica no loopback do contêiner, sem porta publicada. Chaves específicas do teste expiram em uma hora e ficam apenas em memória; sua representação com hash no banco desaparece com o banco descartável. O harness não lê a chave DeepSeek nem a chave C0. O modo sem `-WithHttpAcl` conserva a seleção dos 17 testes anteriores, sem HTTP.
+
+Os testes HTTP usam contas/linhas, pedidos, beneficiário, pagamento em rascunho e wizard sintéticos existentes. A preparação administrativa cria essas fixtures, incluindo uma conta contabilizada para abrir o wizard; isso não é ação do executor nem run científica. Conferem executor fechado, contrato inválido, ausência/erro de bearer, falta de grupo, métodos privados, contexto hostil, CRUD e métodos críticos diretos, atribuição de privilégios/empresa e autogravação de preferências. Cada caso exige igualdade dos hashes de uma projeção crítica antes/depois. A projeção é de diagnóstico: não substitui o oráculo congelado de reset do experimento.
+
+Permissões residuais são explícitas: fornecedores/bancos conservam leitura básica; anexos, preferências, defaults pessoais e campos seguros do próprio usuário não estão globalmente bloqueados. O HTTP 200 de uma preferência pessoal **não** significa autoridade financeira. Inventário de ACLs/regras não prova autorização de todo método público. C1-06 deve preencher explicitamente campos críticos, sem consumir defaults pessoais como fonte confiável; C1-10 deve testar esse caminho e demais bypasses. A identidade não recebe acesso direto a conta/linha, PO ou pagamento. Efeitos financeiros do executor continuam desativados.
+
+A evidência detalhada permanece ignorada em `.runtime/c1-05/<execução>/`: `http-evidence/c105-http.json` contém somente catálogo de permissões, categorias HTTP e hashes; `evidence.json` vincula fonte/imagens, contagens e limpeza. `PASS` exige sumário Odoo sem falhas, cobertura HTTP efetiva, fonte inalterada e consultas Docker bem-sucedidas confirmando ausência dos recursos próprios após a limpeza. Falha no Docker não vale como recurso ausente. `HttpCase` usa cursor transacional de teste: não comprova lifecycle entre processos, concorrência, assinatura, idempotência ou execução financeira integrada. A revisão humana independente permanece no [backlog](task-backlog.md).
+
+Resultado de 30/09/2026: **56 testes Odoo** (17 do scaffold, 24 da identidade e 15 HTTP), com **54 requisições HTTP**, passaram; a regressão do modo sem HTTP passou nos 17 testes anteriores. Os 720 testes offline também passaram. O [inventário saneado](../reproducibility/c1-permissions.inventory.json) contém 360 modelos, 151 ACLs e 83 regras aplicáveis; seus hashes e os da fonte testada estão em `c105Identity` no [lock de ambiente](../reproducibility/lab-environment.lock.json). Estado crítico inalterado, fonte inalterada e limpeza foram confirmados. Isso conclui a prova técnica C1-05, não o aceite humano ou o fluxo C1 completo.
+
 ### Executar o aceite completo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test.ps1

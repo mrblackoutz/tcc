@@ -1,18 +1,24 @@
-param()
+param([switch]$WithHttpAcl)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 # A fresh, labelled, internal lab: no Compose services, existing database,
-# volume, API key, image rebuild or external model call is used here.
+# volume, existing API key, image rebuild or external model call is used here.
+# HTTP mode generates only expiring in-memory synthetic test keys.
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
-$networkName = 'tcc-c104-' + $runId
+$probeTask = if ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
+$probeDirectory = $probeTask.ToLowerInvariant()
+$probePrefix = if ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
+$ownerLabel = if ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
+$networkName = $probePrefix + '-' + $runId
 $postgresName = $networkName + '-db'
 $odooName = $networkName + '-odoo'
-$databaseName = 'tcc_c104_' + $runId.Substring(0, 12)
-$probeRoot = Join-Path $repositoryRoot ('.runtime\c1-04\' + $runId)
-$expectedRoot = [System.IO.Path]::GetFullPath((Join-Path $repositoryRoot '.runtime\c1-04')) + [System.IO.Path]::DirectorySeparatorChar
+$databaseName = $probePrefix.Replace('-', '_') + '_' + $runId.Substring(0, 12)
+$databaseUser = $probePrefix.Replace('-', '_')
+$probeRoot = Join-Path $repositoryRoot ('.runtime\' + $probeDirectory + '\' + $runId)
+$expectedRoot = [System.IO.Path]::GetFullPath((Join-Path $repositoryRoot ('.runtime\' + $probeDirectory))) + [System.IO.Path]::DirectorySeparatorChar
 if (-not [System.IO.Path]::GetFullPath($probeRoot).StartsWith($expectedRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw 'Invalid isolated probe path'
 }
@@ -68,16 +74,13 @@ function Invoke-ProbeDocker {
 function Remove-OwnedContainer {
     param([string]$Name)
     if ($Name -notin @($postgresName, $odooName)) { throw 'Refusing unrelated container cleanup' }
-    $savedPreference = $ErrorActionPreference
-    try {
-        $ErrorActionPreference = 'Continue'
-        $owner = @(& docker container inspect --format '{{json .Config.Labels}}' $Name 2>$null)
-        $inspectExit = $LASTEXITCODE
-    }
-    finally { $ErrorActionPreference = $savedPreference }
-    if ($inspectExit -ne 0) { return }
+    # An engine/permission failure is not proof that a resource is absent.
+    $names = Invoke-ProbeDocker -Arguments @('container', 'ls', '--all', '--format', '{{.Names}}') -LogName ($Name + '-cleanup-list.log')
+    if ($Name -notin $names) { return }
+    $owner = Invoke-ProbeDocker -Arguments @('container', 'inspect', '--format', '{{json .Config.Labels}}', $Name) -LogName ($Name + '-cleanup-owner.log')
     $ownerLabels = ($owner -join '') | ConvertFrom-Json
-    if ($ownerLabels.'tcc.c104.run' -ne $runId) { throw 'Refusing unowned container cleanup' }
+    $ownerProperty = $ownerLabels.PSObject.Properties[$ownerLabel]
+    if ($null -eq $ownerProperty -or $ownerProperty.Value -ne $runId) { throw 'Refusing unowned container cleanup' }
     $null = Invoke-ProbeDocker -Arguments @('container', 'rm', '--force', $Name) -LogName ($Name + '-cleanup.log')
 }
 
@@ -148,10 +151,10 @@ try {
     $postgresEnvironment = Join-Path $probeRoot 'postgres.env'
     $odooConfiguration = Join-Path $probeRoot 'odoo.conf'
     [System.IO.File]::WriteAllLines($postgresEnvironment, [string[]]@(
-        'POSTGRES_USER=tcc_c104', ('POSTGRES_DB=' + $databaseName), ('POSTGRES_PASSWORD=' + $probePassword)
+        ('POSTGRES_USER=' + $databaseUser), ('POSTGRES_DB=' + $databaseName), ('POSTGRES_PASSWORD=' + $probePassword)
     ), $encoding)
     [System.IO.File]::WriteAllLines($odooConfiguration, [string[]]@(
-        '[options]', 'db_host = db', 'db_port = 5432', 'db_user = tcc_c104',
+        '[options]', 'db_host = db', 'db_port = 5432', ('db_user = ' + $databaseUser),
         ('db_password = ' + $probePassword), ('db_name = ' + $databaseName),
         ('admin_passwd = ' + $probePassword), 'data_dir = /var/lib/odoo',
         'addons_path = /opt/odoo/addons,/mnt/extra-addons', 'list_db = False',
@@ -162,12 +165,12 @@ try {
 
     $networkCreated = $true
     $null = Invoke-ProbeDocker -Arguments @(
-        'network', 'create', '--internal', '--label', ('tcc.c104.run=' + $runId), $networkName
+        'network', 'create', '--internal', '--label', ($ownerLabel + '=' + $runId), $networkName
     ) -LogName 'network-create.log'
     $postgresCreated = $true
     $null = Invoke-ProbeDocker -Arguments @(
         'run', '--detach', '--pull', 'never', '--name', $postgresName,
-        '--label', ('tcc.c104.run=' + $runId), '--network', $networkName, '--network-alias', 'db',
+        '--label', ($ownerLabel + '=' + $runId), '--network', $networkName, '--network-alias', 'db',
         '--env-file', $postgresEnvironment, '--read-only', '--tmpfs', '/tmp',
         '--tmpfs', '/var/run/postgresql', '--tmpfs', '/var/lib/postgresql', $postgresImage
     ) -LogName 'postgres-start.log'
@@ -176,7 +179,7 @@ try {
         $savedPreference = $ErrorActionPreference
         try {
             $ErrorActionPreference = 'Continue'
-            $null = & docker exec $postgresName pg_isready -U tcc_c104 -d $databaseName 2>&1
+            $null = & docker exec $postgresName pg_isready -U $databaseUser -d $databaseName 2>&1
             $ready = $LASTEXITCODE -eq 0
         }
         finally { $ErrorActionPreference = $savedPreference }
@@ -185,18 +188,34 @@ try {
     }
     if (-not $ready) { throw 'Isolated PostgreSQL did not become ready' }
 
-    Write-Host 'C1-04: installing and testing the add-on in a fresh disposable Odoo database.'
+    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http'
+    $testArguments = @('--no-http')
+    $httpDockerArguments = @()
+    $httpEvidenceRoot = $null
+    if ($WithHttpAcl) {
+        $testTags = '/ap_security_executor'
+        $testArguments = @('--http-interface', '127.0.0.1')
+        $httpEvidenceRoot = Join-Path $probeRoot 'http-evidence'
+        $null = New-Item -ItemType Directory -Path $httpEvidenceRoot
+        $httpDockerArguments = @(
+            '--mount', ('type=bind,source=' + $httpEvidenceRoot + ',target=/mnt/c1-evidence'),
+            '--env', 'TCC_C1_PROBE_EVIDENCE_DIR=/mnt/c1-evidence'
+        )
+    }
+    Write-Host ($probeTask + ': installing and testing the add-on in a fresh disposable Odoo database.')
     $odooStarted = $true
-    $odooOutput = Invoke-ProbeDocker -Arguments @(
-        'run', '--pull', 'never', '--name', $odooName, '--label', ('tcc.c104.run=' + $runId),
+    $dockerArguments = @(
+        'run', '--pull', 'never', '--name', $odooName, '--label', ($ownerLabel + '=' + $runId),
         '--network', $networkName, '--read-only', '--security-opt', 'no-new-privileges:true', '--cap-drop', 'ALL',
         '--tmpfs', '/tmp:mode=1777', '--tmpfs', '/var/lib/odoo:uid=10001,gid=10001,mode=0750',
         '--mount', ('type=bind,source=' + $addonSnapshot + ',target=/mnt/extra-addons/ap_security_executor,readonly'),
-        '--mount', ('type=bind,source=' + $odooConfiguration + ',target=/etc/odoo/c104.conf,readonly'),
+        '--mount', ('type=bind,source=' + $odooConfiguration + ',target=/etc/odoo/c104.conf,readonly')
+    ) + $httpDockerArguments + @(
         $loadedImageId, 'python', '/opt/odoo/odoo-bin', '-c', '/etc/odoo/c104.conf', '-d', $databaseName,
-        '-i', 'ap_security_executor', '--without-demo=True', '--test-enable', '--test-tags', '/ap_security_executor',
-        '--stop-after-init', '--no-http'
-    ) -LogName 'odoo-tests.log'
+        '-i', 'ap_security_executor', '--without-demo=True', '--test-enable', '--test-tags', $testTags,
+        '--stop-after-init'
+    ) + $testArguments
+    $odooOutput = Invoke-ProbeDocker -Arguments $dockerArguments -LogName 'odoo-tests.log'
     $testSummaryMatches = [regex]::Matches(($odooOutput -join "`n"), '(\d+) failed, (\d+) error\(s\) of (\d+) tests')
     if ($testSummaryMatches.Count -eq 0) { throw 'No Odoo test summary; installation alone is not a passing test' }
     $summary = $testSummaryMatches[$testSummaryMatches.Count - 1]
@@ -206,7 +225,7 @@ try {
     Assert-SameAddonHashes -Before $sourceHashes -After (Get-AddonHashes)
     $result = [ordered]@{
         schema_version = 'c104-probe-evidence/v1'; status = 'TESTS_PASSED_CLEANUP_PENDING'; observed_at = [DateTime]::UtcNow.ToString('o')
-        scope = 'install-and-preflight-only'; source_commit = $sourceLock.selected_commit
+        task = $probeTask; scope = 'install-and-preflight-only'; source_commit = $sourceLock.selected_commit
         odoo_config_digest = $environmentLock.components.odoo.localConfigDigest
         odoo_manifest_digest = $environmentLock.components.odoo.imageDigest
         loaded_image_id = $loadedImageId; loaded_image_id_kind = $loadedImageIdKind
@@ -214,31 +233,48 @@ try {
         addon_tree_sha256 = $sourceHashes; source_tree_unchanged = $true
         isolated_database = $true; existing_lab_touched = $false; financial_effects_enabled = $false
     }
+    if ($WithHttpAcl) {
+        $httpEvidencePath = Join-Path $httpEvidenceRoot 'c105-http.json'
+        if (-not (Test-Path -LiteralPath $httpEvidencePath -PathType Leaf)) { throw 'HTTP test evidence missing' }
+        $httpProof = Get-Content -Raw -Encoding UTF8 -LiteralPath $httpEvidencePath | ConvertFrom-Json
+        if ($httpProof.schema_version -ne 'c105-http-evidence/v1' -or $httpProof.status -ne 'PASS' -or
+            $httpProof.http_request_count -le 0 -or $httpProof.http_test_count -le 0) {
+            throw 'HTTP tests did not produce complete passing evidence'
+        }
+        $result.schema_version = 'c105-probe-evidence/v1'
+        $result.scope = 'identity-inventory-and-json2-http-preflight-only'
+        $result['http_request_count'] = [int]$httpProof.http_request_count
+        $result['http_test_count'] = [int]$httpProof.http_test_count
+        $result['http_evidence_sha256'] = (Get-FileHash -LiteralPath $httpEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    }
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
 }
 finally {
     if ($odooStarted) { Remove-OwnedContainer -Name $odooName }
     if ($postgresCreated) { Remove-OwnedContainer -Name $postgresName }
     if ($networkCreated) {
-        $savedPreference = $ErrorActionPreference
-        try {
-            $ErrorActionPreference = 'Continue'
-            $owner = @(& docker network inspect --format '{{json .Labels}}' $networkName 2>$null)
-            $inspectExit = $LASTEXITCODE
-        }
-        finally { $ErrorActionPreference = $savedPreference }
-        if ($inspectExit -eq 0) {
+        $names = Invoke-ProbeDocker -Arguments @('network', 'ls', '--format', '{{.Name}}') -LogName 'network-cleanup-list.log'
+        if ($networkName -in $names) {
+            $owner = Invoke-ProbeDocker -Arguments @('network', 'inspect', '--format', '{{json .Labels}}', $networkName) -LogName 'network-cleanup-owner.log'
             $ownerLabels = ($owner -join '') | ConvertFrom-Json
-            if ($ownerLabels.'tcc.c104.run' -ne $runId) { throw 'Refusing unowned network cleanup' }
+            $ownerProperty = $ownerLabels.PSObject.Properties[$ownerLabel]
+            if ($null -eq $ownerProperty -or $ownerProperty.Value -ne $runId) { throw 'Refusing unowned network cleanup' }
             $null = Invoke-ProbeDocker -Arguments @('network', 'rm', $networkName) -LogName 'network-cleanup.log'
         }
+    }
+    # Confirm absence with successful Docker queries, including after rm.
+    # A disconnected engine leaves evidence pending, never cleanup_verified.
+    $remainingContainers = Invoke-ProbeDocker -Arguments @('container', 'ls', '--all', '--format', '{{.Names}}') -LogName 'cleanup-final-containers.log'
+    $remainingNetworks = Invoke-ProbeDocker -Arguments @('network', 'ls', '--format', '{{.Name}}') -LogName 'cleanup-final-networks.log'
+    if ($odooName -in $remainingContainers -or $postgresName -in $remainingContainers -or $networkName -in $remainingNetworks) {
+        throw 'Isolated probe resources remain after cleanup'
     }
 }
 if ($null -ne $result) {
     $result.status = 'PASS'
     $result['cleanup_verified'] = $true
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
-    Write-Host ('C1-04 isolated Odoo probe: PASS (' + $result.odoo_test_count + ' tests).')
+    Write-Host ($probeTask + ' isolated Odoo probe: PASS (' + $result.odoo_test_count + ' tests).')
     Write-Host 'Only this probe network, containers, database and filestore were discarded; existing lab preserved.'
-    Write-Host ('Ignored local evidence: .runtime/c1-04/' + $runId + '/evidence.json')
+    Write-Host ('Ignored local evidence: .runtime/' + $probeDirectory + '/' + $runId + '/evidence.json')
 }
