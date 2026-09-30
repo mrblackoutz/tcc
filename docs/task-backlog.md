@@ -159,7 +159,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
 | C1-01 | P0 | Thomaz | Felipe | SCI-01, A3A-01 | [tipos e vínculos](../gateway/src/tcc_gateway/policy_contracts.py), [schemas](../gateway/src/tcc_gateway/schemas/policy_contracts_v1.schema.json), catálogo de reason codes e [vetor de hash](../gateway/tests/fixtures/canonical_action_v1.vector.json) commitados em `ba38573`, sob [contratos fechados (DEC-036)](decision-log.md#dec-036); 269 testes offline (62 novos), documentação e segurança aprovados em 30/09. Falta revisão independente de Felipe e conferência de Thomaz; política, verificador de aprovação e execução Odoo pertencem às tarefas seguintes | AWAITING_REVIEW |
-| C1-02 | P0 | Thomaz | Felipe | C1-01 | policy engine puro para PO/fornecedor/moeda/valor/beneficiário/duplicidade/fase/fail-closed; pode construir sobre `ba38573` provisoriamente, com revalidação após revisão | READY |
+| C1-02 | P0 | Thomaz | Felipe | C1-01 | Gustavo implementa em contingência a [avaliação determinística (DEC-037)](decision-log.md#dec-037) sobre `ba38573`; próximo checkpoint: regras, limites, alvo exato, falhas fechadas e regressões offline | ACTIVE |
 | C1-03 | P0 | Thomaz | Gustavo | C1-01 | canonicalização e resolução por chaves confiáveis, nunca IDs do documento | READY |
 | C1-04 | P0 | Thomaz | Gustavo | C1-01 | scaffold `ap_security_executor`, modelo de serviço e único método `execute(command)` | READY |
 | C1-05 | P0 | Thomaz | Gustavo | C1-04 | grupo/ACL mínimos; usuário sem grupos de faturamento/compras/pagamento; inventário de leituras residuais | WAIT |
