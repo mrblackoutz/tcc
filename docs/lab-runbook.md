@@ -1,4 +1,4 @@
-# Runbook do laboratório M1–M2
+# Runbook do laboratório
 
 ## 1. Finalidade e limite
 
@@ -66,7 +66,7 @@ O script smoke_test.ps1:
 2. calcula o SHA-256 dos bytes do manifest e do config;
 3. exige que manifest e config sejam objetos distintos;
 4. verifica descriptor, plataforma linux/amd64, índice OCI e referência config-manifest;
-5. carrega o tar Docker e exige que o ID da imagem seja o config digest do layout OCI;
+5. carrega o tar Docker e exige que o ID seja o config ou manifest digest da mesma resolução, registrando qual corresponde ao image store;
 6. confere labels de origem, revisão e imagem-base e lê /opt/odoo/.tcc-source-commit;
 7. constrói o gateway e executa 41 testes no Python 3.12 fixado;
 8. inicializa base, web, rpc, account e purchase;
@@ -110,7 +110,7 @@ Um resultado M2 aceito termina com `41 passed`, `M1 smoke PASSED`, `M2_PDF_TO_C0
 | Hash com rascunho | 4af857529f31c027965d4beb8937e0861b19ae7737595a93c1067954965b1986 |
 | Hash restaurado | 59f35a642fb61228f64fa2c0c016dafccec157a5eb7b338dd3ed360722398653 |
 
-Os locks versionados são a fonte corrente desses valores. O arquivo detalhado .runtime/evidence/m1-smoke.json é local; ele não contém chave ou IDs, mas permanece fora do Git pela política geral de evidência bruta.
+Esta tabela preserva o aceite histórico de 31/08. Os locks selecionam o artefato corrente e mantêm os smokes vinculados à imagem em que foram executados. O arquivo detalhado .runtime/evidence/m1-smoke.json permanece fora do Git pela política geral de evidência bruta.
 
 ### 5.1 Evidência M2
 
@@ -125,6 +125,18 @@ Os locks versionados são a fonte corrente desses valores. O arquivo detalhado .
 | Hash restaurado | 224448b689468e1abc66b6556a0c7ebae686914ad1bef9ca11cdde53993aea0f |
 
 O relatório técnico e a interpretação científica correta estão em `docs/m2-c0-baseline.md`. O PDF e a evidência detalhada continuam fora do Git.
+
+### 5.2 Seleção corrente da imagem
+
+A [seleção explícita do artefato disponível (DEC-040)](decision-log.md#dec-040) permite reutilizar a imagem de 31/08 após conferir os exports e a imagem local, sem reconstruir ou atualizar a fonte. A seleção anterior de 07/09 fica preservada no histórico dos locks; seus smokes não são atribuídos à imagem selecionada agora. M1/M2 com código/artefato correntes ainda devem ser revalidados antes do piloto/freeze.
+
+Para verificar os exports locais, sem build, pull, load ou alteração dos locks:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_odoo_artifact.ps1
+```
+
+O verificador lê metadados públicos da base no registry oficial e usa um contêiner efêmero, sem rede/volumes, somente para ler o marcador de fonte. Verificar um candidato **não o seleciona**: digests divergentes exigem decisão explícita. A evidência detalhada fica ignorada em `.runtime/build`.
 
 ## 6. Operação recorrente
 
@@ -150,6 +162,29 @@ Contrato de integração:
 - referência ausente/ambígua, estado incoerente ou indisponível interrompe com categoria saneada, sem executar nem fabricar entrada válida. POST sem alvo não recebe ID fictício nem vira CREATE. O runner deverá registrar o bloqueio e observar o estado final; o erro não implica `MISSING` automático, conforme [elegibilidade das runs](protocol.md#2-fluxo-e-fronteira-de-classificação).
 
 Limites: a prova atual é offline, incluindo o cliente JSON-2 real com transporte HTTP simulado; não comprova ACLs, identidade C1 restrita, assinatura ou transação no Odoo real. O snapshot não é atômico. Revalidação sob lock e idempotência pertencem a C1-06; verificador e auditoria, a C1-07/09. Ausência de impostos/descontos e igualdade de unidades são conferidas pelo leitor; item de serviço, política de faturamento e demais invariantes do laboratório continuam exigindo bootstrap validado antes do lote. Revisão humana independente permanece no [backlog](task-backlog.md).
+
+### Instalação e fronteira do add-on C1-04
+
+O [executor sem efeitos (DEC-039)](decision-log.md#dec-039) está em [ap_security_executor](../odoo/addons/ap_security_executor/models/executor.py). Ele expõe somente `execute(command)` como método público **customizado**, reconstrói contexto/empresa a partir do usuário e verifica contrato/hash estruturalmente. Mesmo um comando válido retorna negação técnica por indisponibilidade, sem criar/contabilizar conta, gravar recibo ou autenticar aprovação. Não existe flag para liberar a implementação incompleta.
+
+Na raiz, com Python e dependências do gateway, execute os testes offline comuns e do contrato independente:
+
+```powershell
+$testScratch = Join-Path (Resolve-Path .).Path ('.runtime\pytest-c104-' + [guid]::NewGuid().ToString('N'))
+python -m pytest -q gateway/tests tests/addon -c gateway/pyproject.toml --basetemp $testScratch
+```
+
+Com Docker Linux e as imagens **já disponíveis e correspondentes aos locks**, execute o teste real:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_c1_scaffold.ps1
+```
+
+O harness não lê `.env` nem a chave DeepSeek, não faz rebuild/pull ou chamadas ao LLM e não toca os serviços/volumes existentes. Confere os dois locks, usa a imagem por ID imutável e uma cópia por execução do add-on com hashes conferidos antes/depois. As fontes do add-on usam finais de linha LF fixados em `.gitattributes`, evitando diferenças de hashes entre clones Windows/Linux. Cria rede interna, PostgreSQL, banco e filestore descartáveis próprios; remove somente esses recursos etiquetados. Logs, senhas efêmeras e evidência detalhada ficam ignorados em `.runtime/c1-04`. `PASS` exige instalação, testes Odoo sem falhas e limpeza confirmada; instalar sozinho não conta.
+
+Cobertura: acesso sem grupo/ACL, usuário inativo/público/superusuário, contexto hostil, empresa padrão, contrato inválido, repetição sem efeitos, negação de CRUD no serviço e filtro de métodos privados. O teste usa ORM e filtro de despacho do Odoo real com HTTP desativado; **não é um smoke JSON-2 com bearer**. Identidade/ACLs completas e inventário residual continuam em C1-05; transação, assinatura/aprovação e auditoria em C1-06/07/09; bypass direto e concorrência em C1-10/11. Revisão humana independente continua obrigatória.
+
+Resultado de 30/09/2026: **720 testes offline** (533 do gateway e 187 do contrato independente) e **17 testes no Odoo real**, todos aprovados. Add-on e harness permaneceram vinculados aos hashes da árvore testada; a limpeza isolada passou, sem efeitos financeiros ou inferência paga. A conclusão saneada está em `c104Scaffold` no lock de ambiente. Esses números comprovam o scaffold, não a integração C1 completa ou eficácia contra ataques.
 
 ### Executar o aceite completo
 

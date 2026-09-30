@@ -8,6 +8,9 @@
 *.yml text eol=lf
 *.ps1 text eol=crlf
 
+# Stable byte-level provenance for the C1 add-on on Windows and Linux.
+odoo/addons/ap_security_executor/** text eol=lf
+
 *.docx binary
 *.pdf binary
 *.png binary

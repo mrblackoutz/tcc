@@ -83,6 +83,36 @@
                             "Revalidar M1/M2 com codigo e artefato correntes antes do piloto/freeze; smokes historicos continuam vinculados a imagem de 07/09, conforme DEC-040.",
                             "Pendencias normativas de G3c, C0 cientifico competente, C1, dataset, piloto e freeze estao no plano-mestre e em docs/decision-log.md; este lock registra somente evidencia executada."
                         ],
+    "c104Scaffold":  {
+                         "schemaVersion":  "c104-scaffold-acceptance/v1",
+                         "status":  "technical-tests-passed-independent-review-pending",
+                         "decision":  "DEC-039",
+                         "completedAt":  "2026-09-30T17:54:24.9641237Z",
+                         "scope":  "installation-and-preflight-without-effects",
+                         "sourceCommit":  "a4b877245c9cb5e3d7152d1593a518170f115ca1",
+                         "imageDigest":  "sha256:3e0bcf8e796820e89577b1db24b4dbb54a63669f66384c4b61577068adf1f392",
+                         "localConfigDigest":  "sha256:c85221764b096dde2df68c50e2da634147b10c14dcfb98bf57f71f62a14bd1f2",
+                         "postgresImage":  "postgres:18@sha256:7341002d2b8c7c5bdd7542a671a95b36196c0b5b888daf454ae4fc33ba5346d7",
+                         "gatewayOfflineTestsPassed":  533,
+                         "addonContractOfflineTestsPassed":  187,
+                         "odooTestsPassed":  17,
+                         "sourceTreeUnchanged":  true,
+                         "cleanupVerified":  true,
+                         "existingLabTouched":  false,
+                         "financialEffectsEnabled":  false,
+                         "json2HttpTested":  false,
+                         "scientificRun":  false,
+                         "addonSourceSha256":  {
+                                                  "__init__.py":  "c76ea5a8b223e17dbb987c138fc1b8d00a9077af272b3b2d1101185939d5bb14",
+                                                  "__manifest__.py":  "f6cbaec38f8c4d78d7c2c23e98faf7ea5e8ff655cda9a73f6ba06282a0a24917",
+                                                  "contracts.py":  "ea298579f5189d03dd628a393e0bcb9eaa3b92a750050169a761571996a3332e",
+                                                  "models/__init__.py":  "58c67525e494826c0fff53d7669c12b33f1e87275fc19ad9bcb3847d79ec318d",
+                                                  "models/executor.py":  "3f906d26c45e9afc7ebb0529450a3ac8f5e59cfa1f7eaccaa6e0a36c1622ea11",
+                                                  "security/executor_security.xml":  "42ac42403d9d6bff9b02eabe55711853628a993dc15c5869a495d4db8422177a",
+                                                  "tests/__init__.py":  "1a285389a21805ba965917ffcaf6e4624bbd91002869a8f8efb986679945d4a4",
+                                                  "tests/test_executor.py":  "b07c216fc4b6bd1c997be4f28b2b7f4a2606c1d8bb51764b513b06948287bd2d"
+                                              }
+                     },
     "m2Smoke":  {
                     "imageDigest":  "sha256:3d884b3892356624e4997b431a5a6ccb215fe6da57b05bed7dbb4d326beeba2b",
                     "localConfigDigest":  "sha256:91bbde645d7a80219dc78c911d164b3354c6a95d8e86252b0c76668c699f5631",
