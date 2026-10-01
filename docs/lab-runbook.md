@@ -206,7 +206,32 @@ Permissões residuais são explícitas: fornecedores/bancos conservam leitura b�
 
 A evidência detalhada permanece ignorada em `.runtime/c1-05/<execução>/`: `http-evidence/c105-http.json` contém somente catálogo de permissões, categorias HTTP e hashes; `evidence.json` vincula fonte/imagens, contagens e limpeza. `PASS` exige sumário Odoo sem falhas, cobertura HTTP efetiva, fonte inalterada e consultas Docker bem-sucedidas confirmando ausência dos recursos próprios após a limpeza. Falha no Docker não vale como recurso ausente. `HttpCase` usa cursor transacional de teste: não comprova lifecycle entre processos, concorrência, assinatura, idempotência ou execução financeira integrada. A revisão humana independente permanece no [backlog](task-backlog.md).
 
-Resultado de 30/09/2026: **56 testes Odoo** (17 do scaffold, 24 da identidade e 15 HTTP), com **54 requisições HTTP**, passaram; a regressão do modo sem HTTP passou nos 17 testes anteriores. Os 720 testes offline também passaram. O [inventário saneado](../reproducibility/c1-permissions.inventory.json) contém 360 modelos, 151 ACLs e 83 regras aplicáveis; seus hashes e os da fonte testada estão em `c105Identity` no [lock de ambiente](../reproducibility/lab-environment.lock.json). Estado crítico inalterado, fonte inalterada e limpeza foram confirmados. Isso conclui a prova técnica C1-05, não o aceite humano ou o fluxo C1 completo.
+Prova inicial, commit `3866721`: **56 testes Odoo** (17 do scaffold, 24 da identidade e 15 HTTP), **54 requisições HTTP**, regressão de 17 testes sem HTTP e 720 testes offline passaram em 30/09/2026. O catálogo naquela árvore continha 360 modelos, 151 ACLs e 83 regras aplicáveis. `c105Identity` no [lock de ambiente](../reproducibility/lab-environment.lock.json) conserva os hashes e o commit dessa prova, não os transfere a fontes posteriores. O [inventário corrente](../reproducibility/c1-permissions.inventory.json) foi atualizado na prova C1-06 abaixo: dois modelos internos adicionais, sem direitos para C1. Estado crítico, fonte e limpeza passaram novamente nos 56 testes/54 requisições. A revisão humana e o fluxo C1 completo continuam pendentes.
+
+### Núcleo transacional privado C1-06
+
+O [kernel de rascunho](../odoo/addons/ap_security_executor/draft_kernel.py), conforme [execução transacional (DEC-042)](decision-log.md#dec-042), implementa `create_draft_atomic(env, command=..., workflow=...)` somente como função interna administrativa. `TrustedDraftWorkflow` vem de código/configuração confiáveis, não do documento, LLM ou RPC. Os [testes sintéticos](../odoo/addons/ap_security_executor/tests/test_draft_kernel.py) mostram a construção completa das fixtures. O chamador controla commit/retry; o helper não faz commit. **`execute` público permanece fechado**, sem flag de ativação e sem autenticar a decisão recebida como autoridade.
+
+Na raiz, com as imagens fixadas disponíveis, execute:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_c1_scaffold.ps1 -WithDraftKernel
+```
+
+Não combine `-WithDraftKernel` e `-WithHttpAcl`: são provas distintas. O modo privado usa banco, rede e filestore descartáveis próprios, HTTP desativado e fontes imutáveis por execução. Não lê credenciais do laboratório/DeepSeek, baixa imagens, faz chamadas pagas ou toca os volumes existentes. Logs e evidência local ficam em `.runtime/c1-06/<execução>/`, ignorados pelo Git.
+
+Garantias implementadas:
+
+- revalidação da identidade/empresa e dos fatos reais de PO, linhas, fornecedor, moeda, total, beneficiário, duplicidade, data e período; locks ordenados das linhas e configuração, incluindo contas, bancos, produtos e empresas ancestrais. O período é calculado sob UID C1, com acesso interno de leitura: uma exceção contábil exclusiva do serviço não abre o período para o executor;
+- guarda escrita por PO e unicidades PostgreSQL por `(empresa, modo, chave)` **e** `(empresa, modo, documento registrado)`, inclusive se tentarem usar POs distintos. Erros PostgreSQL propagam para o chamador; não viram aprovação ou negação permanente. A prova concorrente entre cursores/processos ainda é C1-11;
+- chave documental calculada independentemente no [gateway](../gateway/src/tcc_gateway/idempotency.py) e no [add-on](../odoo/addons/ap_security_executor/draft_contracts.py). Retry preserva o comando inteiro, incluindo timestamps. Corpo divergente conflita; recibo e alvo íntegros retornam antes da quantidade/duplicidade já consumidas, até se outro faturamento deixar a quantidade atual negativa. Replay não repete efeito financeiro, mas incrementa a guarda interna;
+- ambiente financeiro privado com UID interno/contexto reconstruídos e valores fixos explícitos. Defaults pessoais C1 não são consumidos; defaults globais/de serviço aplicáveis causam negação, sem reparo. Conta de despesa e conta payable devem estar ativas e vinculadas à empresa; fornecedor deve pertencer à empresa, ter rank de compra e `autopost_bills=never`;
+- somente serviços faturados por compra, sem impostos, descontos ou conversão de unidade; moeda da empresa com duas casas/0,01. Soma HALF_EVEN das linhas deve coincidir com o total real do PO; divergência de arredondamento nativo falha fechada, sem alterar tolerância. São invariantes do recorte a validar no bootstrap, não regras a ajustar observando o conjunto final;
+- pós-condições completas do rascunho, linhas, beneficiário, conta payable e balanço; nenhum pagamento ou notificação de saída. Savepoint reverte rascunho, linhas, recibo e guarda em falhas ou adulteração. Recibo mínimo não substitui a auditoria C1-09.
+
+Resultado técnico de 30/09/2026: **815 testes offline** (628 gateway, 187 contrato independente), **87 Odoo** (17 scaffold, 24 identidade, 46 kernel), mais regressões separadas de **17 scaffold** e **56 Odoo/54 requisições HTTP**. Provas incluem duas linhas/quantidade fracionária, replay, conflitos, período fechado/exceção do serviço, defaults hostis, unicidade real e faults após criação de rascunho/recibo. Os faults usam `unittest.assertRaises` sem savepoint externo: a reversão demonstrada vem do kernel. Fonte inalterada e limpeza confirmadas; inventário corrente com 362 modelos, 151 ACLs e 83 regras, sem CRUD C1 nos dois modelos internos. Hashes e limites estão em `c106DraftKernel` no lock de ambiente.
+
+`draft-kernel-result/v1` e seus motivos são diagnóstico técnico, não classificação científica de ASR/utilidade. Faltam revisão independente de Felipe e reprodução por Thomaz. Registro servidor de workflows/pré-lote, verificador de aprovação, POST, anexo, auditoria, integração ao runner e concorrência entre processos continuam em C1-07–11/integração. Nenhuma run científica, piloto ou freeze foi realizado por essa prova.
 
 ### Executar o aceite completo
 

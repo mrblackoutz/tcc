@@ -1,17 +1,18 @@
-param([switch]$WithHttpAcl)
+param([switch]$WithHttpAcl, [switch]$WithDraftKernel)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+if ($WithHttpAcl -and $WithDraftKernel) { throw 'Select one explicit probe mode' }
 
 # A fresh, labelled, internal lab: no Compose services, existing database,
 # volume, existing API key, image rebuild or external model call is used here.
 # HTTP mode generates only expiring in-memory synthetic test keys.
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
-$probeTask = if ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
+$probeTask = if ($WithDraftKernel) { 'C1-06' } elseif ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
 $probeDirectory = $probeTask.ToLowerInvariant()
-$probePrefix = if ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
-$ownerLabel = if ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
+$probePrefix = if ($WithDraftKernel) { 'tcc-c106' } elseif ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
+$ownerLabel = if ($WithDraftKernel) { 'tcc.c106.run' } elseif ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
 $networkName = $probePrefix + '-' + $runId
 $postgresName = $networkName + '-db'
 $odooName = $networkName + '-odoo'
@@ -188,12 +189,12 @@ try {
     }
     if (-not $ready) { throw 'Isolated PostgreSQL did not become ready' }
 
-    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http'
+    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http,-c1_draft_kernel'
     $testArguments = @('--no-http')
     $httpDockerArguments = @()
     $httpEvidenceRoot = $null
     if ($WithHttpAcl) {
-        $testTags = '/ap_security_executor'
+        $testTags = '/ap_security_executor,-c1_draft_kernel'
         $testArguments = @('--http-interface', '127.0.0.1')
         $httpEvidenceRoot = Join-Path $probeRoot 'http-evidence'
         $null = New-Item -ItemType Directory -Path $httpEvidenceRoot
@@ -202,6 +203,7 @@ try {
             '--env', 'TCC_C1_PROBE_EVIDENCE_DIR=/mnt/c1-evidence'
         )
     }
+    if ($WithDraftKernel) { $testTags = '/ap_security_executor,-c1_acl_http' }
     Write-Host ($probeTask + ': installing and testing the add-on in a fresh disposable Odoo database.')
     $odooStarted = $true
     $dockerArguments = @(
@@ -246,6 +248,16 @@ try {
         $result['http_request_count'] = [int]$httpProof.http_request_count
         $result['http_test_count'] = [int]$httpProof.http_test_count
         $result['http_evidence_sha256'] = (Get-FileHash -LiteralPath $httpEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    }
+    if ($WithDraftKernel) {
+        $result.schema_version = 'c106-probe-evidence/v1'
+        $result.scope = 'private-admin-draft-transaction-only'
+        $result['public_financial_effects_enabled'] = $false
+        $result['private_synthetic_draft_tested'] = $true
+        $result['independent_cursor_concurrency_tested'] = $false
+        $kernelTests = [regex]::Matches(($odooOutput -join "`n"), 'Starting TestDraftKernel\.(test_[a-z0-9_]+)')
+        if ($kernelTests.Count -eq 0) { throw 'No private kernel test actually executed' }
+        $result['kernel_test_count'] = @($kernelTests | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique).Count
     }
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
 }
