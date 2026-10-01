@@ -2,6 +2,12 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.18] — 2026-09-30
+
+- a [execução transacional privada (DEC-042)](docs/decision-log.md#dec-042) esclarece a identidade documental por digest e IDs confiáveis, sem referência externa; unicidade é por modo, e retry preserva o comando inteiro;
+- separados campos propostos e valores internos fixos necessários para impedir defaults pessoais críticos; o contrato recebido continua fechado;
+- entrada pública permanece bloqueada até os controles de autorização, aprovação e auditoria; esta release não contém o código C1-06 nem altera amostra, hipótese, métrica ou margem.
+
 ## [1.2.17] — 2026-09-26
 
 - criada a [regra de aceite intermediário (DEC-034)](docs/decision-log.md#dec-034): `AWAITING_REVIEW` identifica implementação completa aguardando revisão independente; desenvolvimento dependente pode avançar com contrato versionado, mas piloto e freeze exigem aceite `DONE`;

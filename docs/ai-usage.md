@@ -40,6 +40,8 @@ não redigida de memória.
 
 | 30/09/2026 | Codex, assistente de programação baseado em LLM, com agentes auxiliares de identidade, HTTP e auditoria técnica | implementação C1-05 | provisionamento/gate administrativo, inventário efetivo e testes JSON-2 com bearer reais, conforme [DEC-041](decision-log.md#dec-041); auditoria automatizada corrigiu cleanup e vínculos arquivados/financeiros | revisão humana independente de Felipe e conferência de Thomaz pendentes; auditoria automatizada não substitui aceite | 720 testes offline, 56 Odoo (17 scaffold, 24 identidade, 15 HTTP) e 54 requisições reais aprovados; regressão sem HTTP passou nos 17 testes. Duas tentativas anteriores reprovaram por compatibilidade de senha/fixture e comparação de nomes; corrigidas sem relaxar invariantes financeiros. Hashes de fonte/inventário, estado crítico inalterado e limpeza confirmados; sem laboratório existente, API LLM, conjunto final ou run científica |
 
+| 30/09/2026 | Codex, assistente de programação baseado em LLM, com auxiliares de política/transação/testes | esclarecimento pré-freeze para C1-06 | identificação de divergências textuais de referência/idempotência e valores fixos; release normativa v1.2.18 conforme [DEC-042](decision-log.md#dec-042), separada do código experimental | Gustavo solicitou continuidade; revisão humana independente pendente | fonte Odoo fixado e contratos existentes conferidos; hashes/Markdown/segurança validados na release; sem resultado científico ou ativação pública de efeitos |
+
 ## Pendências
 
 - ADM-02: confirmar no Oriente a política institucional de uso e declaração de IA e derivar
