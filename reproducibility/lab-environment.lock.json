@@ -173,6 +173,7 @@
         "schemaVersion": "c106-draft-kernel-acceptance/v1",
         "status": "technical-tests-passed-independent-review-pending",
         "decision": "DEC-042",
+        "artifactCommit": "3a9ffd6",
         "planReleaseCommit": "759536a",
         "completedAt": "2026-10-01T02:57:56.5364655Z",
         "scope": "private-admin-draft-transaction-only",
