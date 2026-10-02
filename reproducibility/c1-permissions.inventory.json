@@ -77,6 +77,7 @@
     {"model":"account.tax.repartition.line","permissions":{"create":false,"read":true,"unlink":false,"write":false}},
     {"model":"analytic.mixin","permissions":{"create":false,"read":false,"unlink":false,"write":false}},
     {"model":"analytic.plan.fields.mixin","permissions":{"create":false,"read":false,"unlink":false,"write":false}},
+    {"model":"ap.security.approval.nonce","permissions":{"create":false,"read":false,"unlink":false,"write":false}},
     {"model":"ap.security.draft.receipt","permissions":{"create":false,"read":false,"unlink":false,"write":false}},
     {"model":"ap.security.executor","permissions":{"create":false,"read":true,"unlink":false,"write":false}},
     {"model":"ap.security.po.guard","permissions":{"create":false,"read":false,"unlink":false,"write":false}},
@@ -607,5 +608,5 @@
     {"domain_sha256":"fbb022ee3cd83883575c64e68d6dfbb62f5a3aafd790347ed84bdfeec13ea7b3","global":true,"groups":[],"model":"resource.resource","permissions":{"create":true,"read":true,"unlink":true,"write":true},"xml_id":"resource.resource_resource_multi_company"}
   ],
   "limits": ["MODEL_RIGHTS_NOT_PUBLIC_METHOD_AUTHORIZATION","PERSONAL_AND_ATTACHMENT_MUTATIONS_REMAIN","PERSONAL_DEFAULTS_UNTRUSTED_FOR_FUTURE_EXECUTION"],
-  "inventory_sha256": "09615c267a9599374207e15b3d99ee6a3f0ce83934905f96582a47e42015d020"
+  "inventory_sha256": "18e88c041655a215cb30c3bd464d30f61bc108ee650fa312573095bfe7901a10"
 }

@@ -1,18 +1,20 @@
-param([switch]$WithHttpAcl, [switch]$WithDraftKernel)
+param([switch]$WithHttpAcl, [switch]$WithDraftKernel, [switch]$WithApproval)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-if ($WithHttpAcl -and $WithDraftKernel) { throw 'Select one explicit probe mode' }
+if (@($WithHttpAcl, $WithDraftKernel, $WithApproval).Where({ [bool]$_ }).Count -gt 1) {
+    throw 'Select one explicit probe mode'
+}
 
 # A fresh, labelled, internal lab: no Compose services, existing database,
 # volume, existing API key, image rebuild or external model call is used here.
 # HTTP mode generates only expiring in-memory synthetic test keys.
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
-$probeTask = if ($WithDraftKernel) { 'C1-06' } elseif ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
+$probeTask = if ($WithApproval) { 'C1-07' } elseif ($WithDraftKernel) { 'C1-06' } elseif ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
 $probeDirectory = $probeTask.ToLowerInvariant()
-$probePrefix = if ($WithDraftKernel) { 'tcc-c106' } elseif ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
-$ownerLabel = if ($WithDraftKernel) { 'tcc.c106.run' } elseif ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
+$probePrefix = if ($WithApproval) { 'tcc-c107' } elseif ($WithDraftKernel) { 'tcc-c106' } elseif ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
+$ownerLabel = if ($WithApproval) { 'tcc.c107.run' } elseif ($WithDraftKernel) { 'tcc.c106.run' } elseif ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
 $networkName = $probePrefix + '-' + $runId
 $postgresName = $networkName + '-db'
 $odooName = $networkName + '-odoo'
@@ -189,12 +191,12 @@ try {
     }
     if (-not $ready) { throw 'Isolated PostgreSQL did not become ready' }
 
-    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http,-c1_draft_kernel'
+    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http,-c1_draft_kernel,-c1_approval'
     $testArguments = @('--no-http')
     $httpDockerArguments = @()
     $httpEvidenceRoot = $null
     if ($WithHttpAcl) {
-        $testTags = '/ap_security_executor,-c1_draft_kernel'
+        $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval'
         $testArguments = @('--http-interface', '127.0.0.1')
         $httpEvidenceRoot = Join-Path $probeRoot 'http-evidence'
         $null = New-Item -ItemType Directory -Path $httpEvidenceRoot
@@ -203,7 +205,8 @@ try {
             '--env', 'TCC_C1_PROBE_EVIDENCE_DIR=/mnt/c1-evidence'
         )
     }
-    if ($WithDraftKernel) { $testTags = '/ap_security_executor,-c1_acl_http' }
+    if ($WithDraftKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_approval' }
+    if ($WithApproval) { $testTags = '/ap_security_executor,-c1_acl_http' }
     Write-Host ($probeTask + ': installing and testing the add-on in a fresh disposable Odoo database.')
     $odooStarted = $true
     $dockerArguments = @(
@@ -258,6 +261,17 @@ try {
         $kernelTests = [regex]::Matches(($odooOutput -join "`n"), 'Starting TestDraftKernel\.(test_[a-z0-9_]+)')
         if ($kernelTests.Count -eq 0) { throw 'No private kernel test actually executed' }
         $result['kernel_test_count'] = @($kernelTests | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique).Count
+    }
+    if ($WithApproval) {
+        $result.schema_version = 'c107-probe-evidence/v1'
+        $result.scope = 'private-approval-and-nonce-transaction-only'
+        $result['public_financial_effects_enabled'] = $false
+        $result['post_effects_enabled'] = $false
+        $result['private_synthetic_draft_regression_tested'] = $true
+        $result['independent_cursor_concurrency_tested'] = $false
+        $approvalTests = [regex]::Matches(($odooOutput -join "`n"), 'Starting TestApprovalKernel\.(test_[a-z0-9_]+)')
+        if ($approvalTests.Count -eq 0) { throw 'No approval transaction test actually executed' }
+        $result['approval_test_count'] = @($approvalTests | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique).Count
     }
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
 }

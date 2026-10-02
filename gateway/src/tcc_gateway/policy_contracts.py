@@ -521,7 +521,7 @@ class ApprovalFixture:
     scenario_id: str
     approver_ref: str
     canonical_action_hash: str
-    nonce: str
+    nonce: str = field(repr=False)
     issued_at: str
     expires_at: str
     key_id: str
