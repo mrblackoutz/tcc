@@ -235,6 +235,7 @@
         "schemaVersion": "c107-approval-acceptance/v1",
         "status": "technical-tests-passed-independent-review-pending",
         "decision": "DEC-043",
+        "artifactCommit": "5370cc2",
         "completedAt": "2026-10-02T02:16:08.4729798Z",
         "scope": "private-approval-and-nonce-transaction-only",
         "sourceCommit": "a4b877245c9cb5e3d7152d1593a518170f115ca1",
