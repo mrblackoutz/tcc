@@ -278,6 +278,8 @@ Contrato operacional:
 
 Resultado técnico de 03/10/2026: **977 testes offline** (790 gateway, 187 contrato independente; 62 novos do workflow POST) e **162 Odoo** (17 scaffold, 24 identidade, 46 rascunho, 28 aprovação, 47 POST) passaram. A regressão separada de **56 Odoo/54 HTTP** também passou; inventário conferido contra a árvore corrente: 363 modelos, 151 ACLs e 83 regras. São provas administrativas privadas, sem pagamento, chave real ou run científica. As primeiras tentativas expuseram import incompatível, tratamento de deriva de preço e data ausente na fixture de reversão; corrigidos e reexecutados, preservando logs ignorados. Fonte inalterada e limpeza confirmadas.
 
+Os outros modos passaram separadamente em **17 scaffold**, **87 rascunho** e **115 aprovação**, além do HTTP acima. As cinco provas têm os mesmos 24 arquivos do add-on e correspondem ao commit `5582a83`; os hashes atuais foram reconferidos. O catálogo de permissões anterior permanece igual e foi revalidado, não substituído por números inferidos.
+
 Revisão humana independente de Felipe e reprodução por Thomaz são necessárias antes do aceite. `c108PostKernel` no lock de ambiente registra hashes, commit testado e regressões dos modos anteriores, sem transferir evidência histórica. C1-09 é a próxima construção: auditoria/proveniência antes da integração pública, sem dispensar C1-10/11 ou os gates científicos.
 
 ### Executar o aceite completo
