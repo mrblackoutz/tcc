@@ -282,6 +282,31 @@ Os outros modos passaram separadamente em **17 scaffold**, **87 rascunho** e **1
 
 Revisão humana independente de Felipe e reprodução por Thomaz são necessárias antes do aceite. `c108PostKernel` no lock de ambiente registra hashes, commit testado e regressões dos modos anteriores, sem transferir evidência histórica. C1-09 é a próxima construção: auditoria/proveniência antes da integração pública, sem dispensar C1-10/11 ou os gates científicos.
 
+### Auditoria operacional privada C1-09
+
+A [fronteira auditada (DEC-045)](decision-log.md#dec-045) acrescenta registro transacional aos núcleos privados, sem alterar seus contratos ou liberar `execute`. As funções [create_draft_audited e post_bill_audited](../odoo/addons/ap_security_executor/audit_kernel.py) são as fronteiras elegíveis para integração futura; as primitivas anteriores continuam usadas internamente e nas regressões.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_c1_scaffold.ps1 -WithAudit
+```
+
+O modo é exclusivo, inclui as regressões ORM anteriores e usa somente imagens fixadas e recursos descartáveis próprios. Não lê chave real, chama modelo, publica porta ou altera o laboratório existente. Evidência e logs permanecem ignorados em `.runtime/c1-09/<execução>/`; `PASS` exige testes efetivamente executados, fonte inalterada e limpeza conferida.
+
+Contrato operacional:
+
+- [TrustedAuditContext](../odoo/addons/ap_security_executor/audit_contracts.py) fixa execução/tentativa e proveniência de código/configuração por configuração administrativa, não contexto RPC. O formato válido de um hash não comprova procedência; o runner deverá ligá-lo ao manifesto real;
+- [ap.security.audit.event](../odoo/addons/ap_security_executor/models/audit_ledger.py) contém evento JSON fechado, hash com domínio próprio, identidade e vínculos de recibo/replay. C1 não possui acesso; a ORM não permite criar, alterar ou excluir eventos, nem com sudo. Inserção SQL privada preenche todos os campos, sem defaults implícitos;
+- efeito, recibo, nonce e evento de sucesso compartilham savepoint. Falha na inserção, verificação ou montagem do retorno reverte o conjunto. Negações são auditadas somente após rollback financeiro, na transação do chamador. Não existe commit autônomo;
+- falha de storage retorna `AUDIT_UNAVAILABLE`, `FAIL_CLOSED_UNAVAILABILITY` e `audit_complete=false`, sem inventar evento durável. Erro inesperado do kernel gera diagnóstico finito `KERNEL_UNAVAILABLE` após rollback. Serialização/deadlock propagam para retry integral; nenhuma mensagem bruta de exceção é persistida;
+- replay exige evento original íntegro, registra nova tentativa vinculada e devolve o recibo financeiro inalterado. POST exige também o evento CREATE de origem. Recibos antigos não auditados não são adotados. Uma proposta alterada é avaliada pelo kernel como negação de regra/estado, não confundida com storage indisponível;
+- a fila diferida fica isolada até a auditoria ter sucesso. Seu guard exige o mesmo evento POST commitado antes de executar callbacks internos; preserva filas preexistentes. A execução real desse lifecycle e concorrência entre cursores ainda pertencem a C1-11;
+- `before_sha256`/`after_sha256` cobrem uma projeção operacional, não o estado completo nem o oráculo independente. `financial_methods` lista somente métodos de efeitos bem-sucedidos; não prova ausência de tentativas posteriormente revertidas. `checks_scope` e a incompletude do trace são explícitos. IDs de regras ligam diagnósticos ao catálogo, não certificam avaliação de todas as regras;
+- payload persiste somente hashes e metadados técnicos: não conteúdo documental, referências textuais/bancárias, chave, assinatura, token, nonce bruto ou mensagem de erro. Hashes não protegem contra administrador do banco capaz de reescrever SQL.
+
+Resultado técnico de 03/10/2026: **1.070 testes offline** (883 gateway, 187 contrato independente; 93 novos de auditoria) e **211 Odoo** (162 regressões e 49 auditoria) passaram. Os cinco modos anteriores também passaram separadamente: **17 baseline, 56 Odoo/54 HTTP, 87 rascunho, 115 aprovação e 162 POST**. As seis provas correspondem aos mesmos 29 arquivos do add-on. Inventário corrente: 364 modelos, 151 ACLs e 83 regras aplicáveis; novo ledger sem direitos C1. Fonte, hashes e limpeza conferidos. A primeira rodada de 40 casos passou; nove negativas adicionais também passaram, sem retirada de testes ou alteração do protocolo. O lock `c109Audit` vincula o commit dessa implementação e as provas sem substituir o histórico anterior.
+
+Este incremento não completa C1-09: **anexo direto com MIME/tamanho/hash continua pendente**, assim como registro operacional de workflow, integração ao runner e `RunRecord` científico, revisão humana e C1-10/11. `document_bytes_verified=false` é deliberado; não afirmar que o PDF foi autenticado/anexado por esta prova. Não há piloto, freeze ou resultado científico.
+
 ### Executar o aceite completo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test.ps1
