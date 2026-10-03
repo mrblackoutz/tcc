@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 """Internal transactional storage; no capability is granted to the API user.
 
-These records are consumed only by the private draft kernel. Their existence
-does not enable the public executor or replace the later approval/audit gates.
+These records are consumed only by the private draft and approved POST kernels.
+Their existence does not enable the public executor or replace later audit gates.
 """
 
 from odoo import fields, models

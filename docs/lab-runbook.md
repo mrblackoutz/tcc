@@ -256,6 +256,30 @@ Resultado técnico de 01/10/2026: **915 testes offline** (728 gateway, 187 contr
 
 Revisão independente de Felipe e reprodução por Thomaz continuam obrigatórias; custódia/provisionamento de chave real, manifesto, workflow servidor, POST, auditoria, runner, piloto e freeze permanecem pendentes. Motivos de `ApprovalVerificationError` são diagnósticos técnicos, não novas métricas/classificações científicas. C1-08 integrará aprovação/nonce ao POST; C1-09 completará auditoria antes de liberar a entrada pública.
 
+### Contabilização privada aprovada C1-08
+
+A [contabilização atômica (DEC-044)](decision-log.md#dec-044) liga o rascunho de C1-06 à aprovação de C1-07. O [kernel privado](../odoo/addons/ap_security_executor/post_kernel.py) chama `action_post` real somente sobre o alvo registrado por configuração administrativa; `execute` público continua fechado.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_c1_scaffold.ps1 -WithPostKernel
+```
+
+Esse modo inclui as regressões ORM de C1-04–07 e os testes específicos de POST, sem HTTP. É exclusivo: não combinar switches. Usa somente imagens fixadas já disponíveis, rede/banco/filestore descartáveis e dados sintéticos sem valor fiscal. Não toca o laboratório existente nem usa API paga ou chave real. Fonte, hashes, contagem efetiva e limpeza são conferidos; logs/evidência detalhada permanecem em `.runtime/c1-08/<execução>/`.
+
+Contrato operacional:
+
+- `TrustedPostWorkflow` contém o registro imutável do fluxo de origem, `target_move_id` confiável e fase `POST_REVIEW`. Não é payload RPC/documento. `post_bill_atomic(env, command=..., workflow=..., authority=..., key=...)` exige ambiente administrativo e reconstrói as configurações; não recebe relógio do cliente;
+- somente o alvo do recibo CREATE íntegro é admitido. Guarda/locks precedem a releitura, a reconstrução da ação canônica e a revalidação de empresa, fornecedor, PO, moeda, linhas, valor, banco e período. Quantidade já consumida pelo próprio rascunho não é reaplicada; a busca por referência duplicada exclui somente esse alvo;
+- a decisão recebida continua metadado estrutural, não autoridade. MAC, fixture, identidade, janela e nonce são verificados independentemente. O relógio UTC é lido após os locks e novamente após reservar o nonce, imediatamente antes de entrar em `action_post`. A fronteira de validade é essa entrada, não a conclusão de locks internos/commit. `consumed_at` do ledger é o instante da reserva, não medição de término;
+- POST nativo, pós-condições financeiras, recibo POST e consumo do nonce compartilham a transação do chamador. O helper não faz commit, não reescreve dados de negócio para acomodar o token e não cria pagamentos. Recusa importação, reconciliação, reversão, distribuição analítica, dedutibilidade parcial e diário com hashing de outros lançamentos;
+- replay literal confere identidade, alvo contabilizado, recibos, MAC e nonce consumido e retorna o recibo original sem novo POST/reserva, inclusive após expiração. Corpo ou configuração divergentes não são silenciosamente aceitos; contabilização sem recibo POST não é adotada;
+- numeração e `posted_before` são efeitos nativos. O contador de fornecedor é metadado diferido nativo: sua fila `postcommit` fica isolada, é descartada nas falhas e só recebe wrapper guardado após sucesso. Filas/dados anteriores permanecem intactos. O wrapper confere recibo/nonce/alvo commitados antes de executar o contador; indisponibilidade operacional descarta o contador sem interromper callbacks não relacionados. Esse guard não elimina corrida administrativa entre leitura e atualização;
+- a comparação de contagens de efeitos auxiliares não é um oráculo completo de registros preexistentes. Testes de rollback comparam também projeções financeiras e a fila diferida. Auditoria/anexos completos, integração pública/runner, lifecycle após commit e concorrência real permanecem nos gates seguintes; estas provas não são piloto ou resultado científico.
+
+Resultado técnico de 03/10/2026: **977 testes offline** (790 gateway, 187 contrato independente; 62 novos do workflow POST) e **162 Odoo** (17 scaffold, 24 identidade, 46 rascunho, 28 aprovação, 47 POST) passaram. A regressão separada de **56 Odoo/54 HTTP** também passou; inventário conferido contra a árvore corrente: 363 modelos, 151 ACLs e 83 regras. São provas administrativas privadas, sem pagamento, chave real ou run científica. As primeiras tentativas expuseram import incompatível, tratamento de deriva de preço e data ausente na fixture de reversão; corrigidos e reexecutados, preservando logs ignorados. Fonte inalterada e limpeza confirmadas.
+
+Revisão humana independente de Felipe e reprodução por Thomaz são necessárias antes do aceite. `c108PostKernel` no lock de ambiente registra hashes, commit testado e regressões dos modos anteriores, sem transferir evidência histórica. C1-09 é a próxima construção: auditoria/proveniência antes da integração pública, sem dispensar C1-10/11 ou os gates científicos.
+
 ### Executar o aceite completo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test.ps1

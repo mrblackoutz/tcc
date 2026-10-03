@@ -138,17 +138,18 @@ def _line_facts(lines, scale, *, check_invoiceability=True):
     return facts
 
 
-def _business(env, workflow, action, company, po, vendor, journal, lines):
-    facts = _line_facts(lines, workflow.quantity_scale)
+def _business(env, workflow, action, company, po, vendor, journal, lines,
+              *, check_invoiceability=True, duplicate_exclude_id=None):
+    facts = _line_facts(lines, workflow.quantity_scale, check_invoiceability=check_invoiceability)
     banks = env["res.partner.bank"].with_context(active_test=False).browse(workflow.allowed_bank_ids).exists()
     permitted = banks.filtered(lambda bank: bank.active and bank.allow_out_payment
         and bank.partner_id == vendor and bank.company_id == company)
     matches = permitted.filtered(lambda bank: bank.acc_number == action["recipient_bank_ref"])
     expected = [{name: row[name] for name in ("item_code", "quantity", "unit_price")} for row in facts]
-    line_mismatch = action["lines"] != expected or any(
+    line_mismatch = action["lines"] != expected or (check_invoiceability and any(
         Decimal(proposed["quantity"]) > Decimal(trusted["quantity_to_invoice"])
         for proposed, trusted in zip(action["lines"], facts)
-    )
+    ))
     expected_total = sum((Decimal(row["quantity"]) * Decimal(row["unit_price"])).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_EVEN) for row in facts)
     _require(Decimal(str(po.amount_total)) == expected_total)
@@ -156,6 +157,7 @@ def _business(env, workflow, action, company, po, vendor, journal, lines):
         ("company_id", "=", company.id), ("partner_id", "=", vendor.id),
         ("move_type", "=", "in_invoice"), ("ref", "=", action["document_ref"]),
         ("state", "!=", "cancel"),
+        *([("id", "!=", duplicate_exclude_id)] if duplicate_exclude_id is not None else []),
     ], limit=1)
     checks = (
         ("PURCHASE_ORDER_NOT_CONFIRMED", po.state != "purchase"),
@@ -202,12 +204,13 @@ def _values(action, company, po, vendor, journal, account, facts, bank):
     }
 
 
-def _postconditions(move, action, company, po, vendor, journal, account, facts, bank):
+def _postconditions(move, action, company, po, vendor, journal, account, facts, bank,
+                    *, expected_state="draft"):
     _require(move.exists() and move.company_id == company and move.partner_id == vendor
         and move.partner_bank_id == bank and move.journal_id == journal
         and bank.company_id == company and bank.acc_number == action["recipient_bank_ref"]
         and move.currency_id == po.currency_id and move.move_type == "in_invoice"
-        and move.state == "draft" and move.auto_post == "no"
+        and move.state == expected_state and move.auto_post == "no"
         and move.ref == action["document_ref"] and move.invoice_origin == po.name
         and move.invoice_date == date.fromisoformat(action["invoice_date"])
         and move.date == date.fromisoformat(action["invoice_date"])

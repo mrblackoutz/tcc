@@ -1,8 +1,8 @@
-param([switch]$WithHttpAcl, [switch]$WithDraftKernel, [switch]$WithApproval)
+param([switch]$WithHttpAcl, [switch]$WithDraftKernel, [switch]$WithApproval, [switch]$WithPostKernel)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-if (@($WithHttpAcl, $WithDraftKernel, $WithApproval).Where({ [bool]$_ }).Count -gt 1) {
+if (@($WithHttpAcl, $WithDraftKernel, $WithApproval, $WithPostKernel).Where({ [bool]$_ }).Count -gt 1) {
     throw 'Select one explicit probe mode'
 }
 
@@ -11,10 +11,10 @@ if (@($WithHttpAcl, $WithDraftKernel, $WithApproval).Where({ [bool]$_ }).Count -
 # HTTP mode generates only expiring in-memory synthetic test keys.
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
-$probeTask = if ($WithApproval) { 'C1-07' } elseif ($WithDraftKernel) { 'C1-06' } elseif ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
+$probeTask = if ($WithPostKernel) { 'C1-08' } elseif ($WithApproval) { 'C1-07' } elseif ($WithDraftKernel) { 'C1-06' } elseif ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
 $probeDirectory = $probeTask.ToLowerInvariant()
-$probePrefix = if ($WithApproval) { 'tcc-c107' } elseif ($WithDraftKernel) { 'tcc-c106' } elseif ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
-$ownerLabel = if ($WithApproval) { 'tcc.c107.run' } elseif ($WithDraftKernel) { 'tcc.c106.run' } elseif ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
+$probePrefix = if ($WithPostKernel) { 'tcc-c108' } elseif ($WithApproval) { 'tcc-c107' } elseif ($WithDraftKernel) { 'tcc-c106' } elseif ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
+$ownerLabel = if ($WithPostKernel) { 'tcc.c108.run' } elseif ($WithApproval) { 'tcc.c107.run' } elseif ($WithDraftKernel) { 'tcc.c106.run' } elseif ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
 $networkName = $probePrefix + '-' + $runId
 $postgresName = $networkName + '-db'
 $odooName = $networkName + '-odoo'
@@ -191,12 +191,12 @@ try {
     }
     if (-not $ready) { throw 'Isolated PostgreSQL did not become ready' }
 
-    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http,-c1_draft_kernel,-c1_approval'
+    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http,-c1_draft_kernel,-c1_approval,-c1_post_kernel'
     $testArguments = @('--no-http')
     $httpDockerArguments = @()
     $httpEvidenceRoot = $null
     if ($WithHttpAcl) {
-        $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval'
+        $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval,-c1_post_kernel'
         $testArguments = @('--http-interface', '127.0.0.1')
         $httpEvidenceRoot = Join-Path $probeRoot 'http-evidence'
         $null = New-Item -ItemType Directory -Path $httpEvidenceRoot
@@ -205,8 +205,9 @@ try {
             '--env', 'TCC_C1_PROBE_EVIDENCE_DIR=/mnt/c1-evidence'
         )
     }
-    if ($WithDraftKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_approval' }
-    if ($WithApproval) { $testTags = '/ap_security_executor,-c1_acl_http' }
+    if ($WithDraftKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_approval,-c1_post_kernel' }
+    if ($WithApproval) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_post_kernel' }
+    if ($WithPostKernel) { $testTags = '/ap_security_executor,-c1_acl_http' }
     Write-Host ($probeTask + ': installing and testing the add-on in a fresh disposable Odoo database.')
     $odooStarted = $true
     $dockerArguments = @(
@@ -272,6 +273,21 @@ try {
         $approvalTests = [regex]::Matches(($odooOutput -join "`n"), 'Starting TestApprovalKernel\.(test_[a-z0-9_]+)')
         if ($approvalTests.Count -eq 0) { throw 'No approval transaction test actually executed' }
         $result['approval_test_count'] = @($approvalTests | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique).Count
+    }
+    if ($WithPostKernel) {
+        $result.schema_version = 'c108-probe-evidence/v1'
+        $result.scope = 'private-approved-post-transaction-only'
+        # The public executor is still closed. Only disposable synthetic
+        # fixtures exercise native action_post in this administrative probe.
+        $result['financial_effects_scope'] = 'public-executor-only'
+        $result['private_effects_scope'] = 'disposable-synthetic-fixtures-only'
+        $result['public_financial_effects_enabled'] = $false
+        $result['private_synthetic_post_tested'] = $true
+        $result['post_effects_enabled'] = $true
+        $result['independent_cursor_concurrency_tested'] = $false
+        $postTests = [regex]::Matches(($odooOutput -join "`n"), 'Starting TestPostKernel\.(test_[a-z0-9_]+)')
+        if ($postTests.Count -eq 0) { throw 'No private approved POST transaction test actually executed' }
+        $result['post_kernel_test_count'] = @($postTests | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique).Count
     }
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
 }
