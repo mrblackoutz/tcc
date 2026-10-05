@@ -39,6 +39,19 @@ def exactly_one(model, domain, description):
     return records
 
 
+def require_database_attachment_storage(environment):
+    """Fail the common fixture gate before any batch if storage has drifted."""
+    if environment["ir.attachment"]._storage() != "db":
+        raise RuntimeError("fixture attachment storage must be database-backed")
+
+
+def configure_database_attachment_storage(environment):
+    """Set storage during trusted common C0/C1 preparation, never execution."""
+    environment["ir.config_parameter"].sudo().set_param("ir_attachment.location", "db")
+    require_database_attachment_storage(environment)
+
+
+configure_database_attachment_storage(env)
 company = env.company
 company.write({"name": COMPANY_NAME})
 
@@ -216,6 +229,7 @@ api_key = env["res.users.apikeys"].with_user(c0_user)._generate(
     expiration_date=expiration,
 )
 
+require_database_attachment_storage(env)
 env.cr.commit()
 
 SECRETS_DIRECTORY.mkdir(parents=True, exist_ok=True)
@@ -231,6 +245,7 @@ fixture = {
     "scenario_id": SCENARIO_ID,
     "synthetic_data": True,
     "fiscal_value": False,
+    "attachment_storage": "db",
     "company_id": company.id,
     "company_name": company.name,
     "vendor_id": vendor.id,

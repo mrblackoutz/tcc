@@ -23,6 +23,7 @@ from odoo.tests import TransactionCase, tagged
 
 from .. import approval_kernel, audit_kernel, post_kernel
 from ..approval import ApprovalAuthority, ApprovalKey
+from ..document_contracts import SourceDocument
 from ..audit_contracts import TrustedAuditContext, audit_digest
 from ..draft_contracts import TrustedDraftWorkflow, bill_idempotency_key
 from ..draft_kernel import create_draft_atomic
@@ -32,8 +33,31 @@ from .test_executor import _action_hash, _command
 from .test_post_kernel import TestPostKernel, _bytes
 
 
-@tagged("post_install", "-at_install", "c1_audit")
-class TestAuditKernel(TransactionCase):
+def _synthetic_pdf(text="TCC C1-09 DOCUMENTO SINTETICO SEM VALOR FISCAL"):
+    """Deterministic PDF bytes; no gateway imports, files or real documents."""
+    text = text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+    stream = ("BT /F1 10 Tf 40 750 Td (" + text + ") Tj ET\n").encode("ascii")
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        b"<< /Length " + str(len(stream)).encode("ascii") + b" >>\nstream\n" + stream + b"endstream",
+    ]
+    raw = bytearray(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")
+    offsets = [0]
+    for number, body in enumerate(objects, start=1):
+        offsets.append(len(raw))
+        raw.extend(str(number).encode("ascii") + b" 0 obj\n" + body + b"\nendobj\n")
+    xref = len(raw)
+    raw.extend(f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n".encode("ascii"))
+    for offset in offsets[1:]:
+        raw.extend(f"{offset:010d} 00000 n \n".encode("ascii"))
+    raw.extend(f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode("ascii"))
+    return bytes(raw)
+
+
+class AuditFixtureMixin:
     # Reuse only hash/projection/signing helpers, not the C1-08 test class or
     # its tags/fixtures/test methods. Every test below has its own real scope.
     _signed_command = TestPostKernel._signed_command
@@ -45,6 +69,9 @@ class TestAuditKernel(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.document_raw = _synthetic_pdf()
+        cls.document = SourceDocument(raw=cls.document_raw, mimetype="application/pdf")
+        cls.env["ir.config_parameter"].sudo().set_param("ir_attachment.location", "db")
         cls.company = cls.env["res.company"].create({
             "name": "TCC C1-09 COMPANY - SEM VALOR FISCAL",
         })
@@ -108,7 +135,7 @@ class TestAuditKernel(TransactionCase):
             purchase_order_id=cls.purchase.id, vendor_id=cls.vendor.id,
             journal_id=cls.journal.id, expense_account_id=cls.expense.id,
             purchase_line_ids=tuple(cls.purchase_line.ids), allowed_bank_ids=(cls.bank.id,),
-            scenario_id="TCC-SCN-001", document_sha256="a" * 64,
+            scenario_id="TCC-SCN-001", document_sha256=hashlib.sha256(cls.document_raw).hexdigest(),
             policy_version="policy-v1.0.0", phase="DRAFT_INTAKE",
             invoice_date_min="2026-09-01", invoice_date_max="2026-09-30",
             quantity_scale=2, monetary_tolerance="0.00",
@@ -124,6 +151,7 @@ class TestAuditKernel(TransactionCase):
         )
         self.draft_command = _command()
         self.draft_command["action"].update({
+            "document_sha256": self.draft_workflow.document_sha256,
             "vendor_ref": self.vendor.ref, "purchase_order_ref": self.purchase.name,
             "currency": self.company.currency_id.name, "recipient_bank_ref": self.bank.acc_number,
             "document_ref": "TCC-C109-NF-SEM-VALOR-FISCAL",
@@ -154,12 +182,13 @@ class TestAuditKernel(TransactionCase):
         self.assertEqual(event.event_sha256, audit_digest(event.event_payload))
         return event
 
-    def _create(self, command=None, *, workflow=None, audit=None, env=None):
+    def _create(self, command=None, *, workflow=None, audit=None, env=None, document=None):
         return audit_kernel.create_draft_audited(
             self.env if env is None else env,
             command=self.draft_command if command is None else command,
             workflow=self.draft_workflow if workflow is None else workflow,
             audit=self.audit if audit is None else audit,
+            document=self.document if document is None else document,
         )
 
     def _created(self, **changes):
@@ -203,7 +232,7 @@ class TestAuditKernel(TransactionCase):
         self.audit = replace(self.audit, attempt_id=secrets.token_hex(16))
 
     def _post(self, command=None, *, workflow=None, authority=None, key=None,
-              audit=None, env=None, clock=None):
+              audit=None, env=None, clock=None, document=None):
         with patch.object(post_kernel, "_utc_now", side_effect=clock or (lambda: self.now)):
             return audit_kernel.post_bill_audited(
                 self.env if env is None else env,
@@ -212,6 +241,7 @@ class TestAuditKernel(TransactionCase):
                 authority=self.authority if authority is None else authority,
                 key=self.key if key is None else key,
                 audit=self.audit if audit is None else audit,
+                document=self.document if document is None else document,
             )
 
     def _posted(self, **changes):
@@ -256,6 +286,8 @@ class TestAuditKernel(TransactionCase):
         self.assertEqual(len(self._events()), events_before, "Failed audit retained a partial event.")
         return result
 
+@tagged("post_install", "-at_install", "c1_audit")
+class TestAuditKernel(AuditFixtureMixin, TransactionCase):
     def test_create_records_real_receipt_and_canonical_event(self):
         payments_before = self.env["account.payment"].sudo().search_count([])
         result = self._created()

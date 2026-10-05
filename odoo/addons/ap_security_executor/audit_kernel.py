@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 """Private operational audit boundary over the financial kernels.
 
-No RPC capability, commit, attachment or scientific RunRecord is introduced.
+No RPC capability, internal commit or scientific RunRecord is introduced.
 Trusted administrative code supplies provenance. A database administrator can
 rewrite SQL and hashes; this ledger does not claim cryptographic authenticity.
 """
@@ -22,8 +22,13 @@ from odoo.tools.misc import Callbacks
 from . import draft_kernel, post_kernel
 from .approval import ERROR_CODES
 from .audit_contracts import AuditContractError, TrustedAuditContext, audit_digest
+from .attachment_kernel import (
+    AttachmentError, assert_attachment_environment, create_document_attachment,
+    verify_document_attachment,
+)
 from .contracts import ExecutorContractError, _match, _snapshot, validate_command
 from .draft_contracts import TrustedDraftWorkflow, canonical_command_sha256
+from .document_contracts import DocumentContractError, validate_source_document
 from .identity import _admin_environment
 from .post_contracts import TrustedPostWorkflow
 
@@ -38,8 +43,14 @@ _CODES = ERROR_CODES | frozenset({
     "UNSUPPORTED_POST_STATE", "UNTRUSTED_FINANCIAL_DEFAULTS", "VENDOR_MISMATCH",
     "WORKFLOW_MISMATCH", "DRAFT_CONSISTENT", "APPROVED_POST_CONSISTENT",
     "KERNEL_UNAVAILABLE", "AUDIT_UNAVAILABLE",
+    "DOCUMENT_INVALID", "DOCUMENT_EMPTY", "DOCUMENT_TOO_LARGE", "DOCUMENT_MIME_INVALID",
+    "DOCUMENT_HASH_MISMATCH", "ATTACHMENT_CONFIG_INVALID", "ATTACHMENT_UNAVAILABLE",
+    "ATTACHMENT_INTEGRITY_INVALID",
 })
-_UNAVAILABLE = frozenset({"DEPENDENCY_UNAVAILABLE", "KERNEL_UNAVAILABLE", "AUDIT_UNAVAILABLE"})
+_UNAVAILABLE = frozenset({"DEPENDENCY_UNAVAILABLE", "KERNEL_UNAVAILABLE", "AUDIT_UNAVAILABLE",
+                         "ATTACHMENT_CONFIG_INVALID", "ATTACHMENT_UNAVAILABLE"})
+_DOCUMENT_CODES = frozenset({"DOCUMENT_INVALID", "DOCUMENT_EMPTY", "DOCUMENT_TOO_LARGE",
+                             "DOCUMENT_MIME_INVALID", "DOCUMENT_HASH_MISMATCH"})
 _RULES = {
     "AMOUNT_MISMATCH": "R-POL-02", "CURRENCY_MISMATCH": "R-POL-02",
     "LINE_MISMATCH": "R-POL-02", "VENDOR_MISMATCH": "R-POL-02",
@@ -134,6 +145,13 @@ def _financial_snapshot(env, workflow, target_id=None):
             "account.payment", "account.partial.reconcile", "account.full.reconcile",
             "account.analytic.line", "mail.mail", "mail.notification", "ir.attachment")},
     }
+    attachments = env["ir.attachment"].search([
+        ("res_model", "=", "account.move"), ("res_id", "in", moves.ids),
+    ], order="id")
+    projection["attachments"] = [dict(row, raw_sha256=hashlib.sha256(
+        env["ir.attachment"].browse(row["id"]).raw or b"").hexdigest()) for row in attachments.read([
+            "name", "res_model", "res_id", "res_field", "company_id", "type", "mimetype",
+            "file_size", "checksum", "store_fname", "public", "url"])]
     encoded = json.dumps(projection, sort_keys=True, separators=(",", ":"),
                          ensure_ascii=False, allow_nan=False, default=str).encode("utf-8")
     return "sha256:" + hashlib.sha256(b"tcc-operational-state/v1\0" + encoded).hexdigest()
@@ -142,10 +160,10 @@ def _financial_snapshot(env, workflow, target_id=None):
 def _validate_payload_shape(payload):
     # The writer accepts only our closed server-produced shape, never commands.
     required = {"schema_version", "context", "subject", "outcome", "received_policy",
-                "provenance", "receipt", "approval", "original_event_id", "observed_at"}
+                "provenance", "receipt", "approval", "original_event_id", "observed_at", "attachment"}
     if type(payload) is not dict or set(payload) != required:
         raise _AuditUnavailable()
-    if payload["schema_version"] != "operational-audit/v1":
+    if payload["schema_version"] != "operational-audit/v2":
         raise _AuditUnavailable()
     context = payload["context"]
     try:
@@ -185,7 +203,7 @@ def _validate_payload_shape(payload):
             or not outcome["reason_codes"] or any(type(code) is not str or code not in _CODES
                                                    for code in outcome["reason_codes"])):
         raise _AuditUnavailable()
-    expected_methods = ["account.move.create"] if status == "CREATED" else (
+    expected_methods = ["account.move.create", "ir.attachment.create"] if status == "CREATED" else (
         ["account.move.action_post"] if status == "POSTED" else [])
     expected_decision = "DENY" if status == "DENIED" else ("ALLOW" if mode == "CREATE_DRAFT" else "REVIEW")
     expected_class = ("FAIL_CLOSED_UNAVAILABILITY" if any(code in _UNAVAILABLE for code in outcome["reason_codes"])
@@ -195,7 +213,8 @@ def _validate_payload_shape(payload):
             or outcome["effect_applied"] is not (status in {"CREATED", "POSTED"})
             or any(type(rule) is not str or rule not in set(_RULES.values()) for rule in outcome["rule_ids"])
             or outcome["checks_scope"] not in {"PERSISTED_REPLAY", "FULL_SERVER_REVALIDATION",
-                                                "DENIED_AFTER_KERNEL_ROLLBACK", "POST_ROLLBACK_KERNEL_FAILURE"}):
+                                                "DENIED_AFTER_KERNEL_ROLLBACK", "POST_ROLLBACK_KERNEL_FAILURE",
+                                                "DOCUMENT_DENIED_BEFORE_KERNEL"}):
         raise _AuditUnavailable()
     receipt, original = payload["receipt"], payload["original_event_id"]
     if status == "DENIED":
@@ -219,8 +238,10 @@ def _validate_payload_shape(payload):
     if set(policy) != {"decision", "sha256"} or policy["decision"] not in {"ALLOW", "REVIEW", "DENY"}:
         raise _AuditUnavailable()
     _match(policy["sha256"], "digest")
-    expected_provenance = {"document": "UNTRUSTED_HASH_BOUND", "workflow": "TRUSTED_ADMIN_REGISTRATION",
-        "command": "UNTRUSTED_STRUCTURALLY_VALIDATED", "document_bytes_verified": False,
+    document_verified = not bool(set(outcome["reason_codes"]) & _DOCUMENT_CODES)
+    expected_provenance = {"document": "UNTRUSTED_BYTES_VERIFIED" if document_verified else "UNTRUSTED_HASH_BOUND",
+        "workflow": "TRUSTED_ADMIN_REGISTRATION", "command": "UNTRUSTED_STRUCTURALLY_VALIDATED",
+        "document_bytes_verified": document_verified,
         "financial_effect": "SERVER_REVALIDATED" if status in {"CREATED", "POSTED"} else "NONE",
         "field_origins_version": "audit-field-origins/v1",
         "method_trace": "SUCCESSFUL_EFFECT_METHODS_ONLY", "attempted_method_trace_complete": False}
@@ -238,6 +259,20 @@ def _validate_payload_shape(payload):
             raise _AuditUnavailable()
     elif approval is not None:
         raise _AuditUnavailable()
+    metadata = payload["attachment"]
+    if status == "DENIED":
+        if metadata is not None:
+            raise _AuditUnavailable()
+    else:
+        if (type(metadata) is not dict or set(metadata) != {"schema_version", "attachment_id", "move_id",
+                "document_sha256", "byte_count", "mimetype", "storage"}
+                or metadata["schema_version"] != "document-attachment/v1"
+                or type(metadata["attachment_id"]) is not int or metadata["attachment_id"] <= 0
+                or type(metadata["move_id"]) is not int or metadata["move_id"] != receipt["move_id"]
+                or metadata["document_sha256"] != subject["document_sha256"]
+                or type(metadata["byte_count"]) is not int or not 1 <= metadata["byte_count"] <= 1_048_576
+                or metadata["mimetype"] != "application/pdf" or metadata["storage"] != "db"):
+            raise _AuditUnavailable()
     _match(payload["observed_at"], "utcTime")
     return digest
 
@@ -267,6 +302,12 @@ def _verify_event(event):
             or event.success_receipt_id.id != (receipt_id if event.status in {"CREATED", "POSTED"} else False)
             or event.original_event_id.id != (payload["original_event_id"] or False)):
         raise _AuditUnavailable()
+    attachment = payload["attachment"]
+    if event.attachment_id.id != (attachment["attachment_id"] if attachment else False):
+        raise _AuditUnavailable()
+    if attachment:
+        verify_document_attachment(event.env, attachment, company_id=subject["company_id"],
+            move_id=payload["receipt"]["move_id"], document_sha256=subject["document_sha256"])
     if receipt_id:
         receipt = event.receipt_id
         if (receipt.company_id != event.company_id or receipt.executor_user_id != event.executor_user_id
@@ -288,14 +329,15 @@ def _append_event(env, payload):
     env.cr.execute("""
         INSERT INTO ap_security_audit_event
             (company_id, executor_user_id, run_id, attempt_id, executor_mode, status,
-             receipt_id, success_receipt_id, original_event_id, event_sha256, event_payload,
+             receipt_id, success_receipt_id, original_event_id, attachment_id, event_sha256, event_payload,
              create_uid, write_uid, create_date, write_date)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,timezone('UTC',now()),timezone('UTC',now()))
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,timezone('UTC',now()),timezone('UTC',now()))
         RETURNING id
     """, (subject["company_id"], subject["executor_user_id"], context["run_id"], context["attempt_id"],
           subject["executor_mode"], outcome["status"], receipt_id,
           receipt_id if outcome["status"] in {"CREATED", "POSTED"} else None,
-          payload["original_event_id"], digest, Json(payload), env.uid, env.uid))
+          payload["original_event_id"], payload["attachment"]["attachment_id"] if payload["attachment"] else None,
+          digest, Json(payload), env.uid, env.uid))
     event = env["ap.security.audit.event"].browse(env.cr.fetchone()[0])
     _verify_event(event)
     return event
@@ -333,7 +375,8 @@ def _draft_origin(env, registered, audit):
     return _original_event(env, receipt, workflow=config, audit=audit)
 
 
-def _payload(admin, private, command, workflow, audit, checked, result, before, after, original=None):
+def _payload(admin, private, command, workflow, audit, checked, result, before, after,
+             original=None, attachment=None):
     config = workflow.draft if type(workflow) is TrustedPostWorkflow else workflow
     status = result["status"]
     codes = result["reason_codes"]
@@ -351,7 +394,7 @@ def _payload(admin, private, command, workflow, audit, checked, result, before, 
     if status == "POSTED":
         rules.append("R-POL-09")
     return {
-        "schema_version": "operational-audit/v1", "context": asdict(audit),
+        "schema_version": "operational-audit/v2", "context": asdict(audit),
         "subject": {"company_id": config.company_id, "executor_user_id": config.executor_user_id,
             "scenario_id": config.scenario_id, "document_sha256": config.document_sha256,
             "executor_mode": checked.executor_mode, "policy_version": config.policy_version,
@@ -361,20 +404,22 @@ def _payload(admin, private, command, workflow, audit, checked, result, before, 
             "ALLOW" if checked.executor_mode == "CREATE_DRAFT" else "REVIEW"), "deny_class": deny_class,
             "reason_codes": list(codes), "rule_ids": rules,
             "checks_scope": "PERSISTED_REPLAY" if status == "REPLAY" else (
+                "DOCUMENT_DENIED_BEFORE_KERNEL" if set(codes) & _DOCUMENT_CODES else (
                 "POST_ROLLBACK_KERNEL_FAILURE" if "KERNEL_UNAVAILABLE" in codes else (
-                    "DENIED_AFTER_KERNEL_ROLLBACK" if status == "DENIED" else "FULL_SERVER_REVALIDATION")),
+                    "DENIED_AFTER_KERNEL_ROLLBACK" if status == "DENIED" else "FULL_SERVER_REVALIDATION"))),
             "administrative_caller_id": admin.uid, "financial_service_uid": SUPERUSER_ID,
             "before_sha256": before, "after_sha256": after, "effect_applied": result["effect_applied"],
-            "financial_methods": ["account.move.create"] if status == "CREATED" else (
+            "financial_methods": ["account.move.create", "ir.attachment.create"] if status == "CREATED" else (
                 ["account.move.action_post"] if status == "POSTED" else [])},
         "received_policy": {"decision": command["policy_decision"]["decision"],
                             "sha256": audit_digest(command["policy_decision"])},
-        "provenance": {"document": "UNTRUSTED_HASH_BOUND", "workflow": "TRUSTED_ADMIN_REGISTRATION",
-            "command": "UNTRUSTED_STRUCTURALLY_VALIDATED", "document_bytes_verified": False,
+        "provenance": {"document": "UNTRUSTED_HASH_BOUND" if set(codes) & _DOCUMENT_CODES else "UNTRUSTED_BYTES_VERIFIED",
+            "workflow": "TRUSTED_ADMIN_REGISTRATION", "command": "UNTRUSTED_STRUCTURALLY_VALIDATED",
+            "document_bytes_verified": not bool(set(codes) & _DOCUMENT_CODES),
             "financial_effect": "SERVER_REVALIDATED" if status in {"CREATED", "POSTED"} else "NONE",
             "field_origins_version": "audit-field-origins/v1",
             "method_trace": "SUCCESSFUL_EFFECT_METHODS_ONLY", "attempted_method_trace_complete": False},
-        "receipt": result.get("receipt"), "approval": approval,
+        "receipt": result.get("receipt"), "approval": approval, "attachment": attachment,
         "original_event_id": original.id if original else None,
         "observed_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
@@ -404,13 +449,13 @@ def _run_committed_audit(registry, pending, event_id, event_hash, company_id):
                 _verify_event(event)
         if valid:
             pending.run()
-    except (OperationalError, _AuditUnavailable):
+    except (OperationalError, _AuditUnavailable, AttachmentError):
         return None
     finally:
         pending.clear()
 
 
-def _execute(env, *, command, workflow, audit, mode, authority=None, key=None):
+def _execute(env, *, command, workflow, audit, mode, document, authority=None, key=None):
     admin = _admin_environment(env)
     audit = _reconstruct(audit, TrustedAuditContext)
     workflow = _reconstruct(workflow, TrustedDraftWorkflow if mode == "CREATE_DRAFT" else TrustedPostWorkflow)
@@ -432,6 +477,7 @@ def _execute(env, *, command, workflow, audit, mode, authority=None, key=None):
     result = None
     completed = None
     transferred = False
+    attachment = None
     admin.cr.postcommit = pending
     try:
         try:
@@ -443,6 +489,15 @@ def _execute(env, *, command, workflow, audit, mode, authority=None, key=None):
             return _unavailable(mode)
         try:
             with admin.cr.savepoint():
+                try:
+                    verified = validate_source_document(document, document_sha256=config.document_sha256)
+                    if checked.document_sha256 != verified.document_sha256:
+                        raise DocumentContractError("DOCUMENT_HASH_MISMATCH")
+                    assert_attachment_environment(private, config.company_id)
+                except (DocumentContractError, AttachmentError) as error:
+                    raise _KernelDenied({"schema_version": "draft-kernel-result/v1" if mode == "CREATE_DRAFT"
+                        else "post-kernel-result/v1", "status": "DENIED", "effect_applied": False,
+                        "reason_codes": [error.code]}) from None
                 neutral = api.Environment(admin.cr, config.executor_user_id,
                                           draft_kernel._context(config.company_id), su=False)
                 if any(neutral["ap.security.audit.event"].browse().has_access(operation)
@@ -450,8 +505,13 @@ def _execute(env, *, command, workflow, audit, mode, authority=None, key=None):
                     raise _KernelDenied({"schema_version": "draft-kernel-result/v1" if mode == "CREATE_DRAFT"
                         else "post-kernel-result/v1", "status": "DENIED", "effect_applied": False,
                         "reason_codes": ["EXECUTOR_IDENTITY_INVALID"]})
-                if mode == "POST_APPROVED":
-                    _draft_origin(private, workflow, audit)
+                try:
+                    if mode == "POST_APPROVED":
+                        draft_origin = _draft_origin(private, workflow, audit)
+                        attachment = dict(draft_origin.event_payload["attachment"])
+                except AttachmentError as error:
+                    raise _KernelDenied({"schema_version": "post-kernel-result/v1", "status": "DENIED",
+                        "effect_applied": False, "reason_codes": [error.code]}) from None
                 try:
                     result = (draft_kernel.create_draft_atomic(admin, command=command, workflow=workflow)
                               if mode == "CREATE_DRAFT" else post_kernel.post_bill_atomic(
@@ -466,13 +526,25 @@ def _execute(env, *, command, workflow, audit, mode, authority=None, key=None):
                 if result["status"] == "DENIED":
                     raise _KernelDenied(result)
                 original = None
-                if result["status"] == "REPLAY":
-                    receipt = private["ap.security.draft.receipt"].browse(result["receipt"]["receipt_id"])
-                    original = _original_event(private, receipt, workflow=workflow, audit=audit,
-                        action_hash=checked.action_hash, command_hash=canonical_command_sha256(command))
+                try:
+                    if result["status"] == "REPLAY":
+                        receipt = private["ap.security.draft.receipt"].browse(result["receipt"]["receipt_id"])
+                        original = _original_event(private, receipt, workflow=workflow, audit=audit,
+                            action_hash=checked.action_hash, command_hash=canonical_command_sha256(command))
+                        attachment = dict(original.event_payload["attachment"])
+                    if result["status"] == "CREATED":
+                        _record, attachment = create_document_attachment(private,
+                            move_id=result["receipt"]["move_id"], company_id=config.company_id,
+                            document=document, verified=verified)
+                    verify_document_attachment(private, attachment, company_id=config.company_id,
+                        move_id=result["receipt"]["move_id"], document_sha256=config.document_sha256, lock=True)
+                except AttachmentError as error:
+                    raise _KernelDenied({"schema_version": "draft-kernel-result/v1" if mode == "CREATE_DRAFT"
+                        else "post-kernel-result/v1", "status": "DENIED", "effect_applied": False,
+                        "reason_codes": [error.code]}) from None
                 after = _financial_snapshot(private, config, getattr(workflow, "target_move_id", None))
                 event = _append_event(private, _payload(admin, private, command, workflow, audit,
-                    checked, result, before, after, original))
+                    checked, result, before, after, original, attachment))
                 _after_audit_append(event)
                 _verify_event(event)
                 private.flush_all()
@@ -516,12 +588,12 @@ def _execute(env, *, command, workflow, audit, mode, authority=None, key=None):
             pending.clear()
 
 
-def create_draft_audited(env, *, command, workflow, audit):
-    """Private administrative boundary; no commit, RPC or document attachment."""
-    return _execute(env, command=command, workflow=workflow, audit=audit, mode="CREATE_DRAFT")
+def create_draft_audited(env, *, command, workflow, audit, document):
+    """Private document/audit boundary; no commit or public RPC capability."""
+    return _execute(env, command=command, workflow=workflow, audit=audit, document=document, mode="CREATE_DRAFT")
 
 
-def post_bill_audited(env, *, command, workflow, authority, key, audit):
+def post_bill_audited(env, *, command, workflow, authority, key, audit, document):
     """Private reviewed POST boundary; public execute remains fail-closed."""
-    return _execute(env, command=command, workflow=workflow, audit=audit,
+    return _execute(env, command=command, workflow=workflow, audit=audit, document=document,
                     mode="POST_APPROVED", authority=authority, key=key)

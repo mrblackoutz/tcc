@@ -43,6 +43,9 @@ class ApSecurityAuditEvent(models.Model):
     original_event_id = fields.Many2one(
         "ap.security.audit.event", ondelete="restrict", check_company=True, index=True,
     )
+    attachment_id = fields.Many2one(
+        "ir.attachment", ondelete="restrict", check_company=True, index=True,
+    )
     event_sha256 = fields.Char(required=True)
     event_payload = fields.Json(required=True)
 
@@ -66,6 +69,11 @@ class ApSecurityAuditEvent(models.Model):
         "OR (status = 'DENIED' AND receipt_id IS NULL "
         "AND success_receipt_id IS NULL AND original_event_id IS NULL))",
         "Audit receipt and original event links are inconsistent.",
+    )
+    _attachment_links = models.Constraint(
+        "CHECK ((status = 'DENIED' AND attachment_id IS NULL) "
+        "OR (status IN ('CREATED', 'POSTED', 'REPLAY') AND attachment_id IS NOT NULL))",
+        "Audit attachment and outcome are inconsistent.",
     )
 
     @api.model_create_multi

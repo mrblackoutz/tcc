@@ -8,7 +8,7 @@ As referências têm descrição e destino: [contribuição das camadas (RQ4)](P
 
 ## Artefatos principais
 
-Estado técnico atual: os núcleos privados criam rascunhos, autenticam aprovação/uso único e contabilizam com revalidação e rollback. A [auditoria operacional C1-09](docs/lab-runbook.md#auditoria-operacional-privada-c1-09) registra esses efeitos na mesma transação, sem liberar o executor público. **Próximo checkpoint: anexar o documento com validação de MIME, tamanho e hash.** C1-09 continua em andamento; integração, revisão humana e piloto permanecem pendentes. Prioridades e dependências estão no [backlog](docs/task-backlog.md#9-arquitetura-c1-e-testes-de-segurança).
+Estado técnico atual: os núcleos privados criam rascunhos, autenticam aprovação/uso único e contabilizam com revalidação e rollback. A [auditoria e anexação C1-09](docs/lab-runbook.md#auditoria-operacional-privada-c1-09) agora liga esses efeitos ao PDF sintético na mesma transação, validando MIME, tamanho e SHA-256 e reutilizando o anexo no POST/replay. A implementação privada passou nos testes e aguarda revisão humana; o executor público continua fechado. **Próximo trabalho de engenharia: C1-10, testes de bypass da fronteira.** Integração, concorrência/lifecycle real e piloto permanecem pendentes. Prioridades e dependências estão no [backlog](docs/task-backlog.md#9-arquitetura-c1-e-testes-de-segurança).
 
 - `Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md`: fonte editorial e operacional.
 - `AGENTS.md`: regras obrigatórias de execução, versionamento, decisões e proteção de dados.

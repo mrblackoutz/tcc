@@ -191,12 +191,12 @@ try {
     }
     if (-not $ready) { throw 'Isolated PostgreSQL did not become ready' }
 
-    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit'
+    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment'
     $testArguments = @('--no-http')
     $httpDockerArguments = @()
     $httpEvidenceRoot = $null
     if ($WithHttpAcl) {
-        $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit'
+        $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment'
         $testArguments = @('--http-interface', '127.0.0.1')
         $httpEvidenceRoot = Join-Path $probeRoot 'http-evidence'
         $null = New-Item -ItemType Directory -Path $httpEvidenceRoot
@@ -205,9 +205,9 @@ try {
             '--env', 'TCC_C1_PROBE_EVIDENCE_DIR=/mnt/c1-evidence'
         )
     }
-    if ($WithDraftKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_approval,-c1_post_kernel,-c1_audit' }
-    if ($WithApproval) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_post_kernel,-c1_audit' }
-    if ($WithPostKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_audit' }
+    if ($WithDraftKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment' }
+    if ($WithApproval) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_post_kernel,-c1_audit,-c1_attachment' }
+    if ($WithPostKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_audit,-c1_attachment' }
     if ($WithAudit) { $testTags = '/ap_security_executor,-c1_acl_http' }
     Write-Host ($probeTask + ': installing and testing the add-on in a fresh disposable Odoo database.')
     $odooStarted = $true
@@ -291,8 +291,8 @@ try {
         $result['post_kernel_test_count'] = @($postTests | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique).Count
     }
     if ($WithAudit) {
-        $result.schema_version = 'c109-probe-evidence/v1'
-        $result.scope = 'private-transactional-audit-only'
+        $result.schema_version = 'c109-probe-evidence/v2'
+        $result.scope = 'private-transactional-document-audit-only'
         # Audited administrative wrappers and native POST are exercised only
         # against disposable fixtures; this does not open the public executor.
         $result['financial_effects_scope'] = 'public-executor-only'
@@ -304,8 +304,16 @@ try {
         $result['audited_entry_public'] = $false
         $result['independent_cursor_concurrency_tested'] = $false
         $auditTests = [regex]::Matches(($odooOutput -join "`n"), 'Starting TestAuditKernel\.(test_[a-z0-9_]+)')
-        if ($auditTests.Count -eq 0) { throw 'No private transactional audit test actually executed' }
-        $result['audit_kernel_test_count'] = @($auditTests | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique).Count
+        $auditTestNames = @($auditTests | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+        if ($auditTestNames.Count -eq 0) { throw 'No private transactional audit test actually executed' }
+        $result['audit_kernel_test_count'] = $auditTestNames.Count
+        $attachmentTests = [regex]::Matches(($odooOutput -join "`n"), 'Starting TestAttachmentKernel\.(test_[a-z0-9_]+)')
+        $attachmentTestNames = @($attachmentTests | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+        if ($attachmentTestNames.Count -eq 0) { throw 'No private transactional document attachment test actually executed' }
+        $result['attachment_kernel_test_count'] = $attachmentTestNames.Count
+        $result['private_synthetic_document_attachment_tested'] = $true
+        $result['attachment_storage'] = 'db'
+        $result['document_mime_size_sha256_verified'] = $true
     }
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
 }
