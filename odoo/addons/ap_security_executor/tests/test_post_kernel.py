@@ -210,10 +210,12 @@ class TestPostKernel(TransactionCase):
             "ap.security.draft.receipt": ["company_id", "executor_mode", "idempotency_key", "command_sha256", "action_sha256", "document_sha256", "po_id", "vendor_id", "purchase_line_ids", "move_id", "executor_user_id", "receipt_payload"],
             "ap.security.approval.nonce": ["company_id", "executor_user_id", "key_id", "fixture_id", "scenario_id", "approver_ref", "nonce_sha256", "action_sha256", "approval_sha256", "command_sha256", "state", "verified_at", "expires_at", "consumed_at"],
             "ap.security.po.guard": ["company_id", "po_id", "revision"],
+            "ap.security.vendor.guard": ["company_id", "vendor_id", "revision"],
         }.items():
             projection[model] = self.env[model].sudo().with_context(active_test=False).search([], order="id").read(names)
         if not include_guard:
             projection.pop("ap.security.po.guard")
+            projection.pop("ap.security.vendor.guard")
         projection["purchase"] = self.purchase.read(["state", "partner_id", "currency_id", "company_id", "amount_total"])
         projection["purchase_line"] = self.purchase_line.read(["product_qty", "qty_invoiced", "qty_to_invoice", "price_unit", "discount", "tax_ids"])
         projection["vendor"] = self.vendor.read(["supplier_rank", "autopost_bills"])
@@ -402,6 +404,16 @@ class TestPostKernel(TransactionCase):
     def test_new_financial_permission_blocks_post(self):
         self.executor_user.write({"group_ids": [Command.link(self.env.ref("account.group_account_invoice").id)]})
         self._denied()
+
+    def test_new_vendor_guard_permission_blocks_post(self):
+        self.env["ir.model.access"].create({
+            "name": "TCC synthetic vendor guard drift",
+            "model_id": self.env["ir.model"]._get_id("ap.security.vendor.guard"),
+            "group_id": self.env.ref("ap_security_executor.group_executor").id,
+            "perm_read": True, "perm_write": False,
+            "perm_create": False, "perm_unlink": False,
+        })
+        self._denied(reason="EXECUTOR_IDENTITY_INVALID")
 
     def test_global_financial_default_blocks_post_without_repair(self):
         defaults = self.env["ir.default"].sudo()

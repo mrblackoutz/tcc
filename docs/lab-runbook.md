@@ -310,6 +310,36 @@ A prova anterior sem anexo permanece no lock histórico `c109Audit`, vinculada a
 
 C1-09 está `AWAITING_REVIEW`: falta revisão humana de Felipe e reprodução por Thomaz, não implementação documental. [Aceite intermediário (DEC-034)](decision-log.md#dec-034) permite iniciar C1-10/11 provisoriamente sobre o contrato versionado, sem satisfazer gates científicos. Registro operacional de workflow, integração ao runner e `RunRecord` científico, C1-10/11, piloto e freeze continuam separados. `document_bytes_verified=true` significa que os bytes passaram na checagem de MIME/tamanho/hash; não torna o documento confiável ou fiscalmente válido.
 
+### Bypass HTTP C1-10
+
+As [provas de fronteira (DEC-047)](decision-log.md#dec-047) usam JSON-2 e bearer reais contra alvos sintéticos preenchidos, inclusive contas/linhas, fornecedores/bancos, POs, anexos privados, recibos, guardas e nonce consumido. O modelo propõe; estes testes tentam contornar diretamente a autorização. A entrada pública continua fechada: **não são uma prova de executor financeiro integrado**.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_c1_scaffold.ps1 -WithBypass
+```
+
+O modo inclui a regressão HTTP anterior e 20 novos casos de bypass, com 123 requisições próprias. Cada caso exige projeção crítica idêntica antes/depois; códigos HTTP e tipos finitos de erro são conferidos. Preferências pessoais residuais permitidas não contam como autoridade financeira. CRUD/métodos arbitrários ou privados, contexto/empresa hostis, defaults privilegiados e acesso aos ledgers/anexos estão cobertos, incluindo a [guarda de fornecedor (DEC-048)](decision-log.md#dec-048). Reexecutar após integração ou mudança relevante de permissões; esta prova não autoriza abrir `execute`.
+
+Provas saneadas e logs locais ignorados ficam em `.runtime/c1-10/<execução>/`. O harness confere os casos realmente iniciados, hashes de fonte, projeções e limpeza antes de conceder `PASS`. Não usa chave real, porta externa, modelo ou laboratório existente.
+
+### Transações reais e ciclo de commit C1-11
+
+O [probe separado](../odoo/probes/c111_transactions.py) instala o add-on e depois executa outro processo com registry normal, sem `test_enable`, `TestCursor` ou mock do commit. Cada transação usa cursor PostgreSQL nativo com isolamento Repeatable Read. [DEC-047](decision-log.md#dec-047) define os limites; [DEC-048](decision-log.md#dec-048) registra a corrida descoberta e sua correção.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_c1_scaffold.ps1 -WithTransactions
+```
+
+São 22 casos: CREATE/POST e replay após commit, rollback externo/savepoint, seis faults após writes reais, contador nativo de fornecedor após commit, alteração de proposta/beneficiário após aprovação, conflitos de idempotência, duplicidade e cinco pares concorrentes. O observador confirma backends independentes e bloqueio PostgreSQL enquanto o líder ainda mantém sua escrita. Serialização/deadlock exige rollback integral, novo cursor e comando idêntico, com no máximo três tentativas; o kernel não faz commit nem retry parcial.
+
+A corrida adversarial entre POs distintos inicialmente produziu `CREATED/CREATED`, apesar de bloqueio real. A correção escreve guarda privada por empresa/fornecedor antes da guarda PO, em ordem compartilhada por CREATE/POST. Após retry, a referência duplicada deve resultar em `CREATED/DENIED`, com `DUPLICATE_DOCUMENT`, auditoria completa e nenhuma mutação financeira/anexo/recibo do segundo documento. Operações do mesmo fornecedor são serializadas conservadoramente; administradores fora desses wrappers não recebem essa garantia. As guardas revertem com o efeito e não alteram cadastros mestre.
+
+A fixture prepara confiança bancária pelo método nativo e por administrador real distinto de UID1/C1; outro cursor verifica sua persistência. OdooBot/UID1 não pode confiar bancos na registry normal da versão fixada. Não usar contexto de instalação/teste ou SQL como atalho. A integração futura do bootstrap também deve respeitar esse gate; este teste não altera o bootstrap nem o banco existente.
+
+Evidência local em `.runtime/c1-11/<execução>/`, com hash próprio do probe e da mesma árvore do add-on. `PASS` exige todos os 22 IDs, cinco pares, retry real, lifecycle e cleanup. É validação de wrappers administrativos privados; não abre RPC, não comprova todas as escalas/agendamentos e não é piloto, resultado científico ou revisão humana. Fonte, instruções e hashes permitem reprodução; logs/configuração brutos permanecem fora do Git.
+
+Em **05/10/2026**, passaram 1.148 testes offline, C1-10 com 76 Odoo/20 casos/123 HTTP e C1-11 com 22 casos/cinco pares/seis retries. Regressões separadas 17/56/95/123/171/255 e 54 HTTP também passaram. As oito provas têm os mesmos 33 arquivos do add-on; hash do probe, inventário (365 modelos/151 ACLs/83 regras), ausência de recursos descartáveis e fonte atual foram conferidos. Os novos registros `c110Bypass`/`c111Transactions` no [lock de ambiente](../reproducibility/lab-environment.lock.json) serão vinculados ao commit do artefato; locks históricos permanecem intactos.
+
 ### Executar o aceite completo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test.ps1

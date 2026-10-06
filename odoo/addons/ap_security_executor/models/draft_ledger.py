@@ -67,3 +67,22 @@ class ApSecurityPoGuard(models.Model):
         "UNIQUE (company_id, po_id)",
         "A serialization guard already exists for this purchase order.",
     )
+
+
+class ApSecurityVendorGuard(models.Model):
+    _name = "ap.security.vendor.guard"
+    _description = "Internal Supplier Document Serialization Guard"
+    _rec_name = "vendor_id"
+    _order = "id"
+    _check_company_auto = True
+
+    company_id = fields.Many2one("res.company", required=True, ondelete="restrict", index=True)
+    vendor_id = fields.Many2one(
+        "res.partner", required=True, ondelete="restrict", check_company=True, index=True,
+    )
+    revision = fields.Integer(required=True, default=0)
+
+    _vendor_unique = models.Constraint(
+        "UNIQUE (company_id, vendor_id)",
+        "A serialization guard already exists for this supplier and company.",
+    )

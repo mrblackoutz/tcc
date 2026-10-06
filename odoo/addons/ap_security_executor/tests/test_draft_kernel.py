@@ -16,7 +16,7 @@ from unittest.mock import patch
 from psycopg2.errors import UniqueViolation
 
 from odoo import SUPERUSER_ID, Command, api
-from odoo.exceptions import AccessError, ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import TransactionCase, tagged
 
 from .. import draft_kernel
@@ -134,10 +134,12 @@ class TestDraftKernel(TransactionCase):
             "account.move.line": ["move_id", "purchase_line_id", "product_id", "product_uom_id", "quantity", "price_unit", "account_id", "discount", "tax_ids", "debit", "credit"],
             "ap.security.draft.receipt": ["company_id", "executor_mode", "idempotency_key", "command_sha256", "action_sha256", "document_sha256", "po_id", "vendor_id", "purchase_line_ids", "move_id", "executor_user_id", "receipt_payload"],
             "ap.security.po.guard": ["company_id", "po_id", "revision"],
+            "ap.security.vendor.guard": ["company_id", "vendor_id", "revision"],
         }.items():
             projection[model] = self.env[model].with_context(active_test=False).search([], order="id").read(fields)
         if not include_guard:
             projection.pop("ap.security.po.guard")
+            projection.pop("ap.security.vendor.guard")
         projection["purchase"] = self.purchase.read(["state", "partner_id", "currency_id", "company_id", "amount_total"])
         projection["purchase_line"] = self.purchase_line.read(["product_qty", "qty_invoiced", "qty_to_invoice", "price_unit", "discount", "tax_ids"])
         projection["attachment_count"] = self.env["ir.attachment"].search_count([])
@@ -408,11 +410,116 @@ class TestDraftKernel(TransactionCase):
         ]), 1)
 
     def test_receipt_and_guard_have_no_direct_c1_permissions(self):
-        for model in ("ap.security.draft.receipt", "ap.security.po.guard"):
+        for model in ("ap.security.draft.receipt", "ap.security.po.guard",
+                      "ap.security.vendor.guard"):
             records = self.env[model].with_user(self.executor_user)
             for operation in ("read", "write", "create", "unlink"):
                 with self.subTest(model=model, operation=operation):
                     self.assertFalse(records.has_access(operation))
+
+    def test_vendor_guard_uniqueness_is_enforced_in_database(self):
+        guards = self.env["ap.security.vendor.guard"]
+        values = {"company_id": self.company.id, "vendor_id": self.vendor.id, "revision": 0}
+        guards.create(values)
+        self.env.flush_all()
+        with self.assertRaises(UniqueViolation) as caught:
+            with self.env.cr.savepoint():
+                guards.create(values)
+                self.env.flush_all()
+        self.assertEqual(caught.exception.pgcode, "23505")
+        self.assertEqual(guards.search_count([
+            ("company_id", "=", self.company.id), ("vendor_id", "=", self.vendor.id),
+        ]), 1)
+
+    def test_vendor_guard_is_scoped_to_trusted_company_and_vendor(self):
+        guards = self.env["ap.security.vendor.guard"]
+        first = guards.create({"company_id": self.company.id, "vendor_id": self.vendor.id})
+        second = guards.create({"company_id": self.company.id, "vendor_id": self.other_vendor.id})
+        other_vendor = self.env["res.partner"].create({
+            "name": "TCC GUARD OTHER COMPANY SUPPLIER - SEM VALOR FISCAL",
+            "company_id": self.other_company.id, "supplier_rank": 1,
+        })
+        third = guards.create({"company_id": self.other_company.id, "vendor_id": other_vendor.id})
+        self.env.flush_all()
+        self.assertEqual(len(first | second | third), 3)
+        with self.assertRaises(UserError):
+            with self.env.cr.savepoint():
+                guards.create({"company_id": self.other_company.id, "vendor_id": self.vendor.id})
+                self.env.flush_all()
+
+    def test_vendor_guard_system_acl_has_no_unlink_authority(self):
+        administrator = self.env.ref("base.user_admin")
+        self.assertNotEqual(administrator.id, SUPERUSER_ID)
+        self.assertTrue(administrator.has_group("base.group_system"))
+        guards = self.env["ap.security.vendor.guard"].with_user(administrator)
+        for operation in ("read", "write", "create"):
+            with self.subTest(operation=operation):
+                self.assertTrue(guards.has_access(operation))
+        self.assertFalse(guards.has_access("unlink"))
+
+    def test_shared_guard_revisions_do_not_write_master_or_financial_state(self):
+        from .. import post_kernel
+
+        self.assertIs(post_kernel._guard, draft_kernel._guard)
+        vendor_before = self.vendor.read([
+            "name", "ref", "company_id", "supplier_rank", "autopost_bills", "write_date",
+        ])
+        company_before = self.company.read(["name", "currency_id", "write_date"])
+        financial_before = self._state_hash(include_guard=False)
+        first_po_guard_id = draft_kernel._guard(self.env, self.workflow)
+        second_po_guard_id = draft_kernel._guard(self.env, self.workflow)
+        self.assertEqual(first_po_guard_id, second_po_guard_id)
+        vendor_guard = self.env["ap.security.vendor.guard"].search([
+            ("company_id", "=", self.company.id), ("vendor_id", "=", self.vendor.id),
+        ])
+        po_guard = self.env["ap.security.po.guard"].browse(first_po_guard_id)
+        self.assertEqual(len(vendor_guard), 1)
+        self.assertEqual(vendor_guard.revision, 2)
+        self.assertEqual(po_guard.revision, 2)
+        self.assertEqual(financial_before, self._state_hash(include_guard=False))
+        self.assertEqual(vendor_before, self.vendor.read([
+            "name", "ref", "company_id", "supplier_rank", "autopost_bills", "write_date",
+        ]))
+        self.assertEqual(company_before, self.company.read(["name", "currency_id", "write_date"]))
+
+    def test_guard_creation_rolls_back_before_any_financial_write(self):
+        before = self._state_hash()
+        with unittest.TestCase.assertRaises(self, RuntimeError):
+            with self.env.cr.savepoint():
+                draft_kernel._guard(self.env, self.workflow)
+                raise RuntimeError("TCC-INJECTED-GUARD-FAULT")
+        self.assertEqual(before, self._state_hash())
+
+    def test_existing_guard_revision_rolls_back_on_business_denial(self):
+        po_guard_id = draft_kernel._guard(self.env, self.workflow)
+        vendor_guard = self.env["ap.security.vendor.guard"].search([
+            ("company_id", "=", self.company.id), ("vendor_id", "=", self.vendor.id),
+        ])
+        self.assertEqual(vendor_guard.revision, 1)
+        self._denied(self._command(action_changes={
+            "recipient_bank_ref": self.other_bank.acc_number,
+        }), reason="BANK_NOT_ALLOWED")
+        self.assertEqual(vendor_guard.revision, 1)
+        self.assertEqual(self.env["ap.security.po.guard"].browse(po_guard_id).revision, 1)
+
+    def test_vendor_guard_privilege_drift_denies_before_guard_write(self):
+        self.env["ir.model.access"].create({
+            "name": "TCC SYNTHETIC GUARD ACL DRIFT - SEM VALOR FISCAL",
+            "model_id": self.env["ir.model"]._get_id("ap.security.vendor.guard"),
+            "group_id": self.env.ref("ap_security_executor.group_executor").id,
+            "perm_read": True, "perm_write": False,
+            "perm_create": False, "perm_unlink": False,
+        })
+        self.assertTrue(self.env["ap.security.vendor.guard"].with_user(self.executor_user).has_access("read"))
+        self._denied(reason="EXECUTOR_IDENTITY_INVALID")
+
+    def test_global_vendor_guard_default_is_denied_without_repair(self):
+        defaults = self.env["ir.default"]
+        defaults.set("ap.security.vendor.guard", "revision", 100, company_id=self.company.id)
+        self._denied(reason="UNTRUSTED_FINANCIAL_DEFAULTS")
+        self.assertEqual(defaults._get(
+            "ap.security.vendor.guard", "revision", company_id=self.company.id,
+        ), 100)
 
     def test_failure_after_draft_creation_rolls_back_and_retry_works(self):
         before = self._state_hash()

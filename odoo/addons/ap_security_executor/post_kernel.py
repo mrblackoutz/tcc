@@ -65,7 +65,8 @@ def _identity(admin, workflow):
         raise _Denied("EXECUTOR_IDENTITY_INVALID") from None
     neutral = api.Environment(admin.cr, user.id, _context(company.id), su=False)
     _require(not any(neutral[model].browse().has_access(operation)
-        for model in ("ap.security.draft.receipt", "ap.security.po.guard", "ap.security.approval.nonce")
+        for model in ("ap.security.draft.receipt", "ap.security.vendor.guard",
+                      "ap.security.po.guard", "ap.security.approval.nonce")
         for operation in ("read", "write", "create", "unlink")), "EXECUTOR_IDENTITY_INVALID")
 
 

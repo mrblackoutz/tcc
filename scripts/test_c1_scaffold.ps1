@@ -1,8 +1,8 @@
-param([switch]$WithHttpAcl, [switch]$WithDraftKernel, [switch]$WithApproval, [switch]$WithPostKernel, [switch]$WithAudit)
+param([switch]$WithHttpAcl, [switch]$WithDraftKernel, [switch]$WithApproval, [switch]$WithPostKernel, [switch]$WithAudit, [switch]$WithBypass, [switch]$WithTransactions)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-if (@($WithHttpAcl, $WithDraftKernel, $WithApproval, $WithPostKernel, $WithAudit).Where({ [bool]$_ }).Count -gt 1) {
+if (@($WithHttpAcl, $WithDraftKernel, $WithApproval, $WithPostKernel, $WithAudit, $WithBypass, $WithTransactions).Where({ [bool]$_ }).Count -gt 1) {
     throw 'Select one explicit probe mode'
 }
 
@@ -11,10 +11,10 @@ if (@($WithHttpAcl, $WithDraftKernel, $WithApproval, $WithPostKernel, $WithAudit
 # HTTP mode generates only expiring in-memory synthetic test keys.
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
-$probeTask = if ($WithAudit) { 'C1-09' } elseif ($WithPostKernel) { 'C1-08' } elseif ($WithApproval) { 'C1-07' } elseif ($WithDraftKernel) { 'C1-06' } elseif ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
+$probeTask = if ($WithTransactions) { 'C1-11' } elseif ($WithBypass) { 'C1-10' } elseif ($WithAudit) { 'C1-09' } elseif ($WithPostKernel) { 'C1-08' } elseif ($WithApproval) { 'C1-07' } elseif ($WithDraftKernel) { 'C1-06' } elseif ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
 $probeDirectory = $probeTask.ToLowerInvariant()
-$probePrefix = if ($WithAudit) { 'tcc-c109' } elseif ($WithPostKernel) { 'tcc-c108' } elseif ($WithApproval) { 'tcc-c107' } elseif ($WithDraftKernel) { 'tcc-c106' } elseif ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
-$ownerLabel = if ($WithAudit) { 'tcc.c109.run' } elseif ($WithPostKernel) { 'tcc.c108.run' } elseif ($WithApproval) { 'tcc.c107.run' } elseif ($WithDraftKernel) { 'tcc.c106.run' } elseif ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
+$probePrefix = if ($WithTransactions) { 'tcc-c111' } elseif ($WithBypass) { 'tcc-c110' } elseif ($WithAudit) { 'tcc-c109' } elseif ($WithPostKernel) { 'tcc-c108' } elseif ($WithApproval) { 'tcc-c107' } elseif ($WithDraftKernel) { 'tcc-c106' } elseif ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
+$ownerLabel = if ($WithTransactions) { 'tcc.c111.run' } elseif ($WithBypass) { 'tcc.c110.run' } elseif ($WithAudit) { 'tcc.c109.run' } elseif ($WithPostKernel) { 'tcc.c108.run' } elseif ($WithApproval) { 'tcc.c107.run' } elseif ($WithDraftKernel) { 'tcc.c106.run' } elseif ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
 $networkName = $probePrefix + '-' + $runId
 $postgresName = $networkName + '-db'
 $odooName = $networkName + '-odoo'
@@ -191,12 +191,12 @@ try {
     }
     if (-not $ready) { throw 'Isolated PostgreSQL did not become ready' }
 
-    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment'
+    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http'
     $testArguments = @('--no-http')
     $httpDockerArguments = @()
     $httpEvidenceRoot = $null
-    if ($WithHttpAcl) {
-        $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment'
+    if ($WithHttpAcl -or $WithBypass) {
+        $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http'
         $testArguments = @('--http-interface', '127.0.0.1')
         $httpEvidenceRoot = Join-Path $probeRoot 'http-evidence'
         $null = New-Item -ItemType Directory -Path $httpEvidenceRoot
@@ -205,29 +205,66 @@ try {
             '--env', 'TCC_C1_PROBE_EVIDENCE_DIR=/mnt/c1-evidence'
         )
     }
-    if ($WithDraftKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment' }
-    if ($WithApproval) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_post_kernel,-c1_audit,-c1_attachment' }
-    if ($WithPostKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_audit,-c1_attachment' }
-    if ($WithAudit) { $testTags = '/ap_security_executor,-c1_acl_http' }
+    if ($WithDraftKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http' }
+    if ($WithApproval) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http' }
+    if ($WithPostKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_audit,-c1_attachment,-c1_bypass_http' }
+    if ($WithAudit) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_bypass_http' }
+    if ($WithBypass) { $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment' }
+    if ($WithTransactions) {
+        $httpEvidenceRoot = Join-Path $probeRoot 'transaction-evidence'
+        $null = New-Item -ItemType Directory -Path $httpEvidenceRoot
+        $transactionProbePath = Join-Path $repositoryRoot 'odoo/probes/c111_transactions.py'
+        $transactionProbeHash = (Get-FileHash -LiteralPath $transactionProbePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $transactionSnapshot = Join-Path $probeRoot 'probe-snapshot'
+        $null = New-Item -ItemType Directory -Path $transactionSnapshot
+        $transactionSnapshotPath = Join-Path $transactionSnapshot 'c111_transactions.py'
+        Copy-Item -LiteralPath $transactionProbePath -Destination $transactionSnapshotPath
+        if ((Get-FileHash -LiteralPath $transactionSnapshotPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $transactionProbeHash) {
+            throw 'Transaction probe source changed during snapshot'
+        }
+    }
     Write-Host ($probeTask + ': installing and testing the add-on in a fresh disposable Odoo database.')
     $odooStarted = $true
-    $dockerArguments = @(
+    $dockerBaseArguments = @(
         'run', '--pull', 'never', '--name', $odooName, '--label', ($ownerLabel + '=' + $runId),
         '--network', $networkName, '--read-only', '--security-opt', 'no-new-privileges:true', '--cap-drop', 'ALL',
         '--tmpfs', '/tmp:mode=1777', '--tmpfs', '/var/lib/odoo:uid=10001,gid=10001,mode=0750',
         '--mount', ('type=bind,source=' + $addonSnapshot + ',target=/mnt/extra-addons/ap_security_executor,readonly'),
         '--mount', ('type=bind,source=' + $odooConfiguration + ',target=/etc/odoo/c104.conf,readonly')
-    ) + $httpDockerArguments + @(
+    )
+    $odooInitializationArguments = @(
         $loadedImageId, 'python', '/opt/odoo/odoo-bin', '-c', '/etc/odoo/c104.conf', '-d', $databaseName,
-        '-i', 'ap_security_executor', '--without-demo=True', '--test-enable', '--test-tags', $testTags,
+        '-i', 'ap_security_executor', '--without-demo=True',
         '--stop-after-init'
     ) + $testArguments
+    if (-not $WithTransactions) { $odooInitializationArguments += @('--test-enable', '--test-tags', $testTags) }
+    $dockerArguments = $dockerBaseArguments + $httpDockerArguments + $odooInitializationArguments
     $odooOutput = Invoke-ProbeDocker -Arguments $dockerArguments -LogName 'odoo-tests.log'
-    $testSummaryMatches = [regex]::Matches(($odooOutput -join "`n"), '(\d+) failed, (\d+) error\(s\) of (\d+) tests')
-    if ($testSummaryMatches.Count -eq 0) { throw 'No Odoo test summary; installation alone is not a passing test' }
-    $summary = $testSummaryMatches[$testSummaryMatches.Count - 1]
-    if ($summary.Groups[1].Value -ne '0' -or $summary.Groups[2].Value -ne '0' -or [int]$summary.Groups[3].Value -le 0) {
-        throw 'Odoo scaffold tests did not all pass'
+    $odooTestCount = 0
+    if (-not $WithTransactions) {
+        $testSummaryMatches = [regex]::Matches(($odooOutput -join "`n"), '(\d+) failed, (\d+) error\(s\) of (\d+) tests')
+        if ($testSummaryMatches.Count -eq 0) { throw 'No Odoo test summary; installation alone is not a passing test' }
+        $summary = $testSummaryMatches[$testSummaryMatches.Count - 1]
+        if ($summary.Groups[1].Value -ne '0' -or $summary.Groups[2].Value -ne '0' -or [int]$summary.Groups[3].Value -le 0) {
+            throw 'Odoo scaffold tests did not all pass'
+        }
+        $odooTestCount = [int]$summary.Groups[3].Value
+    }
+    else {
+        # Installation is not a test. Use a new ordinary Python process,
+        # with no Odoo test mode or shared TransactionCase cursor.
+        Remove-OwnedContainer -Name $odooName
+        $transactionArguments = $dockerBaseArguments + @(
+            '--mount', ('type=bind,source=' + $transactionSnapshot + ',target=/mnt/c1-probe,readonly'),
+            '--mount', ('type=bind,source=' + $httpEvidenceRoot + ',target=/mnt/c1-evidence'),
+            $loadedImageId, 'python', '/mnt/c1-probe/c111_transactions.py',
+            '--config', '/etc/odoo/c104.conf', '--database', $databaseName,
+            '--evidence', '/mnt/c1-evidence/c111-transactions.json'
+        )
+        $null = Invoke-ProbeDocker -Arguments $transactionArguments -LogName 'transaction-tests.log'
+        if ((Get-FileHash -LiteralPath $transactionProbePath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $transactionProbeHash) {
+            throw 'Transaction probe source tree changed during execution'
+        }
     }
     Assert-SameAddonHashes -Before $sourceHashes -After (Get-AddonHashes)
     $result = [ordered]@{
@@ -236,7 +273,7 @@ try {
         odoo_config_digest = $environmentLock.components.odoo.localConfigDigest
         odoo_manifest_digest = $environmentLock.components.odoo.imageDigest
         loaded_image_id = $loadedImageId; loaded_image_id_kind = $loadedImageIdKind
-        postgres_image = $postgresImage; odoo_test_count = [int]$summary.Groups[3].Value
+        postgres_image = $postgresImage; odoo_test_count = $odooTestCount
         addon_tree_sha256 = $sourceHashes; source_tree_unchanged = $true
         isolated_database = $true; existing_lab_touched = $false; financial_effects_enabled = $false
     }
@@ -253,6 +290,89 @@ try {
         $result['http_request_count'] = [int]$httpProof.http_request_count
         $result['http_test_count'] = [int]$httpProof.http_test_count
         $result['http_evidence_sha256'] = (Get-FileHash -LiteralPath $httpEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    }
+    if ($WithBypass) {
+        $httpEvidencePath = Join-Path $httpEvidenceRoot 'c110-http.json'
+        if (-not (Test-Path -LiteralPath $httpEvidencePath -PathType Leaf)) { throw 'Bypass HTTP evidence missing' }
+        $httpProof = Get-Content -Raw -Encoding UTF8 -LiteralPath $httpEvidencePath | ConvertFrom-Json
+        $bypassMatches = [regex]::Matches(($odooOutput -join "`n"), 'Starting TestExecutorBypassHttp\.(test_[a-z0-9_]+)')
+        $bypassNames = @($bypassMatches | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+        if ($httpProof.schema_version -ne 'c110-http-evidence/v1' -or $httpProof.status -ne 'PASS' -or
+            $httpProof.http_request_count -le 0 -or $httpProof.http_test_count -le 0 -or
+            $bypassNames.Count -ne [int]$httpProof.http_test_count) {
+            throw 'Bypass HTTP cases did not actually execute or produce passing evidence'
+        }
+        $checks = @($httpProof.critical_state_checks)
+        $checkedNames = @($checks | ForEach-Object { $_.case } | Sort-Object -Unique)
+        if ($checks.Count -ne [int]$httpProof.http_test_count -or $checkedNames.Count -ne $checks.Count -or
+            ($checkedNames -join '|') -cne ($bypassNames -join '|') -or
+            $httpProof.public_financial_effects_enabled -ne $false -or $httpProof.integrated_executor_tested -ne $false) {
+            throw 'Bypass state checks incomplete or scope mismatch'
+        }
+        foreach ($check in $checks) {
+            if ($check.before_sha256 -notmatch '^sha256:[0-9a-f]{64}$' -or $check.before_sha256 -cne $check.after_sha256) {
+                throw 'Bypass critical-state mutation or invalid projection'
+            }
+        }
+        $result.schema_version = 'c110-probe-evidence/v1'
+        $result.scope = 'native-json2-bypass-closed-public-executor-only'
+        $result['http_request_count'] = [int]$httpProof.http_request_count
+        $result['http_test_count'] = [int]$httpProof.http_test_count
+        $result['http_evidence_sha256'] = (Get-FileHash -LiteralPath $httpEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $result['public_financial_effects_enabled'] = $false
+        $result['integrated_executor_tested'] = $false
+        $result['financial_effects_scope'] = 'public-executor-only'
+        $result['private_effects_scope'] = 'administrative-synthetic-fixture-seeding-only'
+    }
+    if ($WithTransactions) {
+        $transactionEvidencePath = Join-Path $httpEvidenceRoot 'c111-transactions.json'
+        if (-not (Test-Path -LiteralPath $transactionEvidencePath -PathType Leaf)) { throw 'Transaction evidence missing' }
+        $transactionProof = Get-Content -Raw -Encoding UTF8 -LiteralPath $transactionEvidencePath | ConvertFrom-Json
+        $cases = @($transactionProof.cases)
+        $caseNames = @($cases | ForEach-Object { $_.case } | Sort-Object -Unique)
+        $expectedCaseNames = @(
+            'create_commit_replay', 'create_outer_rollback', 'create_outer_savepoint_rollback',
+            'post_outer_rollback', 'post_outer_savepoint_rollback',
+            'create_fault_after_move', 'create_fault_after_attachment', 'create_fault_after_audit',
+            'post_fault_after_native_post', 'post_fault_after_nonce_consumption', 'post_fault_after_audit',
+            'post_commit_native_rank_replay', 'altered_command_after_approval',
+            'stored_beneficiary_drift_after_approval', 'create_idempotency_changed_body',
+            'post_idempotency_changed_body', 'duplicate_reference_distinct_document',
+            'concurrent_create_identical_command', 'concurrent_post_identical_command',
+            'concurrent_distinct_documents_remaining_quantity', 'concurrent_global_nonce_primitive',
+            'concurrent_cross_po_same_vendor_reference'
+        ) | Sort-Object
+        if ($transactionProof.schema_version -ne 'c111-transactions-evidence/v1' -or $transactionProof.status -ne 'PASS' -or
+            $transactionProof.test_count -ne 22 -or $transactionProof.case_count -ne 22 -or
+            $transactionProof.passed_case_count -ne 22 -or $cases.Count -ne 22 -or
+            ($caseNames -join '|') -cne ($expectedCaseNames -join '|') -or
+            $caseNames.Count -ne $cases.Count -or $transactionProof.registry_test_mode -ne $false -or
+            $transactionProof.normal_registry -ne $true -or $transactionProof.test_cursor_used -ne $false -or
+            $transactionProof.mocked_sql_commit -ne $false -or $transactionProof.native_postcommit_executed -ne $true -or
+            $transactionProof.observed_blocking_pair_count -ne 5 -or
+            $transactionProof.independent_connection_pair_count -ne 5 -or $transactionProof.concurrent_retry_count -lt 5 -or
+            $transactionProof.public_financial_effects_enabled -ne $false -or
+            $transactionProof.independent_cursor_concurrency_tested -ne $true -or
+            $transactionProof.backend_independence_verified -ne $true -or
+            $transactionProof.blocking_overlap_verified -ne $true -or
+            $transactionProof.native_supplier_rank_commit_lifecycle_tested -ne $true) {
+            throw 'Real transaction/concurrency/lifecycle evidence incomplete'
+        }
+        foreach ($case in $cases) {
+            if ($case.status -ne 'PASS' -or $case.case_id -cne $case.case) { throw 'Transaction case failed or identity mismatch' }
+        }
+        $result.schema_version = 'c111-probe-evidence/v1'
+        $result.scope = 'private-audited-independent-transactions-and-commit-lifecycle-only'
+        $result['transaction_test_count'] = [int]$transactionProof.test_count
+        $result['transaction_evidence_sha256'] = (Get-FileHash -LiteralPath $transactionEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $result['transaction_probe_source_sha256'] = $transactionProbeHash
+        $result['public_financial_effects_enabled'] = $false
+        $result['financial_effects_scope'] = 'public-executor-only'
+        $result['private_effects_scope'] = 'disposable-synthetic-fixtures-only'
+        $result['private_synthetic_draft_post_audited'] = $true
+        $result['registry_test_mode'] = $false
+        $result['independent_cursor_concurrency_tested'] = $true
+        $result['native_supplier_rank_commit_lifecycle_tested'] = $true
     }
     if ($WithDraftKernel) {
         $result.schema_version = 'c106-probe-evidence/v1'
@@ -342,7 +462,9 @@ if ($null -ne $result) {
     $result.status = 'PASS'
     $result['cleanup_verified'] = $true
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
-    Write-Host ($probeTask + ' isolated Odoo probe: PASS (' + $result.odoo_test_count + ' tests).')
+    $passedTests = if ($WithTransactions) { $result.transaction_test_count } else { $result.odoo_test_count }
+    $testKind = if ($WithTransactions) { 'independent transaction cases' } else { 'Odoo tests' }
+    Write-Host ($probeTask + ' isolated Odoo probe: PASS (' + $passedTests + ' ' + $testKind + ').')
     Write-Host 'Only this probe network, containers, database and filestore were discarded; existing lab preserved.'
     Write-Host ('Ignored local evidence: .runtime/' + $probeDirectory + '/' + $runId + '/evidence.json')
 }

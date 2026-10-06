@@ -19,4 +19,13 @@
         <field name="perm_create" eval="True"/>
         <field name="perm_unlink" eval="False"/>
     </record>
+    <record id="access_vendor_guard_system" model="ir.model.access">
+        <field name="name">TCC internal supplier guard: system read write and create only</field>
+        <field name="model_id" ref="model_ap_security_vendor_guard"/>
+        <field name="group_id" ref="base.group_system"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
 </odoo>

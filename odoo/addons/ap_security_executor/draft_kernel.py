@@ -65,6 +65,21 @@ def _lock(records):
 def _guard(env, workflow):
     # Updating a dedicated row, not merely locking, forces conflicting
     # REPEATABLE READ snapshots to restart rather than reuse old quantities.
+    # Supplier/company precedes PO for both CREATE and POST. Distinct POs
+    # with the same supplier/reference must conflict on a shared write too;
+    # locking a supplier master row alone leaves old snapshots unchanged.
+    env["ap.security.vendor.guard"].flush_model()
+    env.cr.execute("""
+        INSERT INTO ap_security_vendor_guard
+            (company_id, vendor_id, revision, create_uid, write_uid, create_date, write_date)
+        VALUES (%s, %s, 1, %s, %s, timezone('UTC', now()), timezone('UTC', now()))
+        ON CONFLICT (company_id, vendor_id) DO UPDATE
+            SET revision = ap_security_vendor_guard.revision + 1,
+                write_uid = EXCLUDED.write_uid, write_date = EXCLUDED.write_date
+        RETURNING id
+    """, (workflow.company_id, workflow.vendor_id, env.uid, env.uid))
+    _require(bool(env.cr.fetchone()), "WORKFLOW_MISMATCH")
+    env["ap.security.vendor.guard"].invalidate_model()
     env["ap.security.po.guard"].flush_model()
     env.cr.execute("""
         INSERT INTO ap_security_po_guard
@@ -85,7 +100,8 @@ def _reject_service_defaults(env):
     # financial defaults may be consumed implicitly, including conditional ones.
     _require(not env["ir.default"].search_count([
         ("field_id.model", "in", ["account.move", "account.move.line",
-                                  "ap.security.draft.receipt", "ap.security.po.guard"]),
+                                  "ap.security.draft.receipt", "ap.security.po.guard",
+                                  "ap.security.vendor.guard"]),
         ("user_id", "in", [False, SUPERUSER_ID]),
         ("company_id", "in", [False, env.company.id]),
     ], limit=1), "UNTRUSTED_FINANCIAL_DEFAULTS")
@@ -349,7 +365,8 @@ def create_draft_atomic(env, *, command, workflow):
             raise _Denied("EXECUTOR_IDENTITY_INVALID") from None
         neutral = api.Environment(admin.cr, user.id, _context(company.id), su=False)
         _require(not any(neutral[model].browse().has_access(operation)
-            for model in ("ap.security.draft.receipt", "ap.security.po.guard")
+            for model in ("ap.security.draft.receipt", "ap.security.po.guard",
+                          "ap.security.vendor.guard")
             for operation in ("read", "write", "create", "unlink")), "EXECUTOR_IDENTITY_INVALID")
         private = api.Environment(admin.cr, SUPERUSER_ID, _context(company.id), su=True)
         with localcontext(Context(prec=32, rounding=ROUND_HALF_EVEN)):

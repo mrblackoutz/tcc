@@ -29,9 +29,8 @@ _USER_ERROR = "odoo.exceptions.UserError"
 _UNAUTHORIZED = "werkzeug.exceptions.Unauthorized"
 
 
-@tagged("post_install", "-at_install", "c1_acl_http")
-class TestExecutorIdentityHttp(HttpCase):
-    """No mocked credentials, session authentication, or privileged request."""
+class ExecutorHttpFixtureMixin:
+    """Shared fixtures/transport only; no test methods or suite tags."""
 
     @classmethod
     def setUpClass(cls):
@@ -163,37 +162,41 @@ class TestExecutorIdentityHttp(HttpCase):
     @classmethod
     def tearDownClass(cls):
         try:
-            evidence_dir = os.environ.get("TCC_C1_PROBE_EVIDENCE_DIR")
-            if evidence_dir and hasattr(cls, "http_observations"):
-                directory = Path(evidence_dir).resolve()
-                if directory != Path("/mnt/c1-evidence"):
-                    raise AssertionError("Unexpected HTTP evidence destination.")
-                expected_tests = {
-                    name for name in cls.__dict__ if name.startswith("test_http_")
-                }
-                checked_tests = {item["case"] for item in cls.state_observations}
-                evidence = {
-                    "schema_version": "c105-http-evidence/v1",
-                    "status": "PASS" if checked_tests == expected_tests else "FAIL",
-                    "scope": "native-httpcase-bearer-and-acl-test-cursor",
-                    "http_request_count": len(cls.http_observations),
-                    "http_case_count": len({item["case"] for item in cls.http_observations}),
-                    "http_test_count": len(checked_tests),
-                    "requests": cls.http_observations,
-                    "critical_state_checks": cls.state_observations,
-                    "identity_inventory": cls.inventory,
-                    "credentials_persisted_outside_database": False,
-                    "financial_execution_enabled": False,
-                }
-                (directory / "c105-http.json").write_text(
-                    json.dumps(evidence, sort_keys=True, indent=2) + "\n", encoding="utf-8",
-                )
+            cls._write_http_evidence()
             if hasattr(cls, "http_observations"):
-                _logger.info("C1-05 HTTP probe observed %s real requests", len(cls.http_observations))
+                _logger.info("C1 HTTP probe observed %s real requests", len(cls.http_observations))
         finally:
             cls.executor_key = None
             cls.wrong_key = None
             super().tearDownClass()
+
+    @classmethod
+    def _write_http_evidence(cls):
+        evidence_dir = os.environ.get("TCC_C1_PROBE_EVIDENCE_DIR")
+        if evidence_dir and hasattr(cls, "http_observations"):
+            directory = Path(evidence_dir).resolve()
+            if directory != Path("/mnt/c1-evidence"):
+                raise AssertionError("Unexpected HTTP evidence destination.")
+            expected_tests = {
+                name for name in cls.__dict__ if name.startswith("test_http_")
+            }
+            checked_tests = {item["case"] for item in cls.state_observations}
+            evidence = {
+                "schema_version": "c105-http-evidence/v1",
+                "status": "PASS" if checked_tests == expected_tests else "FAIL",
+                "scope": "native-httpcase-bearer-and-acl-test-cursor",
+                "http_request_count": len(cls.http_observations),
+                "http_case_count": len({item["case"] for item in cls.http_observations}),
+                "http_test_count": len(checked_tests),
+                "requests": cls.http_observations,
+                "critical_state_checks": cls.state_observations,
+                "identity_inventory": cls.inventory,
+                "credentials_persisted_outside_database": False,
+                "financial_execution_enabled": False,
+            }
+            (directory / "c105-http.json").write_text(
+                json.dumps(evidence, sort_keys=True, indent=2) + "\n", encoding="utf-8",
+            )
 
     def _command_for_fixture(self, *, post=False):
         command = _command(post=post)
@@ -309,6 +312,11 @@ class TestExecutorIdentityHttp(HttpCase):
         }
         if status != 200 or body != expected:
             raise AssertionError("HTTP executor did not return the exact closed preflight result.")
+
+
+@tagged("post_install", "-at_install", "c1_acl_http")
+class TestExecutorIdentityHttp(ExecutorHttpFixtureMixin, HttpCase):
+    """Original fifteen identity probes, without inherited extra test cases."""
 
     def test_http_valid_create_and_post_are_closed(self):
         before = self._critical_hash()
