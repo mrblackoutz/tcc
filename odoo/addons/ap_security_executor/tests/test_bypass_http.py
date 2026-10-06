@@ -19,12 +19,13 @@ import secrets
 from odoo import Command
 from odoo.tests import HttpCase, tagged
 
-from .. import audit_kernel
+from .. import audit_kernel, workflow_registry
 from ..approval import ApprovalAuthority, ApprovalKey
 from ..audit_contracts import TrustedAuditContext
 from ..document_contracts import SourceDocument
 from ..draft_contracts import TrustedDraftWorkflow, bill_idempotency_key
 from ..post_contracts import TrustedPostWorkflow
+from ..workflow_contracts import WorkflowProvenance
 from .test_audit_kernel import _synthetic_pdf
 from .test_executor import _action_hash, _command
 from .test_identity_http import (
@@ -35,6 +36,11 @@ from .test_post_kernel import TestPostKernel
 
 _NOT_FOUND = "werkzeug.exceptions.NotFound"
 _LEDGER_FIELDS = {
+    "ap.security.workflow.registration": [
+        "id", "company_id", "executor_user_id", "registrar_user_id", "po_id", "vendor_id",
+        "journal_id", "expense_account_id", "scenario_id", "document_sha256", "schema_version",
+        "registration_sha256", "registration_payload", "create_uid", "write_uid",
+    ],
     "ap.security.draft.receipt": [
         "id", "company_id", "executor_mode", "idempotency_key", "command_sha256",
         "action_sha256", "document_sha256", "po_id", "vendor_id", "purchase_line_ids",
@@ -116,6 +122,13 @@ class TestExecutorBypassHttp(ExecutorHttpFixtureMixin, HttpCase):
             code_commit="a" * 40, code_sha256="sha256:" + "b" * 64,
             configuration_sha256="sha256:" + "c" * 64,
         )
+        workflow_registry.register_draft_workflow(
+            cls.env, workflow=cls.draft_workflow, document=cls.source_document,
+            provenance=WorkflowProvenance(
+                code_commit=audit.code_commit, code_sha256=audit.code_sha256,
+                configuration_sha256=audit.configuration_sha256,
+            ),
+        )
         created = audit_kernel.create_draft_audited(
             cls.env, command=command, workflow=cls.draft_workflow,
             audit=audit, document=cls.source_document,
@@ -171,6 +184,7 @@ class TestExecutorBypassHttp(ExecutorHttpFixtureMixin, HttpCase):
             or not cls.trusted_default or not cls.storage_parameter
             or any(not target for target in cls.ledger_targets.values())
             or cls.ledger_targets["ap.security.approval.nonce"].state != "consumed"
+            or len(cls.ledger_targets["ap.security.workflow.registration"]) != 1
             or len(cls.ledger_targets["ap.security.vendor.guard"]) != 1
             or cls.ledger_targets["ap.security.vendor.guard"].vendor_id != cls.vendor
             or cls.ledger_targets["ap.security.vendor.guard"].revision < 2
@@ -349,6 +363,7 @@ class TestExecutorBypassHttp(ExecutorHttpFixtureMixin, HttpCase):
     def test_http_receipt_and_po_guard_crud_and_read_are_denied(self):
         before = self._critical_hash()
         for model, changes in (
+            ("ap.security.workflow.registration", {"scenario_id": "TCC-C110-DRIFT"}),
             ("ap.security.draft.receipt", {"command_sha256": "sha256:" + "e" * 64}),
             ("ap.security.po.guard", {"revision": 999}),
             ("ap.security.vendor.guard", {"revision": 999}),

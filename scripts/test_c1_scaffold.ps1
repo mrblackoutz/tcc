@@ -1,8 +1,8 @@
-param([switch]$WithHttpAcl, [switch]$WithDraftKernel, [switch]$WithApproval, [switch]$WithPostKernel, [switch]$WithAudit, [switch]$WithBypass, [switch]$WithTransactions)
+param([switch]$WithHttpAcl, [switch]$WithDraftKernel, [switch]$WithApproval, [switch]$WithPostKernel, [switch]$WithAudit, [switch]$WithBypass, [switch]$WithTransactions, [switch]$WithWorkflow)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-if (@($WithHttpAcl, $WithDraftKernel, $WithApproval, $WithPostKernel, $WithAudit, $WithBypass, $WithTransactions).Where({ [bool]$_ }).Count -gt 1) {
+if (@($WithHttpAcl, $WithDraftKernel, $WithApproval, $WithPostKernel, $WithAudit, $WithBypass, $WithTransactions, $WithWorkflow).Where({ [bool]$_ }).Count -gt 1) {
     throw 'Select one explicit probe mode'
 }
 
@@ -11,10 +11,10 @@ if (@($WithHttpAcl, $WithDraftKernel, $WithApproval, $WithPostKernel, $WithAudit
 # HTTP mode generates only expiring in-memory synthetic test keys.
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
-$probeTask = if ($WithTransactions) { 'C1-11' } elseif ($WithBypass) { 'C1-10' } elseif ($WithAudit) { 'C1-09' } elseif ($WithPostKernel) { 'C1-08' } elseif ($WithApproval) { 'C1-07' } elseif ($WithDraftKernel) { 'C1-06' } elseif ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
+$probeTask = if ($WithWorkflow) { 'RUN-02-workflow' } elseif ($WithTransactions) { 'C1-11' } elseif ($WithBypass) { 'C1-10' } elseif ($WithAudit) { 'C1-09' } elseif ($WithPostKernel) { 'C1-08' } elseif ($WithApproval) { 'C1-07' } elseif ($WithDraftKernel) { 'C1-06' } elseif ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
 $probeDirectory = $probeTask.ToLowerInvariant()
-$probePrefix = if ($WithTransactions) { 'tcc-c111' } elseif ($WithBypass) { 'tcc-c110' } elseif ($WithAudit) { 'tcc-c109' } elseif ($WithPostKernel) { 'tcc-c108' } elseif ($WithApproval) { 'tcc-c107' } elseif ($WithDraftKernel) { 'tcc-c106' } elseif ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
-$ownerLabel = if ($WithTransactions) { 'tcc.c111.run' } elseif ($WithBypass) { 'tcc.c110.run' } elseif ($WithAudit) { 'tcc.c109.run' } elseif ($WithPostKernel) { 'tcc.c108.run' } elseif ($WithApproval) { 'tcc.c107.run' } elseif ($WithDraftKernel) { 'tcc.c106.run' } elseif ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
+$probePrefix = if ($WithWorkflow) { 'tcc-workflow' } elseif ($WithTransactions) { 'tcc-c111' } elseif ($WithBypass) { 'tcc-c110' } elseif ($WithAudit) { 'tcc-c109' } elseif ($WithPostKernel) { 'tcc-c108' } elseif ($WithApproval) { 'tcc-c107' } elseif ($WithDraftKernel) { 'tcc-c106' } elseif ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
+$ownerLabel = if ($WithWorkflow) { 'tcc.workflow.run' } elseif ($WithTransactions) { 'tcc.c111.run' } elseif ($WithBypass) { 'tcc.c110.run' } elseif ($WithAudit) { 'tcc.c109.run' } elseif ($WithPostKernel) { 'tcc.c108.run' } elseif ($WithApproval) { 'tcc.c107.run' } elseif ($WithDraftKernel) { 'tcc.c106.run' } elseif ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
 $networkName = $probePrefix + '-' + $runId
 $postgresName = $networkName + '-db'
 $odooName = $networkName + '-odoo'
@@ -191,12 +191,12 @@ try {
     }
     if (-not $ready) { throw 'Isolated PostgreSQL did not become ready' }
 
-    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http'
+    $testTags = '/ap_security_executor,-c1_identity,-c1_acl_http,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http,-c1_workflow'
     $testArguments = @('--no-http')
     $httpDockerArguments = @()
     $httpEvidenceRoot = $null
     if ($WithHttpAcl -or $WithBypass) {
-        $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http'
+        $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http,-c1_workflow'
         $testArguments = @('--http-interface', '127.0.0.1')
         $httpEvidenceRoot = Join-Path $probeRoot 'http-evidence'
         $null = New-Item -ItemType Directory -Path $httpEvidenceRoot
@@ -205,11 +205,28 @@ try {
             '--env', 'TCC_C1_PROBE_EVIDENCE_DIR=/mnt/c1-evidence'
         )
     }
-    if ($WithDraftKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http' }
-    if ($WithApproval) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http' }
-    if ($WithPostKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_audit,-c1_attachment,-c1_bypass_http' }
-    if ($WithAudit) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_bypass_http' }
-    if ($WithBypass) { $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment' }
+    if ($WithDraftKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http,-c1_workflow' }
+    if ($WithApproval) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_bypass_http,-c1_workflow' }
+    if ($WithPostKernel) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_audit,-c1_attachment,-c1_bypass_http,-c1_workflow' }
+    if ($WithAudit) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_bypass_http,-c1_workflow' }
+    if ($WithBypass) { $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_workflow' }
+    if ($WithWorkflow) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_bypass_http' }
+    if ($WithWorkflow) {
+        $workflowEvidenceRoot = Join-Path $probeRoot 'workflow-evidence'
+        $workflowSnapshot = Join-Path $probeRoot 'probe-snapshot'
+        $null = New-Item -ItemType Directory -Path $workflowEvidenceRoot, $workflowSnapshot
+        $workflowProbeHashes = @{}
+        foreach ($workflowSource in @('odoo/probes/c111_transactions.py', 'odoo/probes/workflow_transactions.py')) {
+            $workflowSourcePath = Join-Path $repositoryRoot $workflowSource
+            $workflowHash = (Get-FileHash -LiteralPath $workflowSourcePath -Algorithm SHA256).Hash.ToLowerInvariant()
+            $workflowProbeHashes[$workflowSource] = $workflowHash
+            $workflowCopy = Join-Path $workflowSnapshot ([System.IO.Path]::GetFileName($workflowSource))
+            Copy-Item -LiteralPath $workflowSourcePath -Destination $workflowCopy
+            if ((Get-FileHash -LiteralPath $workflowCopy -Algorithm SHA256).Hash.ToLowerInvariant() -cne $workflowHash) {
+                throw 'Workflow probe source changed during snapshot'
+            }
+        }
+    }
     if ($WithTransactions) {
         $httpEvidenceRoot = Join-Path $probeRoot 'transaction-evidence'
         $null = New-Item -ItemType Directory -Path $httpEvidenceRoot
@@ -264,6 +281,24 @@ try {
         $null = Invoke-ProbeDocker -Arguments $transactionArguments -LogName 'transaction-tests.log'
         if ((Get-FileHash -LiteralPath $transactionProbePath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $transactionProbeHash) {
             throw 'Transaction probe source tree changed during execution'
+        }
+    }
+    if ($WithWorkflow) {
+        # Keep ORM tests and real lifecycle evidence separate. A fresh normal
+        # registry/process proves external commit/rollback, never TestCursor.
+        Remove-OwnedContainer -Name $odooName
+        $workflowArguments = $dockerBaseArguments + @(
+            '--mount', ('type=bind,source=' + $workflowSnapshot + ',target=/mnt/c1-probe,readonly'),
+            '--mount', ('type=bind,source=' + $workflowEvidenceRoot + ',target=/mnt/c1-evidence'),
+            $loadedImageId, 'python', '/mnt/c1-probe/workflow_transactions.py',
+            '--config', '/etc/odoo/c104.conf', '--database', $databaseName,
+            '--evidence', '/mnt/c1-evidence/workflow-transactions.json'
+        )
+        $null = Invoke-ProbeDocker -Arguments $workflowArguments -LogName 'workflow-transactions.log'
+        foreach ($workflowSource in $workflowProbeHashes.Keys) {
+            if ((Get-FileHash -LiteralPath (Join-Path $repositoryRoot $workflowSource) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $workflowProbeHashes[$workflowSource]) {
+                throw 'Workflow probe source tree changed during execution'
+            }
         }
     }
     Assert-SameAddonHashes -Before $sourceHashes -After (Get-AddonHashes)
@@ -373,6 +408,44 @@ try {
         $result['registry_test_mode'] = $false
         $result['independent_cursor_concurrency_tested'] = $true
         $result['native_supplier_rank_commit_lifecycle_tested'] = $true
+    }
+    if ($WithWorkflow) {
+        $workflowNames = @([regex]::Matches(($odooOutput -join "`n"), 'Starting TestWorkflowRegistration\.(test_[a-z0-9_]+)') |
+            ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+        $workflowTestSource = Join-Path $addonSnapshot 'tests/test_workflow_registry.py'
+        $expectedWorkflowNames = @([regex]::Matches((Get-Content -Raw -LiteralPath $workflowTestSource -Encoding UTF8), '(?m)^    def (test_[a-z0-9_]+)\(') |
+            ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+        if ($workflowNames.Count -eq 0 -or ($workflowNames -join '|') -cne ($expectedWorkflowNames -join '|')) {
+            throw 'Workflow ORM cases did not all actually execute'
+        }
+        $workflowEvidencePath = Join-Path $workflowEvidenceRoot 'workflow-transactions.json'
+        $workflowProof = Get-Content -LiteralPath $workflowEvidencePath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $expectedWorkflowNativeCases = @('register_commit_and_fresh_cursor_resolve', 'registration_outer_rollback',
+            'registration_savepoint_rollback_then_commit', 'fault_after_actual_insert', 'conflicting_replay_no_rebinding') | Sort-Object
+        $workflowCases = @($workflowProof.cases)
+        $workflowCaseNames = @($workflowCases | ForEach-Object { $_.case } | Sort-Object -Unique)
+        if ($workflowProof.schema_version -ne 'workflow-transactions-evidence/v1' -or $workflowProof.status -ne 'PASS' -or
+            $workflowCases.Count -ne 5 -or $workflowProof.test_count -ne 5 -or
+            ($workflowCaseNames -join '|') -cne ($expectedWorkflowNativeCases -join '|') -or
+            $workflowProof.normal_registry -ne $true -or $workflowProof.test_cursor_used -ne $false -or
+            $workflowProof.mocked_sql_commit -ne $false -or $workflowProof.public_financial_effects_enabled -ne $false) {
+            throw 'Workflow real transaction proof incomplete or scope mismatch'
+        }
+        foreach ($workflowCase in $workflowCases) {
+            if ($workflowCase.status -ne 'PASS') { throw 'Workflow transaction case failed' }
+        }
+        $result.schema_version = 'workflow-registration-probe-evidence/v1'
+        $result.scope = 'private-draft-workflow-registration-only'
+        $result['workflow_test_count'] = $workflowNames.Count
+        $result['workflow_transaction_test_count'] = [int]$workflowProof.test_count
+        $result['workflow_transaction_evidence_sha256'] = (Get-FileHash -LiteralPath $workflowEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $result['workflow_probe_source_sha256'] = $workflowProbeHashes
+        $result['registration_normal_registry_lifecycle_tested'] = $true
+        $result['registration_public'] = $false
+        $result['public_financial_effects_enabled'] = $false
+        $result['financial_effects_scope'] = 'public-executor-only'
+        $result['private_effects_scope'] = 'disposable-synthetic-registry-and-wrapper-tests-only'
+        $result['workflow_registration_integrated_into_runner'] = $false
     }
     if ($WithDraftKernel) {
         $result.schema_version = 'c106-probe-evidence/v1'

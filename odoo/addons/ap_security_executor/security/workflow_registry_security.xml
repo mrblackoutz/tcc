@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: LGPL-3.0-or-later -->
+<odoo>
+    <record id="access_workflow_registration_system" model="ir.model.access">
+        <field name="name">TCC internal documentary workflow: system read only</field>
+        <field name="model_id" ref="model_ap_security_workflow_registration"/>
+        <field name="group_id" ref="base.group_system"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+</odoo>

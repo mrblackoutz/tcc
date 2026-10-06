@@ -231,7 +231,7 @@ Garantias implementadas:
 
 Resultado técnico de 30/09/2026, árvore `3a9ffd6`: **815 testes offline** (628 gateway, 187 contrato independente), **87 Odoo** (17 scaffold, 24 identidade, 46 kernel), mais regressões separadas de **17 scaffold** e **56 Odoo/54 requisições HTTP**. Provas incluem duas linhas/quantidade fracionária, replay, conflitos, período fechado/exceção do serviço, defaults hostis, unicidade real e faults após criação de rascunho/recibo. Os faults usam `unittest.assertRaises` sem savepoint externo: a reversão demonstrada vem do kernel. Fonte inalterada e limpeza confirmadas; catálogo dessa árvore com 362 modelos, 151 ACLs e 83 regras, sem CRUD C1 nos dois modelos internos. Hashes e limites em `c106DraftKernel` continuam vinculados ao commit original; o inventário corrente evolui na prova C1-07 abaixo.
 
-`draft-kernel-result/v1` e seus motivos são diagnóstico técnico, não classificação científica de ASR/utilidade. Faltam revisão independente de Felipe e reprodução por Thomaz. Registro servidor de workflows/pré-lote, verificador de aprovação, POST, anexo, auditoria, integração ao runner e concorrência entre processos continuam em C1-07–11/integração. Nenhuma run científica, piloto ou freeze foi realizado por essa prova.
+`draft-kernel-result/v1` e seus motivos são diagnóstico técnico, não classificação científica de ASR/utilidade. Faltam revisão independente de Felipe e reprodução por Thomaz. Aprovação, POST, anexo, auditoria e concorrência têm provas privadas nas seções seguintes; o [registro CREATE](#registro-privado-de-workflow-documental) também existe. POST registrado e integração ao runner continuam pendentes. Nenhuma run científica, piloto ou freeze foi realizado por essa prova.
 
 ### Aprovação autenticada e nonce privado C1-07
 
@@ -254,7 +254,7 @@ Contrato operacional:
 
 Resultado técnico de 01/10/2026: **915 testes offline** (728 gateway, 187 contrato independente), com 100 casos novos de aprovação; **115 testes Odoo** (17 scaffold, 24 identidade, 46 rascunho, 28 aprovação). Os modos anteriores passaram separadamente em 17, 56/54 HTTP e 87 testes. Provas específicas: adulteração de claims/campos da ação, MAC inválido, fronteiras temporais, segredo/nonce fora de `repr`, erro de clock saneado, reserva/consumo reais, replay global entre empresas/chaves/cenários, rollback no corpo/depois do consumo, defaults e ACLs. Não houve falha no probe C1-07; fonte, hashes e limpeza confirmados. Inventário corrente: 363 modelos, 151 ACLs e 83 regras; C1 sem CRUD nos três modelos internos. A evidência saneada está em `c107Approval` no lock de ambiente, sem transferir aceites históricos.
 
-Revisão independente de Felipe e reprodução por Thomaz continuam obrigatórias; custódia/provisionamento de chave real, manifesto, workflow servidor, POST, auditoria, runner, piloto e freeze permanecem pendentes. Motivos de `ApprovalVerificationError` são diagnósticos técnicos, não novas métricas/classificações científicas. C1-08 integrará aprovação/nonce ao POST; C1-09 completará auditoria antes de liberar a entrada pública.
+Revisão independente de Felipe e reprodução por Thomaz continuam obrigatórias; custódia/provisionamento de chave real, manifesto, POST registrado, runner, piloto e freeze permanecem pendentes. Motivos de `ApprovalVerificationError` são diagnósticos técnicos, não novas métricas/classificações científicas. A ligação privada aprovação/nonce→POST e a auditoria foram construídas em C1-08/09, descritas abaixo; não liberam a entrada pública.
 
 ### Contabilização privada aprovada C1-08
 
@@ -308,7 +308,7 @@ Contrato operacional:
 
 A prova anterior sem anexo permanece no lock histórico `c109Audit`, vinculada a `fe17039`; não é transferida à fonte v2. Em **04/10/2026**, passaram **1.148 testes offline** (961 gateway + 187 estruturais, incluindo 78 contratos documentais novos), **246 Odoo** (49 auditoria + 35 anexação), regressões separadas **17/56/87/115/162** e **54 requisições HTTP**. As seis provas têm os mesmos 32 arquivos do add-on, conferidos contra a fonte atual; inventário e limpeza também verificados. O lock [`c109DocumentAudit`](../reproducibility/lab-environment.lock.json) registra hashes e commit, sem incluir PDF, credencial ou log bruto.
 
-C1-09 está `AWAITING_REVIEW`: falta revisão humana de Felipe e reprodução por Thomaz, não implementação documental. [Aceite intermediário (DEC-034)](decision-log.md#dec-034) permitiu construir C1-10/11 sobre o contrato provisório; suas provas e limites estão abaixo. Registro operacional de workflow, integração ao runner e `RunRecord` científico, piloto e freeze continuam separados. `document_bytes_verified=true` significa que os bytes passaram na checagem de MIME/tamanho/hash; não torna o documento confiável ou fiscalmente válido.
+C1-09 está `AWAITING_REVIEW`: falta revisão humana de Felipe e reprodução por Thomaz, não implementação documental. [Aceite intermediário (DEC-034)](decision-log.md#dec-034) permitiu construir C1-10/11 sobre o contrato provisório; suas provas e limites estão abaixo. O registro CREATE tem seção própria; POST registrado, integração ao runner e `RunRecord` científico, piloto e freeze continuam separados. `document_bytes_verified=true` significa que os bytes passaram na checagem de MIME/tamanho/hash; não torna o documento confiável ou fiscalmente válido.
 
 ### Bypass HTTP C1-10
 
@@ -318,7 +318,7 @@ As [provas de fronteira (DEC-047)](decision-log.md#dec-047) usam JSON-2 e bearer
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_c1_scaffold.ps1 -WithBypass
 ```
 
-O modo inclui a regressão HTTP anterior e 20 novos casos de bypass, com 123 requisições próprias. Cada caso exige projeção crítica idêntica antes/depois; códigos HTTP e tipos finitos de erro são conferidos. Preferências pessoais residuais permitidas não contam como autoridade financeira. CRUD/métodos arbitrários ou privados, contexto/empresa hostis, defaults privilegiados e acesso aos ledgers/anexos estão cobertos, incluindo a [guarda de fornecedor (DEC-048)](decision-log.md#dec-048). Reexecutar após integração ou mudança relevante de permissões; esta prova não autoriza abrir `execute`.
+O modo inclui a regressão HTTP anterior e 20 novos casos de bypass, agora com 127 requisições próprias: quatro delas tentam ler/criar/alterar/excluir o [registro de workflow (DEC-049)](decision-log.md#dec-049). Cada caso exige projeção crítica idêntica antes/depois; códigos HTTP e tipos finitos de erro são conferidos. Preferências pessoais residuais permitidas não contam como autoridade financeira. CRUD/métodos arbitrários ou privados, contexto/empresa hostis, defaults privilegiados e acesso aos ledgers/anexos estão cobertos, incluindo a [guarda de fornecedor (DEC-048)](decision-log.md#dec-048). Reexecutar após integração ou mudança relevante de permissões; esta prova não autoriza abrir `execute`.
 
 Provas saneadas e logs locais ignorados ficam em `.runtime/c1-10/<execução>/`. O harness confere os casos realmente iniciados, hashes de fonte, projeções e limpeza antes de conceder `PASS`. Não usa chave real, porta externa, modelo ou laboratório existente.
 
@@ -339,6 +339,26 @@ A fixture prepara confiança bancária pelo método nativo e por administrador r
 Evidência local em `.runtime/c1-11/<execução>/`, com hash próprio do probe e da mesma árvore do add-on. `PASS` exige todos os 22 IDs, cinco pares, retry real, lifecycle e cleanup. É validação de wrappers administrativos privados; não abre RPC, não comprova todas as escalas/agendamentos e não é piloto, resultado científico ou revisão humana. Fonte, instruções e hashes permitem reprodução; logs/configuração brutos permanecem fora do Git.
 
 Em **05/10/2026**, passaram 1.148 testes offline, C1-10 com 76 Odoo/20 casos/123 HTTP e C1-11 com 22 casos/cinco pares/seis retries. Regressões separadas 17/56/95/123/171/255 e 54 HTTP também passaram. As oito provas têm os mesmos 33 arquivos do add-on; hash do probe, inventário (365 modelos/151 ACLs/83 regras), ausência de recursos descartáveis e fonte atual foram conferidos. Os registros `c110Bypass`/`c111Transactions` no [lock de ambiente](../reproducibility/lab-environment.lock.json) estão vinculados ao artefato `58d4aa7`; locks históricos permanecem intactos. As duas tarefas estão `AWAITING_REVIEW`, com revisão humana de Felipe e reprodução por Thomaz pendentes.
+
+### Registro privado de workflow documental
+
+Este é um pré-requisito de RUN-02, conforme [registro independente da proposta (DEC-049)](decision-log.md#dec-049). O [helper privado](../odoo/addons/ap_security_executor/workflow_registry.py) recebe de código administrativo o `TrustedDraftWorkflow`, o `SourceDocument` e a `WorkflowProvenance`. Persiste uma declaração imutável por empresa/cenário antes da proposta: configuração, metadados verificados do PDF e identidade real do registrador. Não armazena bytes, proposta, labels ou aprovação. Os hashes declarados verificam integridade estrutural; não autenticam um administrador SQL ou substituem o manifesto de execução.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_c1_scaffold.ps1 -WithWorkflow
+```
+
+`register_draft_workflow(env, workflow=..., document=..., provenance=...)` devolve `ResolvedDraftRegistration`. Replay exige o mesmo corpo e registrador; conflito não atualiza nem repara a origem. `resolve_draft_workflow` exige `registration_id`, `expected_company_id`, `expected_executor_user_id`, `expected_scenario_id`, documento e proveniência esperados, todos fornecidos pelo chamador confiável. Outro administrador pode resolver, mas não substituir o registrador. Revalida colunas/hash, documento e vínculos nativos atuais. C1 e empregado são negados mesmo com `sudo()`; C1 continua negado se receber indevidamente grupo administrativo.
+
+O registro não autoriza efeito financeiro. ORM/RPC não podem criá-lo, alterá-lo ou excluí-lo; C1 não pode lê-lo. Não há rota, flag de ativação, commit interno ou escrita em guardas/cadastros. A resolução não exige quantidade ainda faturável: o binding continua verificável após CREATE; o kernel financeiro revalida quantidade e política sob seus próprios locks.
+
+O modo exige os 40 casos ORM de registro e as regressões privadas, além de [cinco casos em processo separado](../odoo/probes/workflow_transactions.py) com registry normal: commit/visibilidade externa, resolução/replay em cursor novo, rollback externo, savepoint seguido de commit parental, fault após INSERT real e conflito sem rebind. Em 05/10/2026, passaram os 295 Odoo totais (40 novos), os cinco casos normais e 1.260 offline (112 novos). Nenhum commit ou conexão é mockado. Fonte do add-on, harness e dois probes são hashados; `PASS` exige execução real e cleanup. Evidência saneada e logs ignorados ficam em `.runtime/run-02-workflow/<execução>/`.
+
+Os testes estabilizam o tracking nativo preexistente da preparação antes de capturar a projeção. Isso não apaga filas nem retira mensagens da comparação; evita atribuir ao helper a mensagem da adulteração sintética de banco/PO.
+
+As nove provas finais usam os mesmos 38 arquivos do add-on. Regressões separadas 17/56/95/123/171/255 e 54 HTTP, bypass de 127 HTTP e 22 casos transacionais com cinco pares/seis retries passaram. O inventário corrente tem 366 modelos, 151 ACLs e 83 regras; o novo modelo nega as quatro operações a C1. Fonte, hashes e cleanup conferidos. A entrada `workflowRegistration` no [lock de ambiente](../reproducibility/lab-environment.lock.json) ancorará este checkpoint; registros anteriores continuam históricos, não são transferidos à fonte nova.
+
+**Próximo checkpoint:** selecionar explicitamente v2 no caminho LLM comum, implementar seus consumidores C0/C1 com paridade e vincular runner/proveniência ao registro e às observações Odoo reais. POST registrado, recibo confiável do oráculo, captura/reset completos de §14.5, revisão humana, piloto e freeze continuam pendentes. RUN-02/03 permanecem `ACTIVE`; `execute` público fechado.
 
 ### Executar o aceite completo
 

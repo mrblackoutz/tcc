@@ -9,3 +9,4 @@ from . import test_post_kernel
 from . import test_audit_kernel
 from . import test_attachment_kernel
 from . import test_bypass_http
+from . import test_workflow_registry
