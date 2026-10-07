@@ -358,7 +358,29 @@ Os testes estabilizam o tracking nativo preexistente da preparação antes de ca
 
 As nove provas finais usam os mesmos 38 arquivos do add-on. Regressões separadas 17/56/95/123/171/255 e 54 HTTP, bypass de 127 HTTP e 22 casos transacionais com cinco pares/seis retries passaram. O inventário corrente tem 366 modelos, 151 ACLs e 83 regras; o novo modelo nega as quatro operações a C1. Fonte, hashes e cleanup conferidos. A entrada `workflowRegistration` no [lock de ambiente](../reproducibility/lab-environment.lock.json) ancorará este checkpoint; registros anteriores continuam históricos, não são transferidos à fonte nova.
 
-**Próximo checkpoint:** selecionar explicitamente v2 no caminho LLM comum, implementar seus consumidores C0/C1 com paridade e vincular runner/proveniência ao registro e às observações Odoo reais. POST registrado, recibo confiável do oráculo, captura/reset completos de §14.5, revisão humana, piloto e freeze continuam pendentes. RUN-02/03 permanecem `ACTIVE`; `execute` público fechado.
+O contrato comum v2 foi implementado no checkpoint seguinte, descrito abaixo. Registro/proveniência ainda precisam ser ligados pelo runner às observações Odoo reais; não se transfere a prova privada para uma integração que ainda não foi executada.
+
+### Contrato v2 comum e ponte do runner
+
+Implementado sob [transporte e consumidores explícitos (DEC-050)](decision-log.md#dec-050). `/v2/proposals` recebe `llm-client-request/v2` com `output_contract=v2`; `/v1/proposals` continua histórico. Cruzamento de versões falha antes da chamada ao modelo. Condição C0/C1, label, aprovação, workflow e IDs internos não entram no request LLM.
+
+A [ponte comum](../gateway/src/tcc_gateway/runner_contract_v2.py) fornece `build_client_request_v2`, `proposal_from_llm_stage_v2`, `dispatch_c0_llm_stage_v2`, `prepare_c1_llm_stage_v2` e `oracle_proposal_from_llm_stage_v2`. Ela liga a resposta à entrada e às tentativas do estágio existente, sem mudar parâmetros ou reparar a ação. Os destinos têm limites distintos:
+
+- C0 despacha CREATE com os argumentos propostos ou `action_post` no alvo fornecido pelo código confiável. Não importa allowlist, comparação financeira ou aprovação C1; POST não escreve os campos descritivos antes da chamada. `C0ActionDispatch` não comprova commit ou estado.
+- C1 recebe a mesma proposta na entrada da política (`PolicyInput`), com snapshot confiável obrigatório. A ponte não abre `execute`, emite aprovação ou executa os wrappers privados.
+- O conversor do oráculo preserva intenção e fatos propostos. Estado pretendido, retorno RPC e `REVIEW` não substituem observação independente pós-commit.
+
+Hashes de request interno, proposta bruta, schema e mensagens são recompostos e comparados. Hashes do corpo HTTP/request/content do provedor são diagnósticos declarados, não atestação autenticada; sua custódia pertence à integração futura. A revalidação comum nega coerções e dinheiro adulterado antes da formatação. O resumo das tentativas rejeita retries proibidos e limites mínimos incompatíveis; não reconstitui tempo ocioso nem comprova término remoto.
+
+Na raiz, com Python 3.12 ou 3.13 e as dependências de `gateway/pyproject.toml` instaladas:
+
+```powershell
+python -m pytest gateway/tests tests/addon scripts/test_g3b_topology.py scripts/test_g3c_topology.py -q -p no:cacheprovider --basetemp ".runtime/pytest-common-v2-$([guid]::NewGuid().ToString('N'))"
+```
+
+Em **07/10/2026**, passaram **1.453 offline**, com **193 novos**: 88 serviço/estágio v2, 34 C0, 33 conversor e 38 ponte/revalidação/paridade. Incluem HTTP sintético em localhost, sem chamada externa. No sandbox Windows, criação de event loop/socket bloqueou as primeiras tentativas; somente os processos pytest correspondentes foram encerrados e a suíte completa foi reexecutada com acesso local autorizado. Nenhum caso ou controle foi removido. Schemas v1, smokes M2/G3b/G3c, parâmetros, core, add-on e laboratório existente não foram alterados.
+
+**Próximo checkpoint:** ligar registro/proveniência e observações operacionais reais ao runner; validar C0/POST nativo e recibo pós-commit; completar captura/reset de §14.5 e RUN-01. POST registrado, supervisão, revisão humana, competência C0, piloto e freeze continuam pendentes; RUN-02/03 permanecem `ACTIVE`. O estágio local Qwen ainda não integra o runner e seu limite de saída efetivamente enviado exige conferência; nenhum benchmark ou aceite local é declarado.
 
 ### Executar o aceite completo
 

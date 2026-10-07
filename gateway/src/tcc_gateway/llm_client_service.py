@@ -12,7 +12,9 @@ from importlib.resources import files
 from typing import Any
 
 import httpx
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
+
+from .action_proposal_v2 import ActionProposalSchemaError, ActionProposalV2
 
 from .llm_adapters import (
     DeepSeekProposalAdapter,
@@ -22,14 +24,28 @@ from .llm_adapters import (
     LLMProposalRequest,
     LLMProposalResult,
     OllamaProposalAdapter,
+    DEEPSEEK_ADAPTER_ID,
+    OLLAMA_ADAPTER_ID,
+    OutputContract,
+    expected_proposal_request_hashes,
 )
-from .llm_config import DEEPSEEK_MODEL, OLLAMA_MODEL, DeepSeekConfig, OllamaConfig
+from .llm_config import (
+    DEEPSEEK_ALLOWED_RETURNED_MODELS,
+    DEEPSEEK_BASE_URL,
+    DEEPSEEK_MODEL,
+    OLLAMA_ALLOWED_BASE_URLS,
+    OLLAMA_MODEL,
+    DeepSeekConfig,
+    OllamaConfig,
+)
 from .pdf_ingestion import ExtractedPdf
-from .state import canonical_json_bytes
+from .state import canonical_json_bytes, canonical_json_sha256
 
 
 REQUEST_SCHEMA_VERSION = "llm-client-request/v1"
 RESPONSE_SCHEMA_VERSION = "llm-client-response/v1"
+REQUEST_SCHEMA_VERSION_V2 = "llm-client-request/v2"
+RESPONSE_SCHEMA_VERSION_V2 = "llm-client-response/v2"
 MAXIMUM_BODY_BYTES = 131_072
 _MOCK_KEY = "synthetic-g3b-placeholder"
 _FORBIDDEN_ENV_PREFIXES = ("ODOO_", "POSTGRES_")
@@ -53,6 +69,16 @@ def _request_schema() -> dict[str, Any]:
 
 
 _REQUEST_VALIDATOR = Draft202012Validator(_request_schema())
+
+
+def _v2_validator(name: str) -> Draft202012Validator:
+    schema = json.loads(files("tcc_gateway.schemas").joinpath(name).read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    return Draft202012Validator(schema, format_checker=FormatChecker())
+
+
+_REQUEST_VALIDATOR_V2 = _v2_validator("llm_client_request_v2.schema.json")
+_RESPONSE_VALIDATOR_V2 = _v2_validator("llm_client_response_v2.schema.json")
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,14 +141,19 @@ class LLMClientServiceConfig:
         )
 
 
-def parse_client_request(value: Any) -> tuple[str, LLMProposalRequest]:
-    errors = sorted(_REQUEST_VALIDATOR.iter_errors(value), key=lambda item: list(item.path))
-    if errors or not isinstance(value, Mapping):
+def _parse_request(
+    value: Any, validator: Draft202012Validator,
+) -> tuple[str, LLMProposalRequest]:
+    if not isinstance(value, Mapping) or not validator.is_valid(value):
         raise LLMClientServiceError("invalid_request")
 
     document_value = value["document"]
     text = str(document_value["text"])
-    if hashlib.sha256(text.encode("utf-8")).hexdigest() != document_value["text_sha256"]:
+    try:
+        text_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    except UnicodeError:
+        raise LLMClientServiceError("invalid_request") from None
+    if text_sha256 != document_value["text_sha256"]:
         raise LLMClientServiceError("text_hash_mismatch")
 
     document = ExtractedPdf(
@@ -146,6 +177,95 @@ def parse_client_request(value: Any) -> tuple[str, LLMProposalRequest]:
     return str(value["provider"]), request
 
 
+def parse_client_request(value: Any) -> tuple[str, LLMProposalRequest]:
+    """Contrato histórico v1; nunca promove a ação para POST."""
+
+    return _parse_request(value, _REQUEST_VALIDATOR)
+
+
+def parse_client_request_v2(value: Any) -> tuple[str, LLMProposalRequest]:
+    """Entrada v2 explícita, sem condição, label ou autoridade financeira."""
+
+    provider, request = _parse_request(value, _REQUEST_VALIDATOR_V2)
+    if any(type(value["document"][name]) is not int for name in ("page_count", "byte_count")):
+        raise LLMClientServiceError("invalid_request")
+    try:
+        canonical_json_bytes(value)
+    except (TypeError, ValueError, UnicodeError):
+        raise LLMClientServiceError("invalid_request") from None
+    return provider, request
+
+
+def validate_v2_client_response(
+    request_value: Mapping[str, Any], response_value: Mapping[str, Any],
+) -> ActionProposalV2:
+    """Verifica contrato e proveniência; não avalia nem autoriza a ação."""
+
+    provider, request = parse_client_request_v2(request_value)
+    if (
+        not isinstance(response_value, Mapping)
+        or not _RESPONSE_VALIDATOR_V2.is_valid(response_value)
+        or response_value.get("status") != "ok"
+    ):
+        raise LLMClientServiceError("invalid_client_response")
+    try:
+        proposal = ActionProposalV2.from_mapping(response_value["proposal"])
+        request_hash = canonical_json_sha256(request_value)
+        proposal_hash = canonical_json_sha256(response_value["proposal"])
+        if canonical_json_bytes(response_value["proposal"]) != canonical_json_bytes(proposal.to_mapping()):
+            raise LLMClientServiceError("invalid_client_response")
+    except (ActionProposalSchemaError, TypeError, ValueError):
+        raise LLMClientServiceError("invalid_client_response") from None
+    if response_value["client_request_sha256"] != request_hash:
+        raise LLMClientServiceError("request_binding_mismatch")
+    if response_value["proposal_sha256"] != proposal_hash:
+        raise LLMClientServiceError("proposal_hash_mismatch")
+    if proposal.scenario_id != request.scenario_id:
+        raise LLMClientServiceError("scenario_mismatch")
+    proposal_mapping = proposal.to_mapping()
+    if proposal_mapping["source"] != {
+        "document_sha256": request.document.document_sha256,
+        "text_sha256": request.document.text_sha256,
+        "page_count": request.document.page_count,
+    }:
+        raise LLMClientServiceError("document_binding_mismatch")
+    metadata = response_value["metadata"]
+    if (
+        type(metadata["max_output_tokens"]) is not int
+        or type(proposal_mapping["source"]["page_count"]) is not int
+        or any(type(counter) is not int for counter in metadata["usage"].values())
+        or any(type(duration) is not int for duration in metadata["durations_ns"].values())
+    ):
+        raise LLMClientServiceError("invalid_client_response")
+    adapter_id = DEEPSEEK_ADAPTER_ID if provider == "deepseek" else OLLAMA_ADAPTER_ID
+    expected_model = DEEPSEEK_MODEL if provider == "deepseek" else OLLAMA_MODEL
+    allowed_returned = DEEPSEEK_ALLOWED_RETURNED_MODELS if provider == "deepseek" else {OLLAMA_MODEL}
+    allowed_endpoints = (
+        {f"{DEEPSEEK_BASE_URL}/chat/completions"} if provider == "deepseek"
+        else {f"{base_url}/api/chat" for base_url in OLLAMA_ALLOWED_BASE_URLS}
+    )
+    if (
+        metadata["provider"] != provider
+        or metadata["adapter_id"] != adapter_id
+        or proposal_mapping["producer"] != adapter_id
+        or metadata["requested_model"] != expected_model
+        or metadata["returned_model"] not in allowed_returned
+        or metadata["endpoint"] not in allowed_endpoints
+    ):
+        raise LLMClientServiceError("model_mismatch")
+    for name, expected_hash in expected_proposal_request_hashes(request).items():
+        if metadata[name] != expected_hash:
+            raise LLMClientServiceError("prompt_contract_mismatch")
+    # These counters are transport diagnostics, not proof of provider truth.
+    usage_names = (
+        {"prompt_tokens", "completion_tokens", "total_tokens"} if provider == "deepseek"
+        else {"prompt_eval_count", "eval_count"}
+    )
+    if set(metadata["usage"]) - usage_names:
+        raise LLMClientServiceError("invalid_client_response")
+    return proposal
+
+
 def _mock_model_output() -> dict[str, Any]:
     return {
         "vendor_ref": "TCC-VENDOR-001",
@@ -167,8 +287,11 @@ def _mock_model_output() -> dict[str, Any]:
     }
 
 
-def _mock_adapter(provider: str):
-    content = json.dumps(_mock_model_output(), separators=(",", ":"))
+def _mock_adapter(provider: str, *, output_contract: OutputContract = "v1"):
+    output = _mock_model_output()
+    if output_contract == "v2":
+        output = {"action": "CREATE_DRAFT_BILL", **output}
+    content = json.dumps(output, separators=(",", ":"))
     if provider == "deepseek":
         def deepseek_handler(_: httpx.Request) -> httpx.Response:
             return httpx.Response(
@@ -193,6 +316,7 @@ def _mock_adapter(provider: str):
 
         return DeepSeekProposalAdapter(
             DeepSeekConfig(api_key=_MOCK_KEY),
+            output_contract=output_contract,
             transport=httpx.MockTransport(deepseek_handler),
         )
     if provider == "ollama":
@@ -215,6 +339,7 @@ def _mock_adapter(provider: str):
 
         return OllamaProposalAdapter(
             OllamaConfig(base_url="http://ollama:11434"),
+            output_contract=output_contract,
             transport=httpx.MockTransport(ollama_handler),
         )
     raise LLMClientServiceError("invalid_provider")
@@ -245,27 +370,43 @@ def _metadata_mapping(metadata: LLMCallMetadata) -> dict[str, Any]:
     }
 
 
-def _success_mapping(result: LLMProposalResult) -> dict[str, Any]:
-    return {
+def _success_mapping(
+    result: LLMProposalResult,
+    request_value: Mapping[str, Any],
+    *, output_contract: OutputContract,
+) -> dict[str, Any]:
+    value = {
         "schema_version": RESPONSE_SCHEMA_VERSION,
         "status": "ok",
         "proposal": result.proposal.to_mapping(),
         "metadata": _metadata_mapping(result.metadata),
     }
+    if output_contract == "v2":
+        value.update({
+            "schema_version": RESPONSE_SCHEMA_VERSION_V2,
+            "output_contract": "v2",
+            "client_request_sha256": canonical_json_sha256(request_value),
+            "proposal_sha256": canonical_json_sha256(value["proposal"]),
+        })
+        validate_v2_client_response(request_value, value)
+    return value
 
 
 def _adapter_for(
     provider: str,
     config: LLMClientServiceConfig,
     *,
+    output_contract: OutputContract = "v1",
     transport: httpx.BaseTransport | None = None,
 ):
     if config.mode == "mock":
-        return _mock_adapter(provider)
+        return _mock_adapter(provider, output_contract=output_contract)
     if config.mode == _DEEPSEEK_SMOKE_MODE:
         if provider != "deepseek" or config.deepseek_config is None:
             raise LLMClientServiceError("provider_not_allowed_in_mode")
-        return DeepSeekProposalAdapter(config.deepseek_config, transport=transport)
+        return DeepSeekProposalAdapter(
+            config.deepseek_config, output_contract=output_contract, transport=transport,
+        )
     raise LLMClientServiceError("invalid_mode")
 
 
@@ -274,21 +415,40 @@ def process_client_request(
     config: LLMClientServiceConfig | None = None,
     *,
     transport: httpx.BaseTransport | None = None,
+    expected_request_version: str | None = None,
 ) -> tuple[int, dict[str, Any]]:
     selected_config = config or LLMClientServiceConfig()
+    is_v2 = isinstance(value, Mapping) and value.get("schema_version") == REQUEST_SCHEMA_VERSION_V2
+    output_contract: OutputContract = "v2" if is_v2 else "v1"
+    response_version = RESPONSE_SCHEMA_VERSION_V2 if is_v2 else RESPONSE_SCHEMA_VERSION
     try:
-        provider, request = parse_client_request(value)
-        with _adapter_for(provider, selected_config, transport=transport) as adapter:
-            return 200, _success_mapping(adapter.propose(request))
+        if expected_request_version is not None and (
+            not isinstance(value, Mapping) or value.get("schema_version") != expected_request_version
+        ):
+            raise LLMClientServiceError("route_contract_mismatch")
+        parser = parse_client_request_v2 if is_v2 else parse_client_request
+        provider, request = parser(value)
+        if (
+            is_v2 and selected_config.deepseek_config is not None
+            and (
+                type(selected_config.deepseek_config.generation.max_output_tokens) is not int
+                or selected_config.deepseek_config.generation.max_output_tokens != 2048
+            )
+        ):
+            raise LLMClientServiceError("generation_mismatch")
+        with _adapter_for(
+            provider, selected_config, output_contract=output_contract, transport=transport,
+        ) as adapter:
+            return 200, _success_mapping(adapter.propose(request), value, output_contract=output_contract)
     except LLMClientServiceError as error:
         return 400, {
-            "schema_version": RESPONSE_SCHEMA_VERSION,
+            "schema_version": response_version,
             "status": "error",
             "error": {"category": error.category, "retryable": False},
         }
     except LLMAdapterError as error:
         return 502, {
-            "schema_version": RESPONSE_SCHEMA_VERSION,
+            "schema_version": response_version,
             "status": "error",
             "error": {
                 "provider": error.provider,
@@ -332,7 +492,7 @@ def build_handler(config: LLMClientServiceConfig | None = None):
             )
 
         def do_POST(self) -> None:  # noqa: N802 - interface da biblioteca padrão
-            if self.path != "/v1/proposals":
+            if self.path not in {"/v1/proposals", "/v2/proposals"}:
                 self._send_json(404, {"status": "not_found"})
                 return
             content_type = self.headers.get("Content-Type", "").split(";", 1)[0].strip()
@@ -352,7 +512,12 @@ def build_handler(config: LLMClientServiceConfig | None = None):
             except (UnicodeDecodeError, ValueError):
                 self._send_json(400, {"status": "error", "error": {"category": "invalid_json"}})
                 return
-            status, response = process_client_request(value, selected_config)
+            status, response = process_client_request(
+                value, selected_config,
+                expected_request_version=(
+                    REQUEST_SCHEMA_VERSION_V2 if self.path == "/v2/proposals" else REQUEST_SCHEMA_VERSION
+                ),
+            )
             self._send_json(status, response)
 
     return LLMClientHandler

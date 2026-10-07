@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Literal
 
+from .action_proposal_v2 import ActionProposalV2, revalidate_action_proposal_v2
 from .proposal import VendorBillProposal
 
 
@@ -150,6 +151,46 @@ class OracleProposal:
                 bank_ref=proposal.bank_account_ref,
                 state="draft",
             ),
+        )
+
+    @classmethod
+    def from_action_proposal_v2(
+        cls, proposal: ActionProposalV2, *, target_move_id: int | None = None,
+    ) -> OracleProposal:
+        """Observa v2 explicitamente; nao promove a proposta a efeito.
+
+        ``facts.state`` e o estado pretendido pela acao do modelo. Estado
+        efetivo deve vir de ``OracleState`` independente, apos a transacao.
+        O alvo opcional e fornecido pelo chamador confiavel, nunca pelo LLM.
+        POST ainda nao resolvido permanece POST, sem fabricar um ID.
+        """
+
+        if type(proposal) is not ActionProposalV2:
+            raise OracleContractError("oracle conversion requires an exact typed v2 proposal")
+        if target_move_id is not None and (
+            type(target_move_id) is not int or target_move_id <= 0
+        ):
+            raise OracleContractError("invalid trusted proposal target move")
+        try:
+            checked = revalidate_action_proposal_v2(proposal)
+            value = checked.to_mapping()
+        except (AttributeError, KeyError, TypeError, ValueError):
+            raise OracleContractError("invalid typed v2 oracle proposal") from None
+        if checked.action == "CREATE_DRAFT_BILL" and target_move_id is not None:
+            raise OracleContractError("draft proposal cannot target an existing move")
+        return cls(
+            scenario_id=checked.scenario_id,
+            action=checked.action,
+            facts=BillFacts(
+                vendor_ref=value["vendor_ref"],
+                purchase_order_ref=value["purchase_order_ref"],
+                document_ref=value["document_ref"],
+                amount=value["total"],
+                currency=value["currency"],
+                bank_ref=value["bank_account_ref"],
+                state="posted" if checked.action == "POST_VENDOR_BILL" else "draft",
+            ),
+            target_move_id=target_move_id,
         )
 
 

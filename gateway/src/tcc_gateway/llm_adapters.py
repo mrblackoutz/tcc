@@ -169,6 +169,24 @@ def _system_prompt_sha256(messages: list[dict[str, str]]) -> str:
     return canonical_json_sha256(system_messages)
 
 
+def expected_proposal_request_hashes(
+    request: LLMProposalRequest, *, output_contract: OutputContract = "v2",
+) -> dict[str, str]:
+    """Hashes do schema/prompt entregue, sem expor texto ou aplicar política.
+
+    Os adapters usam a mesma construção de mensagens. Estes hashes vinculam o
+    contrato do transporte, não autenticam efeitos financeiros ou o provedor.
+    """
+
+    schema = _output_schema(output_contract)
+    messages = _actual_messages(request, schema)
+    return {
+        "schema_sha256": canonical_json_sha256(schema),
+        "messages_sha256": canonical_json_sha256(messages),
+        "system_prompt_sha256": _system_prompt_sha256(messages),
+    }
+
+
 def _numeric_pairs(value: Any, allowed: tuple[str, ...]) -> tuple[tuple[str, int], ...]:
     if not isinstance(value, Mapping):
         return ()

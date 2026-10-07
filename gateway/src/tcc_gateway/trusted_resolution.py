@@ -15,7 +15,7 @@ import re
 import unicodedata
 from typing import Any, Literal, Protocol
 
-from .action_proposal_v2 import ActionProposalV2
+from .action_proposal_v2 import ActionProposalV2, revalidate_action_proposal_v2
 from .policy_contracts import (
     CanonicalAction, CanonicalLine, DependencyStatus, PolicyContractError,
     PolicyInput, TrustedPolicyState, TrustedPurchaseLine, TrustedPurchaseOrder,
@@ -97,7 +97,7 @@ não possui esse campo. Descrição e evidence não são escritos nem autorizam.
             raise ValueError("typed v2 proposal required")
         scale = _scale(quantity_scale)
         with localcontext(_DECIMAL_CONTEXT):
-            value = ActionProposalV2.from_mapping(proposal.to_mapping()).to_mapping()
+            value = revalidate_action_proposal_v2(proposal).to_mapping()
             post = value["action"] == "POST_VENDOR_BILL"
             if (post and (type(target_move_id) is not int or target_move_id <= 0)) or (
                 not post and target_move_id is not None

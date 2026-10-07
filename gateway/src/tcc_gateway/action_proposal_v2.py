@@ -12,6 +12,8 @@ import unicodedata
 from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import dataclass, field
+from datetime import date
+from decimal import Context, Decimal, DecimalException, ROUND_HALF_EVEN, localcontext
 from functools import lru_cache
 from importlib.resources import files
 from typing import Any, Literal
@@ -19,7 +21,10 @@ from typing import Any, Literal
 from jsonschema import Draft202012Validator, FormatChecker
 
 from .pdf_ingestion import ExtractedPdf
-from .proposal import CREATE_DRAFT_BILL, SCHEMA_VERSION, VendorBillProposal
+from .proposal import (
+    CREATE_DRAFT_BILL, SCHEMA_VERSION, ProposalSource, VendorBillLineProposal,
+    VendorBillProposal,
+)
 from .proposal_schema import ProposalSchemaError
 
 
@@ -188,3 +193,53 @@ def normalise_action_model_output(
     }
     proposal_value.setdefault("evidence", [])
     return ActionProposalV2.from_mapping(proposal_value)
+
+
+def revalidate_action_proposal_v2(proposal: ActionProposalV2) -> ActionProposalV2:
+    """Revalida a entrada tipada sem arredondar uma adulteração para aceitá-la.
+
+    ``frozen=True`` evita mutação acidental, não constitui fronteira de segurança.
+    Os consumidores repetem a validação antes da serialização, que formata dinheiro
+    com duas casas. Não compara fatos com PO, workflow ou rótulos do dataset.
+    """
+    try:
+        if type(proposal) is not ActionProposalV2:
+            raise ValueError("exact v2 type required")
+        bill = proposal._bill_fields
+        if type(bill) is not VendorBillProposal or type(bill.source) is not ProposalSource:
+            raise ValueError("exact financial types required")
+        if any(type(getattr(bill, name)) is not str for name in (
+            "producer", "scenario_id", "vendor_ref", "purchase_order_ref", "document_ref",
+            "currency", "bank_account_ref", "schema_version", "action",
+        )) or type(bill.invoice_date) is not date or type(bill.total) is not Decimal:
+            raise ValueError("invalid financial field type")
+        source = bill.source
+        if (type(source.document_sha256) is not str or type(source.text_sha256) is not str
+                or type(source.page_count) is not int):
+            raise ValueError("invalid source field type")
+        if type(bill.lines) is not tuple or not 1 <= len(bill.lines) <= 50:
+            raise ValueError("invalid line collection")
+        if type(proposal.evidence) is not tuple or len(proposal.evidence) > 8:
+            raise ValueError("invalid evidence collection")
+        if type(proposal.action) is not str or type(proposal.schema_version) is not str:
+            raise ValueError("invalid action type")
+        with localcontext(Context(prec=32, rounding=ROUND_HALF_EVEN)):
+            source.__post_init__()
+            for line in bill.lines:
+                if (type(line) is not VendorBillLineProposal or type(line.item_code) is not str
+                        or type(line.description) is not str or any(
+                            type(getattr(line, name)) is not Decimal
+                            for name in ("quantity", "unit_price", "line_total")
+                        )):
+                    raise ValueError("invalid line type")
+                line.__post_init__()
+            for span in proposal.evidence:
+                if (type(span) is not EvidenceSpan or type(span.field) is not str
+                        or type(span.source_span) is not str):
+                    raise ValueError("invalid evidence type")
+                span.__post_init__()
+            bill.__post_init__()
+            proposal.__post_init__()
+            return ActionProposalV2.from_mapping(proposal.to_mapping())
+    except (AttributeError, TypeError, ValueError, DecimalException):
+        raise ActionProposalSchemaError("invalid typed v2 action proposal") from None

@@ -24,7 +24,14 @@ from .attempt_policy import (
     decide_next_attempt,
 )
 from .llm_adapters import LLMAdapterError
-from .llm_client_service import LLMClientServiceError, parse_client_request
+from .llm_client_service import (
+    LLMClientServiceError,
+    REQUEST_SCHEMA_VERSION_V2,
+    RESPONSE_SCHEMA_VERSION_V2,
+    parse_client_request,
+    parse_client_request_v2,
+    validate_v2_client_response,
+)
 from .llm_config import DEEPSEEK_ALLOWED_RETURNED_MODELS, DEEPSEEK_MODEL
 from .proposal import ProposalValueError, VendorBillProposal
 from .proposal_schema import ProposalSchemaError
@@ -65,7 +72,16 @@ class LLMStageResult:
         }
 
 
-def _validate_success(value: Mapping[str, Any], scenario_id: str) -> None:
+def _validate_success(
+    value: Mapping[str, Any], scenario_id: str,
+    request_value: Mapping[str, Any],
+) -> None:
+    if request_value.get("schema_version") == REQUEST_SCHEMA_VERSION_V2:
+        try:
+            validate_v2_client_response(request_value, value)
+        except LLMClientServiceError as error:
+            raise LLMAdapterError("deepseek", error.category) from None
+        return
     if not isinstance(value, Mapping):
         raise LLMAdapterError("deepseek", "invalid_client_response")
     if value.get("schema_version") != "llm-client-response/v1" or value.get("status") != "ok":
@@ -104,6 +120,13 @@ async def call_llm_client_once(
         raise AttemptContractError("LLM client URL is outside the internal allowlist")
     if type(wall_cap_ns) is not int or wall_cap_ns <= 0:
         raise AttemptContractError("invalid attempt wall cap")
+    is_v2 = isinstance(request_value, Mapping) and request_value.get("schema_version") == REQUEST_SCHEMA_VERSION_V2
+    try:
+        provider, _request = (parse_client_request_v2 if is_v2 else parse_client_request)(request_value)
+    except LLMClientServiceError:
+        raise AttemptContractError("invalid typed LLM client request") from None
+    if provider != "deepseek":
+        raise AttemptContractError("pilot stage requires the DeepSeek model block")
     wall_seconds = wall_cap_ns / NANOSECONDS
     timeout = httpx.Timeout(
         connect=min(10.0, wall_seconds),
@@ -115,7 +138,9 @@ async def call_llm_client_once(
         async with httpx.AsyncClient(
             base_url=client_url, timeout=timeout, transport=transport, trust_env=False,
         ) as client:
-            response = await client.post("/v1/proposals", json=dict(request_value))
+            response = await client.post(
+                "/v2/proposals" if is_v2 else "/v1/proposals", json=dict(request_value),
+            )
     except (httpx.ConnectError, httpx.ConnectTimeout):
         raise LLMAdapterError("deepseek", "transport", retryable=True) from None
     except httpx.RequestError:
@@ -129,6 +154,16 @@ async def call_llm_client_once(
     if response.status_code == 200:
         return value
     error = value.get("error")
+    if is_v2 and (
+        value.get("schema_version") != RESPONSE_SCHEMA_VERSION_V2
+        or value.get("status") != "error"
+        or set(value) - {"schema_version", "status", "output_contract", "error"}
+        or ("output_contract" in value and value["output_contract"] != "v2")
+        or not isinstance(error, Mapping)
+        or set(error) - {"provider", "category", "retryable", "http_status"}
+        or ("provider" in error and error["provider"] != "deepseek")
+    ):
+        raise LLMAdapterError("deepseek", "invalid_client_response")
     if response.status_code == 502 and isinstance(error, Mapping):
         category = error.get("category")
         retryable = error.get("retryable")
@@ -163,7 +198,11 @@ async def run_llm_stage(
     if condition not in {"C0", "C1"}:
         raise AttemptContractError("invalid experimental condition")
     try:
-        provider, request = parse_client_request(request_value)
+        provider, request = (
+            parse_client_request_v2
+            if isinstance(request_value, Mapping) and request_value.get("schema_version") == REQUEST_SCHEMA_VERSION_V2
+            else parse_client_request
+        )(request_value)
     except LLMClientServiceError:
         raise AttemptContractError("invalid typed LLM client request") from None
     if provider != "deepseek":
@@ -183,7 +222,7 @@ async def run_llm_stage(
             response = await asyncio.wait_for(
                 call_once(request_value, wall_cap_ns), timeout=wall_cap_ns / NANOSECONDS,
             )
-            _validate_success(response, request.scenario_id)
+            _validate_success(response, request.scenario_id, request_value)
         except TimeoutError:
             elapsed_ns = max(0, clock_ns() - attempt_started_ns)
             attempts.append(AttemptRecord(number, "deadline_exceeded", elapsed_ns, request_hash))

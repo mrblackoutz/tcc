@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tcc.local/schemas/llm-client-response-v2.json",
+  "title": "Closed LLM action proposal response v2",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "status"],
+  "properties": {
+    "schema_version": {"const": "llm-client-response/v2"},
+    "output_contract": {"const": "v2"},
+    "status": {"enum": ["ok", "error"]},
+    "client_request_sha256": {"$ref": "#/$defs/sha256"},
+    "proposal_sha256": {"$ref": "#/$defs/sha256"},
+    "proposal": {"type": "object"},
+    "error": {
+      "type": "object", "additionalProperties": false,
+      "required": ["category", "retryable"],
+      "properties": {
+        "category": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,63}$"},
+        "retryable": {"type": "boolean"},
+        "provider": {"enum": ["deepseek", "ollama"]},
+        "http_status": {"anyOf": [{"type": "null"}, {"type": "integer", "minimum": 100, "maximum": 599}]}
+      }
+    },
+    "metadata": {
+      "type": "object", "additionalProperties": false,
+      "required": ["provider", "adapter_id", "endpoint", "requested_model", "returned_model", "response_id", "system_fingerprint", "received_at_utc", "thinking", "temperature", "max_output_tokens", "finish_reason", "request_sha256", "response_body_sha256", "response_content_sha256", "messages_sha256", "system_prompt_sha256", "schema_sha256", "usage", "durations_ns"],
+      "properties": {
+        "provider": {"enum": ["deepseek", "ollama"]},
+        "adapter_id": {"enum": ["deepseek-chat-completions/v1", "ollama-chat/v1"]},
+        "endpoint": {"type": "string", "maxLength": 128},
+        "requested_model": {"$ref": "#/$defs/identifier"},
+        "returned_model": {"$ref": "#/$defs/identifier"},
+        "response_id": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/identifier"}]},
+        "system_fingerprint": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/identifier"}]},
+        "received_at_utc": {"type": "string", "format": "date-time", "maxLength": 64},
+        "thinking": {"const": "disabled"},
+        "temperature": {"type": "number", "const": 0},
+        "max_output_tokens": {"type": "integer", "const": 2048},
+        "finish_reason": {"const": "stop"},
+        "request_sha256": {"$ref": "#/$defs/sha256"},
+        "response_body_sha256": {"$ref": "#/$defs/sha256"},
+        "response_content_sha256": {"$ref": "#/$defs/sha256"},
+        "messages_sha256": {"$ref": "#/$defs/sha256"},
+        "system_prompt_sha256": {"$ref": "#/$defs/sha256"},
+        "schema_sha256": {"$ref": "#/$defs/sha256"},
+        "usage": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "prompt_tokens": {"$ref": "#/$defs/counter"},
+            "completion_tokens": {"$ref": "#/$defs/counter"},
+            "total_tokens": {"$ref": "#/$defs/counter"},
+            "prompt_eval_count": {"$ref": "#/$defs/counter"},
+            "eval_count": {"$ref": "#/$defs/counter"}
+          }
+        },
+        "durations_ns": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "total_duration": {"$ref": "#/$defs/counter"},
+            "load_duration": {"$ref": "#/$defs/counter"},
+            "prompt_eval_duration": {"$ref": "#/$defs/counter"},
+            "eval_duration": {"$ref": "#/$defs/counter"}
+          }
+        }
+      }
+    }
+  },
+  "allOf": [{
+    "if": {"properties": {"status": {"const": "ok"}}},
+    "then": {
+      "required": ["output_contract", "client_request_sha256", "proposal_sha256", "proposal", "metadata"],
+      "not": {"required": ["error"]}
+    },
+    "else": {
+      "required": ["error"],
+      "not": {"anyOf": [{"required": ["client_request_sha256"]}, {"required": ["proposal_sha256"]}, {"required": ["proposal"]}, {"required": ["metadata"]}]}
+    }
+  }],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "identifier": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"},
+    "counter": {"type": "integer", "minimum": 0}
+  }
+}
