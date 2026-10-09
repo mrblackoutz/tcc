@@ -1,13 +1,14 @@
 """Ponte pré-freeze do estágio LLM para C0, política C1 e proposta do oráculo.
 
-Não é um runner experimental completo. C0 pode despachar uma operação; C1 só
-prepara PolicyInput para os consumidores privados já existentes. Nenhum resultado
+Não é um runner experimental completo. C0 pode despachar uma operação; C1
+prepara política e, quando ALLOW, comando CREATE para consumidores privados. Nenhum resultado
 desta ponte comprova efeito, aprovação, reset ou captura de estado de §14.5.
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Any, Literal
 
 from .action_proposal_v2 import ActionProposalV2, revalidate_action_proposal_v2
@@ -15,13 +16,15 @@ from .attempt_policy import DEEPSEEK_PILOT_POLICY, AttemptRecord, decide_next_at
 from .c0_action_executor_v2 import C0ActionDispatch, TrustedC0ActionBinding, execute_c0_action_v2
 from .c0_executor import OdooCaller
 from .llm_adapters import LLMMessage, LLMProposalRequest
+from .idempotency import idempotency_key_for_resolved
 from .llm_client_service import (
     REQUEST_SCHEMA_VERSION_V2, parse_client_request_v2, validate_v2_client_response,
 )
 from .oracle import OracleProposal
 from .pdf_ingestion import ExtractedPdf
 from .pilot_llm_runner import LLMStageResult
-from .policy_contracts import PolicyInput
+from .policy_contracts import CapabilityCommand, PolicyDecision, PolicyInput
+from .policy_engine import evaluate_policy
 from .state import canonical_json_sha256
 from .trusted_resolution import ResolvedTrustedState, prepare_policy_input
 
@@ -144,3 +147,41 @@ def oracle_proposal_from_llm_stage_v2(
     return OracleProposal.from_action_proposal_v2(
         proposal_from_llm_stage_v2(request_value, stage), target_move_id=target_move_id,
     )
+
+
+@dataclass(frozen=True, slots=True)
+class C1DraftPreparation:
+    """Resultado transitório, não recibo de efeito nem autorização de POST."""
+
+    policy_input: PolicyInput
+    decision: PolicyDecision
+    command: CapabilityCommand | None
+
+
+def prepare_c1_draft_command_v2(
+    request_value: Mapping[str, Any], stage: LLMStageResult,
+    *, resolved: ResolvedTrustedState, policy_version: str, evaluated_at: str, expires_at: str,
+) -> C1DraftPreparation:
+    """Avalia regras existentes; só ALLOW de CREATE produz comando sem aprovação.
+
+    O chamador fornece observações operacionais reais no estado resolvido. Esta
+    função não as coleta, não supõe disponibilidade e não despacha efeitos.
+    DENY/REVIEW mantêm intenção e motivos, sem converter POST em CREATE. O
+    consumidor privado deve repetir validações sob lock e observar após commit.
+    """
+    policy_input = prepare_c1_llm_stage_v2(
+        request_value, stage, resolved=resolved, policy_version=policy_version,
+        evaluated_at=evaluated_at, expires_at=expires_at,
+    )
+    decision = evaluate_policy(policy_input)
+    decision.validate_binding(policy_input)
+    command = None
+    if decision.decision == "ALLOW":
+        if (policy_input.action.executor_mode != "CREATE_DRAFT"
+                or policy_input.action.action != "CREATE_DRAFT_BILL"):
+            raise RunnerContractError("ALLOW cannot authorize a non-CREATE draft handoff")
+        command = CapabilityCommand(
+            policy_input.action, decision, idempotency_key_for_resolved(resolved),
+        )
+        command.validate_binding(policy_input)
+    return C1DraftPreparation(policy_input, decision, command)

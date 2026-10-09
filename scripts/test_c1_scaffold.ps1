@@ -418,6 +418,14 @@ try {
         if ($workflowNames.Count -eq 0 -or ($workflowNames -join '|') -cne ($expectedWorkflowNames -join '|')) {
             throw 'Workflow ORM cases did not all actually execute'
         }
+        $registeredNames = @([regex]::Matches(($odooOutput -join "`n"), 'Starting TestRegisteredDraftExecution\.(test_[a-z0-9_]+)') |
+            ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+        $registeredTestSource = Join-Path $addonSnapshot 'tests/test_registered_execution.py'
+        $expectedRegisteredNames = @([regex]::Matches((Get-Content -Raw -LiteralPath $registeredTestSource -Encoding UTF8), '(?m)^    def (test_[a-z0-9_]+)\(') |
+            ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+        if ($registeredNames.Count -eq 0 -or ($registeredNames -join '|') -cne ($expectedRegisteredNames -join '|')) {
+            throw 'Registered CREATE ORM cases did not all actually execute'
+        }
         $workflowEvidencePath = Join-Path $workflowEvidenceRoot 'workflow-transactions.json'
         $workflowProof = Get-Content -LiteralPath $workflowEvidencePath -Raw -Encoding UTF8 | ConvertFrom-Json
         $expectedWorkflowNativeCases = @('register_commit_and_fresh_cursor_resolve', 'registration_outer_rollback',
@@ -435,8 +443,9 @@ try {
             if ($workflowCase.status -ne 'PASS') { throw 'Workflow transaction case failed' }
         }
         $result.schema_version = 'workflow-registration-probe-evidence/v1'
-        $result.scope = 'private-draft-workflow-registration-only'
+        $result.scope = 'private-draft-workflow-registration-and-registered-create-only'
         $result['workflow_test_count'] = $workflowNames.Count
+        $result['registered_draft_test_count'] = $registeredNames.Count
         $result['workflow_transaction_test_count'] = [int]$workflowProof.test_count
         $result['workflow_transaction_evidence_sha256'] = (Get-FileHash -LiteralPath $workflowEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
         $result['workflow_probe_source_sha256'] = $workflowProbeHashes

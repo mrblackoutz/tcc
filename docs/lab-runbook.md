@@ -352,13 +352,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_c1_scaffold.p
 
 O registro não autoriza efeito financeiro. ORM/RPC não podem criá-lo, alterá-lo ou excluí-lo; C1 não pode lê-lo. Não há rota, flag de ativação, commit interno ou escrita em guardas/cadastros. A resolução não exige quantidade ainda faturável: o binding continua verificável após CREATE; o kernel financeiro revalida quantidade e política sob seus próprios locks.
 
-O modo exige os 40 casos ORM de registro e as regressões privadas, além de [cinco casos em processo separado](../odoo/probes/workflow_transactions.py) com registry normal: commit/visibilidade externa, resolução/replay em cursor novo, rollback externo, savepoint seguido de commit parental, fault após INSERT real e conflito sem rebind. Em 05/10/2026, passaram os 295 Odoo totais (40 novos), os cinco casos normais e 1.260 offline (112 novos). Nenhum commit ou conexão é mockado. Fonte do add-on, harness e dois probes são hashados; `PASS` exige execução real e cleanup. Evidência saneada e logs ignorados ficam em `.runtime/run-02-workflow/<execução>/`.
+O modo exige os 40 casos ORM de registro, os 28 casos CREATE registrado e as regressões privadas, além de [cinco casos em processo separado](../odoo/probes/workflow_transactions.py) com registry normal: commit/visibilidade externa, resolução/replay em cursor novo, rollback externo, savepoint seguido de commit parental, fault após INSERT real e conflito sem rebind. Na primeira prova de registro, em 05/10/2026, passaram 295 Odoo totais e 1.260 offline; na árvore CREATE registrado, em 07/10/2026, passaram 323 Odoo e os cinco casos normais, com nomes de testes efetivamente executados conferidos. Nenhum commit ou conexão é mockado. Fonte do add-on, harness e dois probes são hashados; `PASS` exige execução real e cleanup. Evidência e logs ignorados ficam em `.runtime/run-02-workflow/<execução>/`.
 
 Os testes estabilizam o tracking nativo preexistente da preparação antes de capturar a projeção. Isso não apaga filas nem retira mensagens da comparação; evita atribuir ao helper a mensagem da adulteração sintética de banco/PO.
 
 As nove provas finais usam os mesmos 38 arquivos do add-on. Regressões separadas 17/56/95/123/171/255 e 54 HTTP, bypass de 127 HTTP e 22 casos transacionais com cinco pares/seis retries passaram. O inventário corrente tem 366 modelos, 151 ACLs e 83 regras; o novo modelo nega as quatro operações a C1. Fonte, hashes e cleanup conferidos. A entrada `workflowRegistration` no [lock de ambiente](../reproducibility/lab-environment.lock.json) ancorará este checkpoint; registros anteriores continuam históricos, não são transferidos à fonte nova.
 
-O contrato comum v2 foi implementado no checkpoint seguinte, descrito abaixo. Registro/proveniência ainda precisam ser ligados pelo runner às observações Odoo reais; não se transfere a prova privada para uma integração que ainda não foi executada.
+O contrato comum v2 e a ligação privada do CREATE foram implementados nos checkpoints seguintes, descritos abaixo. O runner experimental completo e o produtor das observações operacionais ainda não estão prontos; não se transfere a prova privada para esses gates.
 
 ### Contrato v2 comum e ponte do runner
 
@@ -367,7 +367,7 @@ Implementado sob [transporte e consumidores explícitos (DEC-050)](decision-log.
 A [ponte comum](../gateway/src/tcc_gateway/runner_contract_v2.py) fornece `build_client_request_v2`, `proposal_from_llm_stage_v2`, `dispatch_c0_llm_stage_v2`, `prepare_c1_llm_stage_v2` e `oracle_proposal_from_llm_stage_v2`. Ela liga a resposta à entrada e às tentativas do estágio existente, sem mudar parâmetros ou reparar a ação. Os destinos têm limites distintos:
 
 - C0 despacha CREATE com os argumentos propostos ou `action_post` no alvo fornecido pelo código confiável. Não importa allowlist, comparação financeira ou aprovação C1; POST não escreve os campos descritivos antes da chamada. `C0ActionDispatch` não comprova commit ou estado.
-- C1 recebe a mesma proposta na entrada da política (`PolicyInput`), com snapshot confiável obrigatório. A ponte não abre `execute`, emite aprovação ou executa os wrappers privados.
+- C1 recebe a mesma proposta na entrada da política (`PolicyInput`), com snapshot confiável obrigatório. `prepare_c1_draft_command_v2` avalia as regras existentes e forma comando somente em `ALLOW`/CREATE, com idempotência dos IDs confiáveis. `DENY`/`REVIEW` ficam sem comando; indisponibilidade do leitor aborta sem inventar snapshot. A ponte não coleta sinais operacionais, abre `execute`, emite aprovação ou despacha efeito.
 - O conversor do oráculo preserva intenção e fatos propostos. Estado pretendido, retorno RPC e `REVIEW` não substituem observação independente pós-commit.
 
 Hashes de request interno, proposta bruta, schema e mensagens são recompostos e comparados. Hashes do corpo HTTP/request/content do provedor são diagnósticos declarados, não atestação autenticada; sua custódia pertence à integração futura. A revalidação comum nega coerções e dinheiro adulterado antes da formatação. O resumo das tentativas rejeita retries proibidos e limites mínimos incompatíveis; não reconstitui tempo ocioso nem comprova término remoto.
@@ -380,7 +380,27 @@ python -m pytest gateway/tests tests/addon scripts/test_g3b_topology.py scripts/
 
 Em **07/10/2026**, passaram **1.453 offline**, com **193 novos**: 88 serviço/estágio v2, 34 C0, 33 conversor e 38 ponte/revalidação/paridade. Incluem HTTP sintético em localhost, sem chamada externa. No sandbox Windows, criação de event loop/socket bloqueou as primeiras tentativas; somente os processos pytest correspondentes foram encerrados e a suíte completa foi reexecutada com acesso local autorizado. Nenhum caso ou controle foi removido. Schemas v1, smokes M2/G3b/G3c, parâmetros, core, add-on e laboratório existente não foram alterados.
 
-**Próximo checkpoint:** ligar registro/proveniência e observações operacionais reais ao runner; validar C0/POST nativo e recibo pós-commit; completar captura/reset de §14.5 e RUN-01. POST registrado, supervisão, revisão humana, competência C0, piloto e freeze continuam pendentes; RUN-02/03 permanecem `ACTIVE`. O estágio local Qwen ainda não integra o runner e seu limite de saída efetivamente enviado exige conferência; nenhum benchmark ou aceite local é declarado.
+### Prova nativa C0 e CREATE C1 registrado
+
+Implementada sob [integração técnica delimitada (DEC-051)](decision-log.md#dec-051). Para reproduzir com Docker e as imagens locais já fixadas disponíveis:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_runner_native.ps1
+```
+
+O harness cria PostgreSQL, Odoo e gateway descartáveis em rede interna sem portas do host. Não usa volumes do laboratório, `.env`, chave real, pull, rebuild ou instalação de bibliotecas. A credencial C0 expira e só passa por um tmpfs rotulado de 1 MiB, com permissões restritas; não aparece em argumentos, stdout ou evidência. Cleanup confere nomes/labels e ausência final, tentando cada recurso mesmo se outra remoção falhar. Fonte é copiada, hashada e montada somente leitura; qualquer deriva reprova.
+
+A tag local gateway `0.5.0` diverge do digest histórico do lock. A prova usa diretamente o digest disponível `5c81dda…` como runtime de dependências, com versões conferidas e fonte corrente montada. Não muda o lock nem transfere o aceite de uma imagem à outra. A futura imagem experimental precisa de reconciliação antes do freeze.
+
+Passaram, em **09/10/2026**, sete casos C0: CREATE benigno, alteração de valor, banco de outro beneficiário, POST sem aprovação, alvo ausente, alvo ambíguo e erro nativo em alvo já posted. A identidade é funcional e não administrativa. Cada caso confere chamadas financeiras tentadas; o POST válido retornou HTTP 200 e o erro nativo HTTP 422, sem alteração. CREATE preserva fornecedor, PO, referência, data, moeda, banco/beneficiário, linha de compra, quantidade e preço efetivamente propostos. POST só atua no alvo confiável e não escreve campos descritivos do modelo. Observações pós-commit cobrem a empresa, sem filtro pela referência proposta; conferem três novos rascunhos e somente a transição POST esperada nos campos observados.
+
+O [wrapper C1 privado](../odoo/addons/ap_security_executor/registered_execution.py) recebe ID do registro, bindings esperados, documento, comando e contexto de auditoria. Resolve/lock/revalida o registro; a proveniência vem do contexto, sem override de workflow. Um savepoint externo engloba kernel e conferência de evento/recibo/anexo. A função devolve `caller_transaction_pending=True`: commit e retry integral pertencem ao chamador, não ao wrapper. Público permanece fechado.
+
+Os quatro casos C1 usam registry e cursores normais: CREATE com commit; replay com o mesmo recibo; rollback externo; e fault após CREATE real, seguido de commit do pai. Um cursor novo verifica binding, recibo, exatamente um evento CREATED e o REPLAY correspondente, anexo/hash e ausência de segundo efeito. No fault, rascunho, recibo, evento, anexo e guardas não sobrevivem ao savepoint; o PO mantém sua quantidade. Nenhum commit, cursor, método financeiro ou JSON-2 é mockado.
+
+A árvore passou em **1.483 testes offline** (30 novos) e **323 Odoo** (28 novos CREATE registrado), além dos cinco casos normais do registro. Evidência local: `.runtime/runner-native/<execução>/evidence.json`, com hashes das fontes/provas e cleanup; registros saneados ficam no [lock](../reproducibility/lab-environment.lock.json). Os hashes declarados detectam mistura/deriva, não autenticam um administrador.
+
+**Limites:** o provedor LLM é simulado e os casos não medem sucesso de prompt injection. A prova C1 usa comando estrutural de desenvolvimento, não produtor operacional/gateway completo. Não existe classificação científica de `evaluate_oracle` nesta prova; a captura mínima não é o snapshot/reset de §14.5. RUN-02/03 e C0-02 continuam `ACTIVE`. Próximo: POST registrado vinculado ao recibo CREATE e observações operacionais reais; depois captura/reset, RunRecord e supervisão. Revisão humana, competência C0 no piloto e freeze continuam pendentes. O estágio local Qwen ainda não está integrado nem benchmarkado.
 
 ### Executar o aceite completo
 
