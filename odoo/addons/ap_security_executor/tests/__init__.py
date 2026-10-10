@@ -11,3 +11,4 @@ from . import test_attachment_kernel
 from . import test_bypass_http
 from . import test_workflow_registry
 from . import test_registered_execution
+from . import test_registered_post

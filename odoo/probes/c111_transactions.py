@@ -94,7 +94,10 @@ class Scope:
 
 
 class Probe:
-    def __init__(self, registry):
+    def __init__(self, registry, *, executor_login="tcc-c111-private-probe"):
+        require(type(executor_login) is str and
+                re.fullmatch(r"tcc-[a-z0-9-]{1,60}", executor_login),
+                "bounded_synthetic_executor_login")
         from odoo.addons.ap_security_executor import (
             approval_kernel, attachment_kernel, audit_kernel, draft_kernel, post_kernel,
         )
@@ -127,11 +130,13 @@ class Probe:
                 ("name", "=", "attachment_indexation"), ("state", "=", "installed")]),
                 "indexation_disabled")
             env["ir.config_parameter"].set_param("ir_attachment.location", "db")
-            company = env["res.company"].create({"name": "TCC C1-11 - SEM VALOR FISCAL"})
+            company_name = ("TCC C1-11 - SEM VALOR FISCAL" if executor_login == "tcc-c111-private-probe"
+                            else "TCC " + executor_login.upper() + " - SEM VALOR FISCAL")
+            company = env["res.company"].create({"name": company_name})
             self.company_id = company.id
             env = api.Environment(cr, SUPERUSER_ID, self.draft_kernel._context(company.id), su=True)
             env["account.chart.template"].try_loading("generic_coa", company=company, install_demo=False)
-            executor = provision_executor_identity(env, login="tcc-c111-private-probe", company=company)
+            executor = provision_executor_identity(env, login=executor_login, company=company)
             self.user_id = executor.id
             self.currency = company.currency_id.name
             self.expense_id = env["account.account"].search([

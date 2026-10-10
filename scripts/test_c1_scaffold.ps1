@@ -216,7 +216,8 @@ try {
         $workflowSnapshot = Join-Path $probeRoot 'probe-snapshot'
         $null = New-Item -ItemType Directory -Path $workflowEvidenceRoot, $workflowSnapshot
         $workflowProbeHashes = @{}
-        foreach ($workflowSource in @('odoo/probes/c111_transactions.py', 'odoo/probes/workflow_transactions.py')) {
+        foreach ($workflowSource in @('odoo/probes/c111_transactions.py', 'odoo/probes/workflow_transactions.py',
+                                     'odoo/probes/registered_post_transactions.py')) {
             $workflowSourcePath = Join-Path $repositoryRoot $workflowSource
             $workflowHash = (Get-FileHash -LiteralPath $workflowSourcePath -Algorithm SHA256).Hash.ToLowerInvariant()
             $workflowProbeHashes[$workflowSource] = $workflowHash
@@ -226,6 +227,30 @@ try {
                 throw 'Workflow probe source changed during snapshot'
             }
         }
+        $workflowGitBase = (& git -C $repositoryRoot rev-parse HEAD).Trim()
+        if ($LASTEXITCODE -ne 0 -or $workflowGitBase -cnotmatch '^[0-9a-f]{40}$') {
+            throw 'Cannot bind workflow proof to a Git base'
+        }
+        # Source digest is a closed, credential-free declaration of precisely
+        # the copied add-on and probes, not an authenticated attestation.
+        $bundleNames = [string[]](@($sourceHashes.Keys) + @($workflowProbeHashes.Keys))
+        [Array]::Sort($bundleNames, [StringComparer]::Ordinal)
+        $bundleLines = foreach ($bundleName in $bundleNames) {
+            $bundleHash = if ($sourceHashes.ContainsKey($bundleName)) { $sourceHashes[$bundleName] }
+                          else { $workflowProbeHashes[$bundleName] }
+            $bundleName + '=' + $bundleHash + "`n"
+        }
+        $hashAlgorithm = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $workflowSourceBundleHash = ([BitConverter]::ToString($hashAlgorithm.ComputeHash(
+                $encoding.GetBytes(($bundleLines -join ''))))).Replace('-', '').ToLowerInvariant()
+            $configurationDeclaration = 'registered-post-native/v1' + "`n" +
+                'odoo=' + $environmentLock.components.odoo.imageDigest + "`n" +
+                'postgres=' + $postgresImage + "`n" + 'public=false' + "`n"
+            $workflowConfigurationHash = ([BitConverter]::ToString($hashAlgorithm.ComputeHash(
+                $encoding.GetBytes($configurationDeclaration)))).Replace('-', '').ToLowerInvariant()
+        }
+        finally { $hashAlgorithm.Dispose() }
     }
     if ($WithTransactions) {
         $httpEvidenceRoot = Join-Path $probeRoot 'transaction-evidence'
@@ -295,6 +320,17 @@ try {
             '--evidence', '/mnt/c1-evidence/workflow-transactions.json'
         )
         $null = Invoke-ProbeDocker -Arguments $workflowArguments -LogName 'workflow-transactions.log'
+        Remove-OwnedContainer -Name $odooName
+        $registeredPostArguments = $dockerBaseArguments + @(
+            '--mount', ('type=bind,source=' + $workflowSnapshot + ',target=/mnt/c1-probe,readonly'),
+            '--mount', ('type=bind,source=' + $workflowEvidenceRoot + ',target=/mnt/c1-evidence'),
+            $loadedImageId, 'python', '/mnt/c1-probe/registered_post_transactions.py',
+            '--config', '/etc/odoo/c104.conf', '--database', $databaseName,
+            '--evidence', '/mnt/c1-evidence/registered-post-transactions.json',
+            '--git-base', $workflowGitBase, '--source-bundle-sha256', $workflowSourceBundleHash,
+            '--configuration-sha256', $workflowConfigurationHash
+        )
+        $null = Invoke-ProbeDocker -Arguments $registeredPostArguments -LogName 'registered-post-transactions.log'
         foreach ($workflowSource in $workflowProbeHashes.Keys) {
             if ((Get-FileHash -LiteralPath (Join-Path $repositoryRoot $workflowSource) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $workflowProbeHashes[$workflowSource]) {
                 throw 'Workflow probe source tree changed during execution'
@@ -426,6 +462,14 @@ try {
         if ($registeredNames.Count -eq 0 -or ($registeredNames -join '|') -cne ($expectedRegisteredNames -join '|')) {
             throw 'Registered CREATE ORM cases did not all actually execute'
         }
+        $registeredPostNames = @([regex]::Matches(($odooOutput -join "`n"), 'Starting TestRegisteredPostExecution\.(test_[a-z0-9_]+)') |
+            ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+        $registeredPostTestSource = Join-Path $addonSnapshot 'tests/test_registered_post.py'
+        $expectedRegisteredPostNames = @([regex]::Matches((Get-Content -Raw -LiteralPath $registeredPostTestSource -Encoding UTF8), '(?m)^    def (test_[a-z0-9_]+)\(') |
+            ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+        if ($registeredPostNames.Count -eq 0 -or ($registeredPostNames -join '|') -cne ($expectedRegisteredPostNames -join '|')) {
+            throw 'Registered POST ORM cases did not all actually execute'
+        }
         $workflowEvidencePath = Join-Path $workflowEvidenceRoot 'workflow-transactions.json'
         $workflowProof = Get-Content -LiteralPath $workflowEvidencePath -Raw -Encoding UTF8 | ConvertFrom-Json
         $expectedWorkflowNativeCases = @('register_commit_and_fresh_cursor_resolve', 'registration_outer_rollback',
@@ -442,10 +486,46 @@ try {
         foreach ($workflowCase in $workflowCases) {
             if ($workflowCase.status -ne 'PASS') { throw 'Workflow transaction case failed' }
         }
-        $result.schema_version = 'workflow-registration-probe-evidence/v1'
-        $result.scope = 'private-draft-workflow-registration-and-registered-create-only'
+        $registeredPostEvidencePath = Join-Path $workflowEvidenceRoot 'registered-post-transactions.json'
+        $registeredPostProof = Get-Content -LiteralPath $registeredPostEvidencePath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $expectedRegisteredPostCases = @('registered_post_commit_fresh_cursor', 'registered_post_replay',
+            'registered_post_without_approval', 'registered_post_outer_rollback',
+            'registered_post_savepoint_rollback_then_commit',
+            'registered_post_fault_after_real_effect_then_parent_commit') | Sort-Object
+        $postCases = @($registeredPostProof.cases)
+        $postCaseNames = @($postCases | ForEach-Object { $_.case } | Sort-Object -Unique)
+        if ($registeredPostProof.schema_version -ne 'registered-post-transactions-evidence/v1' -or
+            $registeredPostProof.status -ne 'PASS' -or $postCases.Count -ne 6 -or
+            $registeredPostProof.test_count -ne 6 -or
+            ($postCaseNames -join '|') -cne ($expectedRegisteredPostCases -join '|') -or
+            $registeredPostProof.normal_registry -ne $true -or $registeredPostProof.test_cursor_used -ne $false -or
+            $registeredPostProof.mocked_sql_commit -ne $false -or
+            $registeredPostProof.public_financial_effects_enabled -ne $false -or
+            $registeredPostProof.scientific_run -ne $false -or $registeredPostProof.human_review_complete -ne $false -or
+            $registeredPostProof.git_base -cne $workflowGitBase -or
+            $registeredPostProof.source_bundle_sha256 -cne $workflowSourceBundleHash -or
+            $registeredPostProof.configuration_sha256 -cne $workflowConfigurationHash) {
+            throw 'Registered POST real transaction proof incomplete or binding mismatch'
+        }
+        foreach ($postCase in $postCases) {
+            if ($postCase.status -ne 'PASS') { throw 'Registered POST transaction case failed' }
+            foreach ($check in $postCase.checks.PSObject.Properties) {
+                if ($check.Value -is [bool] -and -not $check.Value) {
+                    throw 'Registered POST transaction check failed'
+                }
+            }
+        }
+        $result.schema_version = 'workflow-registration-probe-evidence/v2'
+        $result.scope = 'private-registration-and-registered-create-post-only'
         $result['workflow_test_count'] = $workflowNames.Count
         $result['registered_draft_test_count'] = $registeredNames.Count
+        $result['registered_post_test_count'] = $registeredPostNames.Count
+        $result['registered_post_transaction_test_count'] = $postCases.Count
+        $result['registered_post_transaction_evidence_sha256'] = (Get-FileHash -LiteralPath $registeredPostEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $result['registered_post_normal_registry_lifecycle_tested'] = $true
+        $result['git_base'] = $workflowGitBase
+        $result['declared_source_bundle_sha256'] = $workflowSourceBundleHash
+        $result['declared_configuration_sha256'] = $workflowConfigurationHash
         $result['workflow_transaction_test_count'] = [int]$workflowProof.test_count
         $result['workflow_transaction_evidence_sha256'] = (Get-FileHash -LiteralPath $workflowEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
         $result['workflow_probe_source_sha256'] = $workflowProbeHashes
