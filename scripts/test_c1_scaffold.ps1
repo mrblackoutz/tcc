@@ -1,8 +1,9 @@
-param([switch]$WithHttpAcl, [switch]$WithDraftKernel, [switch]$WithApproval, [switch]$WithPostKernel, [switch]$WithAudit, [switch]$WithBypass, [switch]$WithTransactions, [switch]$WithWorkflow)
+param([switch]$WithHttpAcl, [switch]$WithDraftKernel, [switch]$WithApproval, [switch]$WithPostKernel, [switch]$WithAudit, [switch]$WithBypass, [switch]$WithTransactions, [switch]$WithWorkflow, [switch]$WithOperational,
+      [ValidateSet('desktop-linux')][string]$DockerContext)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-if (@($WithHttpAcl, $WithDraftKernel, $WithApproval, $WithPostKernel, $WithAudit, $WithBypass, $WithTransactions, $WithWorkflow).Where({ [bool]$_ }).Count -gt 1) {
+if (@($WithHttpAcl, $WithDraftKernel, $WithApproval, $WithPostKernel, $WithAudit, $WithBypass, $WithTransactions, $WithWorkflow, $WithOperational).Where({ [bool]$_ }).Count -gt 1) {
     throw 'Select one explicit probe mode'
 }
 
@@ -11,10 +12,10 @@ if (@($WithHttpAcl, $WithDraftKernel, $WithApproval, $WithPostKernel, $WithAudit
 # HTTP mode generates only expiring in-memory synthetic test keys.
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
-$probeTask = if ($WithWorkflow) { 'RUN-02-workflow' } elseif ($WithTransactions) { 'C1-11' } elseif ($WithBypass) { 'C1-10' } elseif ($WithAudit) { 'C1-09' } elseif ($WithPostKernel) { 'C1-08' } elseif ($WithApproval) { 'C1-07' } elseif ($WithDraftKernel) { 'C1-06' } elseif ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
+$probeTask = if ($WithOperational) { 'RUN-02-observation' } elseif ($WithWorkflow) { 'RUN-02-workflow' } elseif ($WithTransactions) { 'C1-11' } elseif ($WithBypass) { 'C1-10' } elseif ($WithAudit) { 'C1-09' } elseif ($WithPostKernel) { 'C1-08' } elseif ($WithApproval) { 'C1-07' } elseif ($WithDraftKernel) { 'C1-06' } elseif ($WithHttpAcl) { 'C1-05' } else { 'C1-04' }
 $probeDirectory = $probeTask.ToLowerInvariant()
-$probePrefix = if ($WithWorkflow) { 'tcc-workflow' } elseif ($WithTransactions) { 'tcc-c111' } elseif ($WithBypass) { 'tcc-c110' } elseif ($WithAudit) { 'tcc-c109' } elseif ($WithPostKernel) { 'tcc-c108' } elseif ($WithApproval) { 'tcc-c107' } elseif ($WithDraftKernel) { 'tcc-c106' } elseif ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
-$ownerLabel = if ($WithWorkflow) { 'tcc.workflow.run' } elseif ($WithTransactions) { 'tcc.c111.run' } elseif ($WithBypass) { 'tcc.c110.run' } elseif ($WithAudit) { 'tcc.c109.run' } elseif ($WithPostKernel) { 'tcc.c108.run' } elseif ($WithApproval) { 'tcc.c107.run' } elseif ($WithDraftKernel) { 'tcc.c106.run' } elseif ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
+$probePrefix = if ($WithOperational) { 'tcc-observation' } elseif ($WithWorkflow) { 'tcc-workflow' } elseif ($WithTransactions) { 'tcc-c111' } elseif ($WithBypass) { 'tcc-c110' } elseif ($WithAudit) { 'tcc-c109' } elseif ($WithPostKernel) { 'tcc-c108' } elseif ($WithApproval) { 'tcc-c107' } elseif ($WithDraftKernel) { 'tcc-c106' } elseif ($WithHttpAcl) { 'tcc-c105' } else { 'tcc-c104' }
+$ownerLabel = if ($WithOperational) { 'tcc.observation.run' } elseif ($WithWorkflow) { 'tcc.workflow.run' } elseif ($WithTransactions) { 'tcc.c111.run' } elseif ($WithBypass) { 'tcc.c110.run' } elseif ($WithAudit) { 'tcc.c109.run' } elseif ($WithPostKernel) { 'tcc.c108.run' } elseif ($WithApproval) { 'tcc.c107.run' } elseif ($WithDraftKernel) { 'tcc.c106.run' } elseif ($WithHttpAcl) { 'tcc.c105.run' } else { 'tcc.c104.run' }
 $networkName = $probePrefix + '-' + $runId
 $postgresName = $networkName + '-db'
 $odooName = $networkName + '-odoo'
@@ -31,6 +32,7 @@ $postgresCreated = $false
 $networkCreated = $false
 $odooStarted = $false
 $result = $null
+$dockerContextArguments = if ($DockerContext) { @('--context', $DockerContext) } else { @() }
 
 function Get-AddonHashes {
     $hashes = @{}
@@ -62,7 +64,7 @@ function Invoke-ProbeDocker {
     $savedPreference = $ErrorActionPreference
     try {
         $ErrorActionPreference = 'Continue'
-        $output = @(& docker @Arguments 2>&1)
+        $output = @(& docker @dockerContextArguments @Arguments 2>&1)
         $exitCode = $LASTEXITCODE
     }
     finally { $ErrorActionPreference = $savedPreference }
@@ -88,6 +90,13 @@ function Remove-OwnedContainer {
 }
 
 try {
+    if ($DockerContext) {
+        $contextEndpoint = Invoke-ProbeDocker -Arguments @('context', 'inspect', $DockerContext,
+            '--format', '{{.Endpoints.docker.Host}}') -LogName 'context-endpoint-check.log'
+        if ($contextEndpoint.Count -ne 1 -or $contextEndpoint[0] -cnotmatch '^npipe://') {
+            throw 'Explicit probe Docker context must use a local named pipe'
+        }
+    }
     $environmentLock = Get-Content -LiteralPath (Join-Path $repositoryRoot 'reproducibility/lab-environment.lock.json') -Raw | ConvertFrom-Json
     $sourceLock = Get-Content -LiteralPath (Join-Path $repositoryRoot 'reproducibility/odoo-source.lock.json') -Raw | ConvertFrom-Json
     if ($sourceLock.selected_commit -ne $environmentLock.components.odoo.commit -or
@@ -182,7 +191,7 @@ try {
         $savedPreference = $ErrorActionPreference
         try {
             $ErrorActionPreference = 'Continue'
-            $null = & docker exec $postgresName pg_isready -U $databaseUser -d $databaseName 2>&1
+            $null = & docker @dockerContextArguments exec $postgresName pg_isready -U $databaseUser -d $databaseName 2>&1
             $ready = $LASTEXITCODE -eq 0
         }
         finally { $ErrorActionPreference = $savedPreference }
@@ -211,6 +220,52 @@ try {
     if ($WithAudit) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_bypass_http,-c1_workflow' }
     if ($WithBypass) { $testTags = '/ap_security_executor,-c1_draft_kernel,-c1_approval,-c1_post_kernel,-c1_audit,-c1_attachment,-c1_workflow' }
     if ($WithWorkflow) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_bypass_http' }
+    if ($WithOperational) { $testTags = '/ap_security_executor,-c1_acl_http,-c1_bypass_http' }
+    else { $testTags += ',-c1_observation' }
+    if ($WithOperational) {
+        $observationEvidenceRoot = Join-Path $probeRoot 'observation-evidence'
+        $observationSnapshot = Join-Path $probeRoot 'probe-snapshot'
+        $null = New-Item -ItemType Directory -Path $observationEvidenceRoot, $observationSnapshot
+        $observationProbeHashes = @{}
+        foreach ($observationSource in @('odoo/probes/c111_transactions.py', 'odoo/probes/operational_observation_transactions.py')) {
+            $observationSourcePath = Join-Path $repositoryRoot $observationSource
+            $observationHash = (Get-FileHash -LiteralPath $observationSourcePath -Algorithm SHA256).Hash.ToLowerInvariant()
+            $observationProbeHashes[$observationSource] = $observationHash
+            $observationCopy = Join-Path $observationSnapshot ([System.IO.Path]::GetFileName($observationSource))
+            Copy-Item -LiteralPath $observationSourcePath -Destination $observationCopy
+            if ((Get-FileHash -LiteralPath $observationCopy -Algorithm SHA256).Hash.ToLowerInvariant() -cne $observationHash) {
+                throw 'Observation probe source changed during snapshot'
+            }
+        }
+        $observationGitBase = (& git -C $repositoryRoot rev-parse HEAD).Trim()
+        if ($LASTEXITCODE -ne 0 -or $observationGitBase -cnotmatch '^[0-9a-f]{40}$') {
+            throw 'Cannot bind observation proof to a Git base'
+        }
+        $observationBundleNames = [string[]](@($sourceHashes.Keys) + @($observationProbeHashes.Keys))
+        [Array]::Sort($observationBundleNames, [StringComparer]::Ordinal)
+        $observationBundleLines = foreach ($observationBundleName in $observationBundleNames) {
+            $observationBundleHash = if ($sourceHashes.ContainsKey($observationBundleName)) { $sourceHashes[$observationBundleName] }
+                                     else { $observationProbeHashes[$observationBundleName] }
+            $observationBundleName + '=' + $observationBundleHash + "`n"
+        }
+        $observationHashAlgorithm = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $observationSourceBundleHash = ([BitConverter]::ToString($observationHashAlgorithm.ComputeHash(
+                $encoding.GetBytes(($observationBundleLines -join ''))))).Replace('-', '').ToLowerInvariant()
+            $observationConfigurationDeclaration = 'registered-observation-native/v1' + "`n" +
+                'odoo=' + $environmentLock.components.odoo.imageDigest + "`n" +
+                'postgres=' + $postgresImage + "`n" + 'public=false' + "`n"
+            $observationConfigurationHash = ([BitConverter]::ToString($observationHashAlgorithm.ComputeHash(
+                $encoding.GetBytes($observationConfigurationDeclaration)))).Replace('-', '').ToLowerInvariant()
+        }
+        finally { $observationHashAlgorithm.Dispose() }
+        $observationGatewayHashes = @{}
+        $observationGatewayPaths = @(& git -C $repositoryRoot ls-files --cached --others --exclude-standard -- 'gateway/src/tcc_gateway')
+        if ($LASTEXITCODE -ne 0 -or $observationGatewayPaths.Count -eq 0) { throw 'Cannot enumerate gateway validation sources' }
+        foreach ($observationGatewayPath in @($observationGatewayPaths) + @('scripts/validate_operational_observation_evidence.py')) {
+            $observationGatewayHashes[$observationGatewayPath] = (Get-FileHash -LiteralPath (Join-Path $repositoryRoot $observationGatewayPath) -Algorithm SHA256).Hash.ToLowerInvariant()
+        }
+    }
     if ($WithWorkflow) {
         $workflowEvidenceRoot = Join-Path $probeRoot 'workflow-evidence'
         $workflowSnapshot = Join-Path $probeRoot 'probe-snapshot'
@@ -334,6 +389,50 @@ try {
         foreach ($workflowSource in $workflowProbeHashes.Keys) {
             if ((Get-FileHash -LiteralPath (Join-Path $repositoryRoot $workflowSource) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $workflowProbeHashes[$workflowSource]) {
                 throw 'Workflow probe source tree changed during execution'
+            }
+        }
+    }
+    if ($WithOperational) {
+        Remove-OwnedContainer -Name $odooName
+        $observationArguments = $dockerBaseArguments + @(
+            '--mount', ('type=bind,source=' + $observationSnapshot + ',target=/mnt/c1-probe,readonly'),
+            '--mount', ('type=bind,source=' + $observationEvidenceRoot + ',target=/mnt/c1-evidence'),
+            $loadedImageId, 'python', '/mnt/c1-probe/operational_observation_transactions.py',
+            '--config', '/etc/odoo/c104.conf', '--database', $databaseName,
+            '--evidence', '/mnt/c1-evidence/operational-observation-transactions.json',
+            '--git-base', $observationGitBase, '--source-bundle-sha256', $observationSourceBundleHash,
+            '--configuration-sha256', $observationConfigurationHash
+        )
+        $null = Invoke-ProbeDocker -Arguments $observationArguments -LogName 'observation-transactions.log'
+        foreach ($observationSource in $observationProbeHashes.Keys) {
+            if ((Get-FileHash -LiteralPath (Join-Path $repositoryRoot $observationSource) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $observationProbeHashes[$observationSource]) {
+                throw 'Observation probe source tree changed during execution'
+            }
+        }
+        $observationNativeEvidencePath = Join-Path $observationEvidenceRoot 'operational-observation-transactions.json'
+        $savedPreference = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = 'Continue'
+            $observationValidationArguments = @(
+                (Join-Path $repositoryRoot 'scripts/validate_operational_observation_evidence.py'),
+                '--evidence', $observationNativeEvidencePath, '--git-base', $observationGitBase,
+                '--source-bundle-sha256', $observationSourceBundleHash, '--configuration-sha256', $observationConfigurationHash
+            )
+            $observationContractOutput = @(& python @observationValidationArguments 2>&1)
+            $observationContractExitCode = $LASTEXITCODE
+        }
+        finally { $ErrorActionPreference = $savedPreference }
+        [System.IO.File]::WriteAllLines((Join-Path $probeRoot 'observation-contract-validation.json'),
+            [string[]]@($observationContractOutput | ForEach-Object { [string]$_ }), $encoding)
+        if ($observationContractExitCode -ne 0) { throw 'Native observation gateway contract validation failed' }
+        $observationContractProof = ($observationContractOutput -join "`n") | ConvertFrom-Json
+        if ($observationContractProof.status -ne 'PASS' -or $observationContractProof.record_count -ne 9 -or
+            $observationContractProof.schema_version -ne 'registered-operational-contract-validation/v1') {
+            throw 'Native observation gateway validation incomplete'
+        }
+        foreach ($observationGatewayPath in $observationGatewayHashes.Keys) {
+            if ((Get-FileHash -LiteralPath (Join-Path $repositoryRoot $observationGatewayPath) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $observationGatewayHashes[$observationGatewayPath]) {
+                throw 'Observation gateway validation sources changed during execution'
             }
         }
     }
@@ -535,6 +634,71 @@ try {
         $result['financial_effects_scope'] = 'public-executor-only'
         $result['private_effects_scope'] = 'disposable-synthetic-registry-and-wrapper-tests-only'
         $result['workflow_registration_integrated_into_runner'] = $false
+    }
+    if ($WithOperational) {
+        $observationNames = @([regex]::Matches(($odooOutput -join "`n"), 'Starting TestOperationalObservation\.(test_[a-z0-9_]+)') |
+            ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+        $observationTestSource = Join-Path $addonSnapshot 'tests/test_operational_observation.py'
+        $expectedObservationNames = @([regex]::Matches((Get-Content -LiteralPath $observationTestSource -Raw -Encoding UTF8), '(?m)^    def (test_[a-z0-9_]+)\(') |
+            ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+        if ($observationNames.Count -eq 0 -or ($observationNames -join '|') -cne ($expectedObservationNames -join '|')) {
+            throw 'Operational observation ORM cases did not all actually execute'
+        }
+        $observationProof = Get-Content -LiteralPath $observationNativeEvidencePath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $observationCases = @($observationProof.cases)
+        $observationCaseNames = @($observationCases | ForEach-Object { $_.case_id } | Sort-Object -Unique)
+        $expectedObservationCases = @('observe_create_open_clean_readonly', 'observe_ledger_duplicate_changed_reference',
+            'observe_native_reference_duplicate', 'observe_closed_period_executor_identity', 'observe_post_origin_not_duplicate',
+            'observe_post_additional_reference_duplicate', 'observe_audit_preflight_unavailable',
+            'observe_candidate_hash_changes_with_reference_and_date') | Sort-Object
+        if ($observationProof.schema_version -ne 'operational-observation-transactions-evidence/v1' -or
+            $observationProof.scope -ne 'private-registered-operational-observation-readonly-only' -or
+            $observationProof.status -ne 'PASS' -or $observationCases.Count -ne 8 -or
+            $observationProof.case_count -ne 8 -or $observationProof.test_count -ne 8 -or
+            $observationProof.passed_case_count -ne 8 -or $observationProof.record_count -ne 9 -or
+            ($observationCaseNames -join '|') -cne ($expectedObservationCases -join '|') -or
+            $observationProof.normal_registry -ne $true -or $observationProof.test_cursor_used -ne $false -or
+            $observationProof.registry_test_mode -ne $false -or $observationProof.mocked_sql_commit -ne $false -or
+            $observationProof.mocked_financial_method -ne $false -or $observationProof.mocked_clock -ne $false -or
+            $observationProof.approval_material_emitted -ne $false -or $observationProof.real_provider_calls_executed -ne 0 -or
+            $observationProof.public_executor_enabled -ne $false -or $observationProof.public_financial_effects_enabled -ne $false -or
+            $observationProof.scientific_run -ne $false -or $observationProof.human_review_complete -ne $false -or
+            $observationProof.git_base -cne $observationGitBase -or
+            $observationProof.source_bundle_sha256 -cne $observationSourceBundleHash -or
+            $observationProof.configuration_sha256 -cne $observationConfigurationHash) {
+            throw 'Operational observation transaction proof incomplete or binding mismatch'
+        }
+        foreach ($observationCase in $observationCases) {
+            if ($observationCase.status -ne 'PASS' -or @($observationCase.checks.PSObject.Properties).Count -eq 0) {
+                throw 'Operational observation transaction case incomplete'
+            }
+            foreach ($check in $observationCase.checks.PSObject.Properties) {
+                if ($check.Value -is [bool] -and -not $check.Value) { throw 'Operational observation transaction check failed' }
+            }
+        }
+        $result.schema_version = 'registered-operational-probe-evidence/v1'
+        $result.scope = 'private-readonly-observations-and-gateway-contract-only'
+        $result['operational_observation_test_count'] = $observationNames.Count
+        $result['operational_observation_transaction_test_count'] = $observationCases.Count
+        $result['operational_observation_record_count'] = [int]$observationContractProof.record_count
+        $result['operational_observation_transaction_evidence_sha256'] = (Get-FileHash -LiteralPath $observationNativeEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $result['gateway_contract_validation_sha256'] = (Get-FileHash -LiteralPath (Join-Path $probeRoot 'observation-contract-validation.json') -Algorithm SHA256).Hash.ToLowerInvariant()
+        $result['git_base'] = $observationGitBase
+        $result['declared_source_bundle_sha256'] = $observationSourceBundleHash
+        $result['declared_configuration_sha256'] = $observationConfigurationHash
+        $result['observation_probe_source_sha256'] = $observationProbeHashes
+        $result['gateway_contract_source_sha256'] = $observationGatewayHashes
+        $result['docker_context'] = if ($DockerContext) { $DockerContext } else { 'caller-default' }
+        $result['docker_context_selection_scope'] = 'probe-only-explicit-cli-flag-or-unchanged-default'
+        $result['native_observation_contract_validated_by_gateway'] = $true
+        $result['observer_financial_effects_enabled'] = $false
+        $result['public_financial_effects_enabled'] = $false
+        $result['financial_effects_scope'] = 'public-executor-only'
+        $result['private_effects_scope'] = 'disposable-synthetic-fixtures-and-regression-tests-only'
+        $result['gateway_policy_live_odoo_roundtrip_tested'] = $false
+        $result['full_oracle_capture_and_reset_tested'] = $false
+        $result['human_review_complete'] = $false
+        $result['scientific_run'] = $false
     }
     if ($WithDraftKernel) {
         $result.schema_version = 'c106-probe-evidence/v1'

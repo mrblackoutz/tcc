@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Registered operational observation, advisory and candidate-bound",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "registration", "provenance", "scope", "facts", "preflight", "observed_at", "observation_sha256"],
+  "properties": {
+    "schema_version": {"const": "registered-operational-observation/v1"},
+    "registration": {
+      "type": "object", "additionalProperties": false,
+      "required": ["registration_id", "registration_sha256"],
+      "properties": {"registration_id": {"$ref": "#/$defs/id"}, "registration_sha256": {"$ref": "#/$defs/hash"}}
+    },
+    "provenance": {
+      "type": "object", "additionalProperties": false,
+      "required": ["code_commit", "code_sha256", "configuration_sha256"],
+      "properties": {
+        "code_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "code_sha256": {"$ref": "#/$defs/hash"}, "configuration_sha256": {"$ref": "#/$defs/hash"}
+      }
+    },
+    "scope": {
+      "type": "object", "additionalProperties": false,
+      "required": ["company_id", "executor_user_id", "vendor_id", "purchase_order_id", "purchase_line_ids", "journal_id", "allowed_bank_ids", "scenario_id", "document_sha256", "policy_version", "invoice_date_min", "invoice_date_max", "monetary_tolerance", "quantity_scale", "executor_mode", "action_sha256", "document_ref", "invoice_date", "target_move_id"],
+      "properties": {
+        "company_id": {"$ref": "#/$defs/id"}, "executor_user_id": {"$ref": "#/$defs/id"},
+        "vendor_id": {"$ref": "#/$defs/id"}, "purchase_order_id": {"$ref": "#/$defs/id"},
+        "purchase_line_ids": {"$ref": "#/$defs/ids"}, "journal_id": {"$ref": "#/$defs/id"},
+        "allowed_bank_ids": {"$ref": "#/$defs/ids"},
+        "scenario_id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9._-]{0,63}$"},
+        "document_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "policy_version": {"type": "string", "pattern": "^[a-z][a-z0-9._/-]{0,63}$"},
+        "invoice_date_min": {"$ref": "#/$defs/date"}, "invoice_date_max": {"$ref": "#/$defs/date"},
+        "monetary_tolerance": {"type": "string", "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{2}$"},
+        "quantity_scale": {"type": "integer", "enum": [2, 3, 4]},
+        "executor_mode": {"enum": ["CREATE_DRAFT", "POST_APPROVED"]},
+        "action_sha256": {"$ref": "#/$defs/hash"}, "document_ref": {"$ref": "#/$defs/reference"},
+        "invoice_date": {"$ref": "#/$defs/date"},
+        "target_move_id": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/id"}]}
+      }
+    },
+    "facts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["document_duplicate", "reference_duplicate", "duplicate_detected", "accounting_period_open"],
+      "properties": {
+        "document_duplicate": {"type": "boolean"}, "reference_duplicate": {"type": "boolean"},
+        "duplicate_detected": {"type": "boolean"}, "accounting_period_open": {"type": "boolean"}
+      }
+    },
+    "preflight": {
+      "type": "object", "additionalProperties": false,
+      "required": ["state", "audit"],
+      "properties": {"state": {"$ref": "#/$defs/availability"}, "audit": {"$ref": "#/$defs/availability"}}
+    },
+    "observed_at": {"type": "string", "format": "date-time", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z$"},
+    "observation_sha256": {"$ref": "#/$defs/hash"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"scope": {"properties": {"executor_mode": {"const": "CREATE_DRAFT"}}}}},
+      "then": {"properties": {"scope": {"properties": {"target_move_id": {"type": "null"}}}}},
+      "else": {"properties": {"scope": {"properties": {"target_move_id": {"$ref": "#/$defs/id"}}}}}
+    },
+    {
+      "if": {"properties": {"facts": {"properties": {"document_duplicate": {"const": false}, "reference_duplicate": {"const": false}}}}},
+      "then": {"properties": {"facts": {"properties": {"duplicate_detected": {"const": false}}}}},
+      "else": {"properties": {"facts": {"properties": {"duplicate_detected": {"const": true}}}}}
+    }
+  ],
+  "$defs": {
+    "id": {"type": "integer", "minimum": 1},
+    "ids": {"type": "array", "minItems": 1, "maxItems": 50, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+    "hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "date": {"type": "string", "format": "date", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "reference": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9._ /-]{0,95}$"},
+    "availability": {"enum": ["AVAILABLE", "UNAVAILABLE"]}
+  }
+}

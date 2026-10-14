@@ -422,7 +422,31 @@ O harness confere os nomes dos testes ORM efetivamente executados e exige seis c
 
 Em 09–10/10/2026 passaram **1.504 testes offline** (1.168 gateway + 336 contratos/topologia; 21 novos), **367 Odoo** (44 novos POST registrado), **cinco casos normais de registro e seis POST**. A regressão C1-11 passou nos **22 casos** na mesma árvore. A prova confere 42 fontes do add-on `19.0.0.11.0` e três probes; o [lock](../reproducibility/lab-environment.lock.json) preserva o checkpoint anterior e acrescenta hashes da nova prova vinculada ao commit. Startup falho das fixtures e preparação inconsistente do nonce foram corrigidos sem relaxar constraints ou retirar negativas; rodadas interrompidas permanecem locais e não recebem aceite.
 
-**Próximo checkpoint:** produtor real de observações da política. Duplicidade e período contábil precisam ser vinculados à referência/data da ação candidata, além da empresa, documento e PO; o contrato atual não basta para reutilizar um status entre candidatos. Implementar esse binding separadamente, sem valores favoráveis implícitos. Depois: captura/restauração completa, oráculo, RunRecord e supervisão. Este incremento não abre `execute`, não integra gateway POST completo e não conclui RUN-02/03, piloto, revisão humana ou freeze. Nenhuma API externa é usada.
+O [produtor de observações ligadas à ação](#observacoes-operacionais-ligadas-a-acao) foi construído no checkpoint seguinte, sem transferir esta prova anterior ao novo código. Integração nativa completa com a política, captura/restauração, oráculo, RunRecord e supervisão permanecem separados. Este incremento não abre `execute`, não integra gateway POST completo e não conclui RUN-02/03, piloto, revisão humana ou freeze. Nenhuma API externa é usada.
+
+<a id="observacoes-operacionais-ligadas-a-acao"></a>
+
+### Observações operacionais ligadas à ação
+
+Implementação sob [observações reais vinculadas à ação candidata (DEC-053)](decision-log.md#dec-053). Reproduzir com as imagens locais fixadas e Docker Desktop Linux disponível:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_c1_scaffold.ps1 -WithOperational -DockerContext desktop-linux
+```
+
+A seleção de contexto é explícita apenas nessas chamadas: não troca o padrão do Docker nem inicia serviços. O harness confere endpoint local named pipe, pins, arquitetura e fonte antes de criar banco/rede/containers descartáveis rotulados. Não usa a API do modelo, chave do laboratório ou volumes existentes.
+
+O [produtor privado no Odoo](../odoo/addons/ap_security_executor/operational_observation.py) recebe registro, bindings esperados, PDF/proveniência e ação canônica, sem comando de execução, aprovação ou resultados fornecidos pelo chamador. Consulta duplicidade pelo documento/chave do ledger e pela referência candidata, usando fornecedor/empresa registrados. Em POST, exclui somente o recibo e o lançamento da origem CREATE auditada. Período usa data candidata e diário registrado, preservando o UID executor nas exceções contábeis. Não altera a proposta, grava evento, reserva nonce ou contabiliza. Retry não reavalia esses fatos: usa o comando original, cuja integridade/replay o kernel revalida.
+
+O envelope fechado `registered-operational-observation/v1` inclui hash da ação completa, referência/data/modo/alvo, registro/proveniência, IDs/configuração, fatos e timestamp do servidor. O [conversor gateway](../gateway/src/tcc_gateway/operational_observation.py) exige configuração independente com listas registradas de linhas/bancos; confere esquema/hash, IDs lidos, limites e ação exata antes da política. Parser limitado a 65.536 bytes, profundidade 8 e 4.096 nós; ciclos e erros de forma produzem diagnóstico finito. Banco revogado pode faltar na leitura, mas um ID adicional na lista declarada não é adotado.
+
+`DependencyStatus` é obrigatório e vem do supervisor confiável, sem defaults favoráveis. A checagem prévia nativa de auditoria é somente leitura/configuração/ACL/tabela: não garante INSERT futuro ou saúde do gateway. Ela só pode piorar, nunca melhorar, um status de indisponibilidade. O novo caminho `prepare_c1_observed_draft_command_v2` exige estado observado; CREATE só gera comando após `ALLOW`, e POST mantém `REVIEW`. Os helpers antigos, sem esse vínculo, permanecem encanamento de desenvolvimento, não entrada deste caminho.
+
+A prova exige os nomes dos 41 testes ORM e oito casos em processo normal: leitura limpa; ledger positivo mesmo com referência alterada; referência duplicada; período fechado para C1 apesar de exceção UID1; origem POST excluída da duplicidade; duplicata adicional; auditoria indisponível; e alteração de referência/data/hash. Nove observações reais são validadas pelo parser gateway contra bindings preparados independentemente. Checks/fatos por caso, flags, contagens e diferença entre os dois candidatos são conferidos, não somente a palavra PASS. Projeções técnicas e callbacks devem ficar iguais antes/depois e em cursor novo após commit do chamador.
+
+**Validação em 13/10/2026:** passaram 1.735 offline (1.358 gateway + 377 contratos/topologia; 231 novos), 408 Odoo (41 novos), oito casos normais/nove observações aceitas pelo contrato gateway e regressão C1-11 de 22 casos. São 44 fontes do add-on `19.0.0.12.0` e dois probes, além das fontes do parser/schema gateway conferidas; cleanup confirmado. Duas consultas Docker interrompidas e um erro de import antes do probe não contam como casos. Evidências/credenciais/logs ignorados ficam em `.runtime/run-02-observation/<execução>/`; o [lock](../reproducibility/lab-environment.lock.json) acrescenta somente hashes/contagens saneados da prova final repetida após commit, preservando entradas anteriores.
+
+**Limites e próximo passo:** schema/hash/binding entre processos não é um round-trip de política com leitura e execução nativas completas. Falta ligar esse caminho à integração real do runner, conferir efeitos após commit e depois completar captura/reset, oráculo, RunRecord e supervisão. Observação é um snapshot consultivo: não elimina TOCTOU, não garante frescor futuro nem autentica contra administrador SQL. RUN-02/03 continuam `ACTIVE`; revisão humana, piloto, freeze e competência C0 permanecem pendentes. `execute` público continua fechado.
 
 ### Executar o aceite completo
 

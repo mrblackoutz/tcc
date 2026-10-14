@@ -21,6 +21,7 @@ from .llm_client_service import (
     REQUEST_SCHEMA_VERSION_V2, parse_client_request_v2, validate_v2_client_response,
 )
 from .oracle import OracleProposal
+from .operational_observation import ObservedTrustedState, prepare_observed_policy_input
 from .pdf_ingestion import ExtractedPdf
 from .pilot_llm_runner import LLMStageResult
 from .policy_contracts import CapabilityCommand, PolicyDecision, PolicyInput
@@ -182,6 +183,39 @@ def prepare_c1_draft_command_v2(
             raise RunnerContractError("ALLOW cannot authorize a non-CREATE draft handoff")
         command = CapabilityCommand(
             policy_input.action, decision, idempotency_key_for_resolved(resolved),
+        )
+        command.validate_binding(policy_input)
+    return C1DraftPreparation(policy_input, decision, command)
+
+
+def prepare_c1_observed_draft_command_v2(
+    request_value: Mapping[str, Any], stage: LLMStageResult,
+    *, observed: ObservedTrustedState, policy_version: str, evaluated_at: str, expires_at: str,
+) -> C1DraftPreparation:
+    """DEC-053: nova entrada exige observação registrada ligada ao candidato.
+
+    Não aceita ResolvedTrustedState/booleans de desenvolvimento. Avaliação real
+    das regras precede o comando CREATE; POST fica REVIEW sem gerar aprovação.
+    Esta ponte não despacha, captura efeito, supervisiona ou resolve TOCTOU.
+    """
+    if type(observed) is not ObservedTrustedState:
+        raise RunnerContractError("observed candidate-bound C1 context required")
+    proposal = proposal_from_llm_stage_v2(request_value, stage)
+    if stage.condition != "C1":
+        raise RunnerContractError("C1 observed consumer requires a C1 stage")
+    policy_input = prepare_observed_policy_input(
+        proposal, observed, policy_version=policy_version,
+        evaluated_at=evaluated_at, expires_at=expires_at,
+    )
+    decision = evaluate_policy(policy_input)
+    decision.validate_binding(policy_input)
+    command = None
+    if decision.decision == "ALLOW":
+        if (policy_input.action.executor_mode != "CREATE_DRAFT"
+                or policy_input.action.action != "CREATE_DRAFT_BILL"):
+            raise RunnerContractError("ALLOW cannot authorize a non-CREATE observed handoff")
+        command = CapabilityCommand(
+            policy_input.action, decision, idempotency_key_for_resolved(observed.resolved),
         )
         command.validate_binding(policy_input)
     return C1DraftPreparation(policy_input, decision, command)
