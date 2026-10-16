@@ -1,22 +1,12 @@
-"""Componentes compartilhados do gateway experimental do TCC."""
+"""Componentes compartilhados, carregados somente quando solicitados.
 
-from .config import OdooConfig, OdooConfigError
-from .llm_adapters import (
-    DeepSeekProposalAdapter,
-    LLMAdapterError,
-    LLMCallMetadata,
-    LLMMessage,
-    LLMProposalRequest,
-    LLMProposalResult,
-    OllamaProposalAdapter,
-)
-from .llm_config import DeepSeekConfig, LLMConfigError, OllamaConfig
-from .model_output import ModelOutputSchemaError, model_output_schema
-from .odoo_json2 import OdooJson2Client, OdooJson2Error
-from .pdf_ingestion import ExtractedPdf, PdfIngestionError, PdfLimits, extract_pdf_text
-from .proposal import VendorBillLineProposal, VendorBillProposal
-from .proposal_schema import ProposalSchemaError, validate_proposal_mapping
-from .state import canonical_json_bytes, canonical_json_sha256
+Contratos administrativos feitos apenas com a biblioteca padrão também são
+usados no Odoo fixado, que não possui as dependências opcionais do gateway.
+Importar o pacote ou esses contratos não deve carregar HTTP, PDF ou schemas.
+Os nomes públicos anteriores continuam disponíveis por PEP 562.
+"""
+
+from importlib import import_module
 
 __all__ = [
     "OdooConfig",
@@ -46,3 +36,45 @@ __all__ = [
     "canonical_json_bytes",
     "canonical_json_sha256",
 ]
+
+_EXPORTS = {
+    "OdooConfig": "config",
+    "OdooConfigError": "config",
+    "DeepSeekConfig": "llm_config",
+    "OllamaConfig": "llm_config",
+    "LLMConfigError": "llm_config",
+    "DeepSeekProposalAdapter": "llm_adapters",
+    "OllamaProposalAdapter": "llm_adapters",
+    "LLMAdapterError": "llm_adapters",
+    "LLMCallMetadata": "llm_adapters",
+    "LLMMessage": "llm_adapters",
+    "LLMProposalRequest": "llm_adapters",
+    "LLMProposalResult": "llm_adapters",
+    "ModelOutputSchemaError": "model_output",
+    "model_output_schema": "model_output",
+    "OdooJson2Client": "odoo_json2",
+    "OdooJson2Error": "odoo_json2",
+    "ExtractedPdf": "pdf_ingestion",
+    "PdfIngestionError": "pdf_ingestion",
+    "PdfLimits": "pdf_ingestion",
+    "extract_pdf_text": "pdf_ingestion",
+    "VendorBillLineProposal": "proposal",
+    "VendorBillProposal": "proposal",
+    "ProposalSchemaError": "proposal_schema",
+    "validate_proposal_mapping": "proposal_schema",
+    "canonical_json_bytes": "state",
+    "canonical_json_sha256": "state",
+}
+
+
+def __getattr__(name: str):
+    module_name = _EXPORTS.get(name)
+    if module_name is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    value = getattr(import_module("." + module_name, __name__), name)
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    return sorted(set(globals()) | set(__all__))

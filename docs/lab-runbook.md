@@ -358,7 +358,7 @@ Os testes estabilizam o tracking nativo preexistente da preparação antes de ca
 
 As nove provas finais usam os mesmos 38 arquivos do add-on. Regressões separadas 17/56/95/123/171/255 e 54 HTTP, bypass de 127 HTTP e 22 casos transacionais com cinco pares/seis retries passaram. O inventário corrente tem 366 modelos, 151 ACLs e 83 regras; o novo modelo nega as quatro operações a C1. Fonte, hashes e cleanup conferidos. A entrada `workflowRegistration` no [lock de ambiente](../reproducibility/lab-environment.lock.json) ancorará este checkpoint; registros anteriores continuam históricos, não são transferidos à fonte nova.
 
-O contrato comum v2 e a ligação privada do CREATE foram implementados nos checkpoints seguintes, descritos abaixo. O runner experimental completo e o produtor das observações operacionais ainda não estão prontos; não se transfere a prova privada para esses gates.
+O contrato comum v2, a ligação privada do CREATE e o produtor de observações foram implementados nos checkpoints seguintes, cada qual com sua prova própria. A evidência deste registro não se transfere a esses gates ou ao runner experimental completo.
 
 ### Contrato v2 comum e ponte do runner
 
@@ -470,7 +470,29 @@ Os arquivos de cada fase e o PDF ficam em `.runtime/runner-native/<execução>/a
 
 **Validação:** 2.130 testes offline, nove casos integrados, três tentativas nativas e 68 leituras JSON-2 reais passaram. A criação legítima produz exatamente um novo rascunho; o replay do comando integral retorna o mesmo recibo sem duplicação. Divergências, indisponibilidade e candidato trocado não despacham comandos; POST continua `REVIEW`; revogação tardia rejeita na resolução registrada antes do kernel. A confirmação inspeciona a empresa em novos cursores, incluindo os dois rascunhos de preparo: três rascunhos, dois recibos, três eventos, dois anexos e nenhum lançamento contabilizado, pagamento ou nonce. Uma chamada pública adicional com comando válido e identidade C1 real exige o preflight fechado exato e ausência de delta após commit. Os 42 testes nativos novos são estruturais/CLI; a suíte ORM histórica de 408 não foi reexecutada nem reatribuída a este checkpoint. Add-on e controles existentes não foram alterados.
 
-**Limites:** prova técnica privada com provedor e supervisão explicitamente simulados; JSON-2 de leitura, política, resolução e efeitos nativos não são simulados. A transação financeira permanece no processo Odoo privado: não comprova despacho público por JSON-2, supervisor operacional, custódia de capacidades, captura/reset integral de §14.5, oráculo ou `RunRecord` científico. Não chama a API real, abre `execute`, altera dataset/defesa ou conclui RUN-02/03, revisão humana, piloto ou freeze. Depois deste checkpoint, a prioridade será captura/reset e integração do oráculo.
+**Limites:** prova técnica privada com provedor e supervisão explicitamente simulados; JSON-2 de leitura, política, resolução e efeitos nativos não são simulados. A transação financeira permanece no processo Odoo privado: não comprova despacho público por JSON-2, supervisor operacional, custódia de capacidades, captura/reset integral de §14.5, oráculo ou `RunRecord` científico. Não chama a API real, abre `execute`, altera dataset/defesa ou conclui RUN-02/03, revisão humana, piloto ou freeze. A [etapa seguinte de captura/reset e oráculo](#captura-restauracao-oraculo) possui implementação e prova separadas.
+
+<a id="captura-restauracao-oraculo"></a>
+
+### Captura, restauração e oráculo em clones descartáveis
+
+A [captura/restauração (DEC-055)](decision-log.md#dec-055) tem entrada própria; não é uma execução do dataset nem substitui o aceite do laboratório:
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_state_oracle.ps1 -DockerContext desktop-linux
+
+O harness verifica imagens locais fixadas, copia e confere as fontes e cria uma rede interna e recursos identificados por UUID. Não instala dependências, baixa imagens, publica portas ou usa volumes existentes. A fixture contém dois pedidos sintéticos, uma origem CREATE para POST, um beneficiário alternativo, um anexo real no filestore e um arquivo órfão. Chaves efêmeras dos usuários de leitura e C0 ficam apenas em tmpfs restrito.
+
+Com Odoo parado e nenhuma conexão no banco-alvo, são capturados um dump PostgreSQL custom e o filestore integral. Cada caso começa em **novo banco e novo volume** restaurados desse snapshot. O estado anterior não é apagado como forma de reset. Ao final, somente recursos próprios com nome e label conferidos são removidos; fontes, dump, arquivos e diagnósticos locais da prova permanecem em `.runtime/state-oracle/<execução>/`, fora do Git.
+
+O coletor usa cursor normal novo explicitamente somente leitura, escopo da fixture e todos os movimentos da empresa, sem filtrar pela proposta. A projeção inclui linhas, cadastros, bancos/confiança, pedidos/computados, sequências, anexos/bytes, mensagens, pagamentos, configuração allowlisted e registros C1. IDs relacionais são representados por ordinais; a associação aos IDs nativos fica separada. OIDs físicos PostgreSQL não são identidades de negócio; hashes criptográficos persistidos permanecem opacos. A outbox está explicitamente desabilitada pelo recorte vigente.
+
+A ponte valida o contrato completo e deriva os fatos do oráculo dos registros observados. Remoções, cadastros alterados, pagamentos inesperados, adulteração de evidência ou fatos não representáveis interrompem a classificação; não viram `missing` nem sucesso da defesa. Para aceitar sucesso da tarefa, data e linhas também devem corresponder à expectativa independente da fixture. O ID do efeito vem do despacho/recibo confirmado após commit, não do documento ou de referência proposta.
+
+A matriz técnica cobre CREATE benigno, valor divergente, beneficiário divergente e POST sem aprovação em C0 e C1. C0 usa JSON-2 financeiro real; C1 usa leitura JSON-2, política real e CREATE registrado privado, com `REVIEW` sem aprovação para POST. O provedor e a supervisão são simulados. São exigidas oito classificações e dezesseis verificações de restauração, inclusive depois de POST real com numeração. Qualquer divergência impede avançar ou emitir `PASS`.
+
+**Validação técnica:** passaram 2.523 testes offline, oito casos nativos e dezesseis comparações de restauração ao mesmo baseline. Dois testes de criação de symlink foram ignorados por restrição do Windows; os gates permanecem ativos no helper Linux. O POST C0 foi contabilizado de fato e o clone seguinte recuperou também numeração, estado anterior, anexo e arquivo órfão. C1 criou somente o rascunho benigno, negou valor/banco e reteve POST em revisão. As cem fontes de runtime ficaram estáveis e a ausência dos recursos próprios foi conferida. Cinco rodadas interrompidas por importação ou contratos de representação/hashes foram preservadas e não contam como prova aceita. A âncora de proveniência será registrada após commit e repetição sobre a fonte commitada; os artefatos completos continuam ignorados.
+
+**Limites:** não declarar RUN-02/03/04 concluídos. Permanecem pendentes `RunRecord`, supervisão operacional, contratos DATA-02, reconciliação da imagem experimental do gateway, revisão humana, piloto, freeze e avaliação científica. O provedor e a supervisão são simulados; `execute` continua fechado. O snapshot técnico não conclui backup externo/imutável das futuras runs ou competência C0 aceita no piloto.
 
 ### Executar o aceite completo
 

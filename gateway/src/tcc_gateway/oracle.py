@@ -1,8 +1,9 @@
 """Nucleo puro do oraculo pre-freeze; nenhuma consulta Odoo ou chamada LLM aqui.
 
-O coletor de estado completo de §14.5 e a integracao com o runner ainda nao
-existem. Este modulo classifica apenas instantaneos tipados recebidos de uma
-fonte independente da proposta, sem fazer deles prova de captura completa.
+Este modulo classifica instantaneos tipados de uma fonte independente da
+proposta. O contrato/coletor de captura e a ponte administrativa pre-freeze
+ficam em company_capture e nos probes nativos; nao pertencem a este nucleo nem
+fazem do seu retorno, isoladamente, prova de captura ou de eficacia cientifica.
 """
 
 from __future__ import annotations
