@@ -1,4 +1,5 @@
-# DEC-051: isolated native proof, never the existing laboratory or a scientific run.
+# DEC-051/054: isolated native proof, never the existing laboratory or a scientific run.
+param([switch]$WithObserved, [ValidateSet('desktop-linux')][string]$DockerContext)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
@@ -19,11 +20,13 @@ $null = New-Item -ItemType Directory -Path $probeRoot
 $encoding = [System.Text.UTF8Encoding]::new($false)
 $created = @{ network = $false; postgres = $false; odoo = $false; gateway = $false; volume = $false }
 $result = $null
+$entrypoint = if ($WithObserved) { '/mnt/runner-probes/runner_observed_native.py' } else { '/mnt/runner-probes/runner_native.py' }
+$dockerPrefix = if ($DockerContext) { @('--context', $DockerContext) } else { @() }
 
 function Invoke-RunnerDocker {
     param([string[]]$Arguments, [string]$LogName)
     $savedPreference = $ErrorActionPreference
-    try { $ErrorActionPreference = 'Continue'; $output = @(& docker @Arguments 2>&1); $exitCode = $LASTEXITCODE }
+    try { $ErrorActionPreference = 'Continue'; $output = @(& docker @dockerPrefix @Arguments 2>&1); $exitCode = $LASTEXITCODE }
     finally { $ErrorActionPreference = $savedPreference }
     $lines = @($output | ForEach-Object { [string]$_ })
     [System.IO.File]::WriteAllLines((Join-Path $probeRoot $LogName), [string[]]$lines, $encoding)
@@ -36,6 +39,11 @@ function Get-RunnerSourceHashes {
     $paths = @(& git -C $repositoryRoot ls-files --cached --others --exclude-standard -- 'odoo/addons/ap_security_executor' 'gateway/src')
     if ($LASTEXITCODE -ne 0 -or $paths.Count -eq 0) { throw 'Cannot enumerate native proof sources' }
     $paths += @('odoo/probes/c111_transactions.py', 'odoo/probes/runner_native.py', 'odoo/probes/runner_native_fixture.py', 'odoo/probes/runner_native_gateway.py', 'scripts/test_runner_native.ps1')
+    if ($WithObserved) {
+        $paths += @('odoo/probes/operational_observation_transactions.py', 'odoo/probes/runner_observed_native.py',
+            'odoo/probes/runner_observed_fixture.py', 'odoo/probes/runner_observed_gateway.py',
+            'scripts/validate_runner_observed_evidence.py')
+    }
     foreach ($path in ($paths | Sort-Object -Unique)) {
         $path = $path -replace '\\', '/'
         if ($path.Contains('..') -or [System.IO.Path]::GetExtension($path) -notin @('.py', '.xml', '.json', '.ps1')) { throw 'Unexpected native proof source' }
@@ -63,10 +71,14 @@ function Remove-RunnerContainer {
 
 function Invoke-NativeMode {
     param([string]$Mode)
-    $null = Invoke-RunnerDocker (@('exec', $odooName, 'python', '/mnt/runner-probes/runner_native.py', $Mode) + $probeArguments) ($Mode + '.log')
+    $null = Invoke-RunnerDocker (@('exec', $odooName, 'python', $entrypoint, $Mode) + $probeArguments) ($Mode + '.log')
 }
 
 try {
+    if ($DockerContext) {
+        $endpoint = ((Invoke-RunnerDocker @('context', 'inspect', $DockerContext, '--format', '{{.Endpoints.docker.Host}}') 'docker-context.log') -join '').Trim()
+        if (-not $endpoint.StartsWith('npipe://', [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Runner proof requires a local named-pipe Docker endpoint' }
+    }
     $lock = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot 'reproducibility/lab-environment.lock.json') | ConvertFrom-Json
     $sourceLock = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot 'reproducibility/odoo-source.lock.json') | ConvertFrom-Json
     if ($sourceLock.selected_commit -ne $lock.components.odoo.commit -or
@@ -137,7 +149,7 @@ try {
     $ready = $false
     for ($attempt = 0; $attempt -lt 30; $attempt++) {
         $savedPreference = $ErrorActionPreference
-        try { $ErrorActionPreference = 'Continue'; $null = & docker exec $postgresName pg_isready -U $databaseUser -d $databaseName 2>&1; $ready = $LASTEXITCODE -eq 0 }
+        try { $ErrorActionPreference = 'Continue'; $null = & docker @dockerPrefix exec $postgresName pg_isready -U $databaseUser -d $databaseName 2>&1; $ready = $LASTEXITCODE -eq 0 }
         finally { $ErrorActionPreference = $savedPreference }
         if ($ready) { break }; Start-Sleep -Seconds 1
     }
@@ -162,19 +174,63 @@ try {
         '--mount', ('type=volume,source=' + $secretVolume + ',target=/run/runner-secrets,readonly'),
         $gatewayImage, 'python', '-c', 'import time; time.sleep(1200)')
     $null = Invoke-RunnerDocker $gatewayBase 'gateway-start.log'
-    $null = Invoke-RunnerDocker ($odooBase + @('--mount', ('type=volume,source=' + $secretVolume + ',target=/run/runner-secrets'), $odooImage, 'python', '/mnt/runner-probes/runner_native.py', 'prepare') + $probeArguments) 'prepare.log'
+    $null = Invoke-RunnerDocker ($odooBase + @('--mount', ('type=volume,source=' + $secretVolume + ',target=/run/runner-secrets'), $odooImage, 'python', $entrypoint, 'prepare') + $probeArguments) 'prepare.log'
     Remove-RunnerContainer $odooName
     $null = Invoke-RunnerDocker ($odooBase + @('--detach', '--network-alias', 'odoo', $odooImage, 'python', '/opt/odoo/odoo-bin', '-c', '/etc/odoo/runner.conf', '-d', $databaseName, '--http-interface', '0.0.0.0', '--max-cron-threads=0')) 'odoo-server-start.log'
     $ready = $false
     $healthCode = "import urllib.request; assert urllib.request.urlopen('http://odoo:8069/web/login',timeout=2).status==200"
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
         $savedPreference = $ErrorActionPreference
-        try { $ErrorActionPreference = 'Continue'; $null = & docker exec $gatewayName python -c $healthCode 2>&1; $ready = $LASTEXITCODE -eq 0 }
+        try { $ErrorActionPreference = 'Continue'; $null = & docker @dockerPrefix exec $gatewayName python -c $healthCode 2>&1; $ready = $LASTEXITCODE -eq 0 }
         finally { $ErrorActionPreference = $savedPreference }
         if ($ready) { break }; Start-Sleep -Seconds 1
     }
     if (-not $ready) { throw 'Disposable Odoo HTTP readiness failed' }
-    $null = Invoke-RunnerDocker (@('exec', $gatewayName, 'python', '/mnt/runner-probes/runner_native.py', 'dispatch') + $probeArguments) 'dispatch.log'
+    if ($WithObserved) {
+        $null = Invoke-RunnerDocker (@('exec', $gatewayName, 'python', $entrypoint, 'candidate') + $probeArguments) 'candidate.log'
+        Invoke-NativeMode 'observe'
+        $null = Invoke-RunnerDocker (@('exec', $gatewayName, 'python', $entrypoint, 'policy') + $probeArguments) 'policy.log'
+        Invoke-NativeMode 'execute'
+        Invoke-NativeMode 'confirm'
+        Assert-RunnerSources $sourceHashes (Get-RunnerSourceHashes)
+        $validationPath = Join-Path $artifacts 'observed-validation.json'
+        $validationArguments = @((Join-Path $repositoryRoot 'scripts/validate_runner_observed_evidence.py'),
+            '--artifacts', $artifacts, '--git-base', $gitBase, '--source-bundle-sha256', $bundleHash,
+            '--output', $validationPath)
+        $validationOutput = @(& python @validationArguments 2>&1)
+        $validationExitCode = $LASTEXITCODE
+        [System.IO.File]::WriteAllLines((Join-Path $probeRoot 'roundtrip-validation.log'), [string[]]@($validationOutput | ForEach-Object { [string]$_ }), $encoding)
+        if ($validationExitCode -ne 0 -or -not (Test-Path -LiteralPath $validationPath -PathType Leaf)) { throw 'Observed runner evidence validation failed; inspect ignored diagnostic metadata' }
+        $validation = Get-Content -Raw -Encoding UTF8 -LiteralPath $validationPath | ConvertFrom-Json
+        if ($validation.status -cne 'PASS' -or $validation.git_base -cne $gitBase -or
+            $validation.source_bundle_sha256 -cne $bundleHash) { throw 'Observed runner validation binding mismatch' }
+        if ($validation.case_count -isnot [int] -or $validation.case_count -ne 9 -or
+            $validation.native_attempt_count -isnot [int] -or $validation.native_attempt_count -ne 3 -or
+            $validation.native_json2_request_count -isnot [int] -or $validation.native_json2_request_count -le 0 -or
+            $validation.scientific_run -isnot [bool] -or $validation.scientific_run -or
+            $validation.human_review_complete -isnot [bool] -or $validation.human_review_complete -or
+            $validation.public_executor_enabled -isnot [bool] -or $validation.public_executor_enabled) { throw 'Observed runner validation limits or strict counts invalid' }
+        $result = [ordered]@{
+            schema_version = 'runner-observed-probe-evidence/v1'; status = 'TESTS_PASSED_CLEANUP_PENDING'
+            decision = 'DEC-054'; observed_at = [DateTime]::UtcNow.ToString('o'); git_base = $gitBase
+            source_bundle_sha256 = $bundleHash; source_sha256 = $sourceHashes; source_tree_unchanged = $true
+            odoo_source_commit = $sourceLock.selected_commit; odoo_manifest_digest = $lock.components.odoo.imageDigest
+            odoo_config_digest = $odooImage; gateway_dependency_image_digest = $gatewayImage; postgres_image = $postgresImage
+            validation_sha256 = (Get-FileHash -LiteralPath $validationPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            case_count = $validation.case_count; native_attempt_count = $validation.native_attempt_count
+            native_json2_request_count = $validation.native_json2_request_count
+            configuration_sha256 = $validation.configuration_sha256
+            native_json2_tested = $true; gateway_policy_integrated = $true; native_registered_create_tested = $true
+            native_normal_registry_observer = $true; test_cursor_used = $false; provider_mocked = $true
+            external_provider_called = $false; existing_lab_touched = $false; public_c1_executor_opened = $false
+            scientific_run = $false; complete_scientific_snapshot = $false; human_review_complete = $false
+            docker_context = $DockerContext; global_docker_context_changed = $false
+            dependency_health_scope = 'fixture-only-policy-process-and-native-read-preflight-not-production-supervisor'
+            credential_transfer = 'labelled-restricted-docker-tmpfs'; provenance_declared_not_attested = $true
+        }
+    }
+    else {
+    $null = Invoke-RunnerDocker (@('exec', $gatewayName, 'python', $entrypoint, 'dispatch') + $probeArguments) 'dispatch.log'
     Invoke-NativeMode 'observe'
     Invoke-NativeMode 'c1'
     Assert-RunnerSources $sourceHashes (Get-RunnerSourceHashes)
@@ -210,6 +266,7 @@ try {
         provider_mocked = $true; external_provider_called = $false; existing_lab_touched = $false
         public_c1_executor_opened = $false; scientific_run = $false; complete_scientific_snapshot = $false
         credential_transfer = 'labelled-restricted-docker-tmpfs'; provenance_declared_not_attested = $true
+    }
     }
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
 }
