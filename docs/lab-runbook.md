@@ -514,6 +514,32 @@ O bootstrap é idempotente para as fixtures M1. Se encontrar uma conta com a ref
 
 docker compose down encerra contêineres e rede, mas preserva os volumes.
 
+<a id="run-record-candidato"></a>
+
+### Registro local candidato de execução — RUN-01/08
+
+A [DEC-056](decision-log.md#dec-056) acrescenta três componentes de engenharia, sem alterar a prova nativa anterior:
+
+- [registro e parser](../gateway/src/tcc_gateway/run_record.py): `build_run_record` recebe documento original, entrada/etapa v2, identidade do slot, supervisão declarada, caso/expectativa independentes e capturas `baseline`, `before`, `after`, `restored`. Confere bytes/hash do documento, tentativas, cenário/condição, proveniência comum e igualdade do reset. Recalcula disposição e oráculo, em vez de aceitar um resultado informado;
+- [contrato de supervisão](../gateway/src/tcc_gateway/run_supervision.py): intervalos monotônicos inteiros, ordenados e não sobrepostos, vinculados ao run, host, relógio, código e configuração. `UNKNOWN` nunca é convertido em quiescência confirmada. O contrato não coleta saúde, verifica término remoto ou executa retries;
+- [persistência local](../gateway/src/tcc_gateway/run_record_store.py): `write_run_record(root, record)` e `read_run_record(root, run_id)`. A raiz deve ser um `Path` absoluto, existente, dedicado e ignorado sob `.runtime`. O gravador cria exclusivamente `<run_id>/record.json`, faz flush/fsync e só então grava `manifest.json`; a leitura exige os dois arquivos exatos, hashes/tamanhos e revalidação integral. Links, reparse points, hardlinks, restos, corrupção e sobrescrita são recusados. Falha preserva o diretório incompleto; usar novo run ID para uma nova tentativa autorizada, nunca apagar o anterior para ocultar interrupção.
+
+O [JSON Schema](../gateway/src/tcc_gateway/schemas/run_record_v1.schema.json) valida o envelope estrutural; **somente `parse_run_record` verifica os contratos aninhados e os vínculos/resultados recalculados**. O registro é um snapshot privado: `to_mapping()` contém texto, PDF codificado, resposta/proposta e capturas completas, e **não é exportação saneada**. Nenhum registro bruto é preparado para Git. `.runtime` também é ignorada e barrada pelo scanner quando aninhada em outro diretório; os artefatos locais são preservados.
+
+**Caminho suportado:** proposta v2 bem-sucedida, estado completo representável, efeito sem incerteza declarada, reset exato e nenhuma aprovação afirmada apenas por booleano. O produtor das evidências continua confiável por premissa: hashes/tipos não autenticam SQL, processo, modelo ou declaração de supervisão. Simulação permanece explícita; observação declarada não libera ciência. Custo/pricing, HTTP bruto, avaliação por invariante, chamadas com identidade, aprovação e demais lacunas constam em `pending`, nunca como zero ou `PASS`. `scientific_run` e `human_review_complete` são obrigatoriamente falsos.
+
+**Caminhos ainda pendentes:** falha/recusa/timeout da proposta, observação indisponível/`MISSING` e reset divergente não podem ser concluídos por este builder. Nesses casos, preservar capturas, saída e diagnóstico pelos canais brutos existentes dos probes. Ausência de registro candidato **não exclui uma run**. Em particular, reset divergente deve conservar a disposição da execução já observada e interromper o próximo slot; a integração desse registro de falha é o próximo checkpoint, não uma autorização de retry seletivo.
+
+Reproduzir os testes novos, a partir da raiz do repositório:
+
+```powershell
+python -m pytest gateway/tests/test_run_record.py gateway/tests/test_run_record_store.py gateway/tests/test_run_supervision.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp ".runtime/pytest-record-$([guid]::NewGuid().ToString('N'))"
+```
+
+No sandbox Windows, as fixtures de diretório temporário/socket podem exigir execução local autorizada. Não retirar testes por isso. Fixtures de symlink indisponíveis no host são reportadas como skips; verificações de reparse/hardlinks continuam exercitadas. Não houve chamada à API, Docker ou alteração no laboratório neste checkpoint. O gravador não comprova backup externo criptografado/imutável, segurança contra administrador hostil, resistência a perda de energia ou aceite humano. RUN-01/02/03/04/08 permanecem abertos; SCI-03, DATA-02, supervisão operacional, piloto e freeze continuam gates.
+
+**Validação em 16/10/2026:** 2.837 testes offline passaram na árvore final, dos quais 314 novos; seis fixtures de symlink foram ignoradas por restrições do Windows (quatro novas, duas anteriores). Incluem paridade C0/C1, CREATE benigno/manipulação de valor, POST sem aprovação, origens independentes do provedor/supervisão, resultados recalculados, tipos estritos, corrupção, interrupção, exclusividade, fsync e nomes portáveis. A revisão automatizada identificou e corrigiu duas fronteiras permissivas de tipos; não concedeu revisão humana. Os 18 Markdown correntes, verificação de segurança e `git diff --check` passaram. A prova nativa da DEC-055 não foi reexecutada nem transferida para esta nova fonte.
+
 ### Construir e verificar apenas a imagem Odoo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_odoo_image.ps1

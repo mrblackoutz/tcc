@@ -27,7 +27,7 @@ try {
         [pscustomobject]@{ Name = 'local credential configuration'; Pattern = '(?i)(^|/)(odoo\.conf|\.pgpass|pgpass\.conf|\.npmrc|\.pypirc|\.netrc)$'; Allow = '$a' },
         [pscustomobject]@{ Name = 'credential path'; Pattern = '(?i)(^|/)(secrets?|credentials?)(/|\.|$)'; Allow = '$a' },
         [pscustomobject]@{ Name = 'database or dump'; Pattern = '(?i)\.(dump|backup|sql|sqlite|sqlite3)$'; Allow = '$a' },
-        [pscustomobject]@{ Name = 'local runtime state'; Pattern = '(?i)^\.runtime(/|$)'; Allow = '$a' },
+        [pscustomobject]@{ Name = 'local runtime state'; Pattern = '(?i)(^|/)\.runtime(/|$)'; Allow = '$a' },
         [pscustomobject]@{ Name = 'private/raw data'; Pattern = '(?i)^(data/private|dataset/private|documents/private|sources/private|experiments/raw|experiments/runs|analysis/private|logs|outbox)(/|$)'; Allow = '$a' },
         [pscustomobject]@{ Name = 'local Odoo snapshot'; Pattern = '(?i)^odoo-19\.0(/|$)'; Allow = '$a' },
         [pscustomobject]@{ Name = 'local institutional/TCC I source package'; Pattern = '(?i)^relatorio_tcc_I_fci_pacote(/|$)'; Allow = '$a' }

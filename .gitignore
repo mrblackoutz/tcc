@@ -42,7 +42,7 @@ pgpass.conf
 /relatorio_tcc_I_fci_pacote/
 
 # Bancos, volumes e estado local do Odoo/PostgreSQL
-/.runtime/
+.runtime/
 /odoo-data/
 /postgres-data/
 /filestore/
