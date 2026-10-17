@@ -318,6 +318,10 @@ def build_run_record(*, identity: RunIdentity, document_bytes: bytes, request_va
 
 def parse_run_record(value: dict) -> RunRecord:
     """Recompute derived fields when loading; reject extras and favourable edits."""
+    if type(value) is dict and value.get("schema_version") == "run-record/v2":
+        # Explicit version dispatch; never relax the original v1 contract.
+        from .run_record_v2 import parse_run_record_v2
+        return parse_run_record_v2(value)
     try:
         value = _json_snapshot(value)
         _closed(value, _TOP_FIELDS)
