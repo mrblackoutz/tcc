@@ -539,7 +539,7 @@ Os schemas [v1](../gateway/src/tcc_gateway/schemas/run_record_v1.schema.json) e 
 
 Os bloqueios de classificação e reset têm prioridade sobre o bloqueio LLM; `reset_status` preserva separadamente `VERIFIED`, `DIVERGED` ou `UNOBSERVED`. O futuro consumidor deve usar `derived.batch_gate`, que inclui a incerteza LLM, e não apenas o gate interno da disposição técnica. São gates derivados no registro, ainda a consumir pelo supervisor integrado: não impedem retrospectivamente retries/efeitos já ocorridos nem substituem controle de processo. Divergência exige captura válida no mesmo binding: corrupção ou outra proveniência são erros contratuais, não simples divergência. O status terminal do cliente não comprova término remoto; os tempos resumidos e o intervalo declarado são apenas limites de coerência. Falhas com tempo declarado acima do prazo são preservadas, não aceitas como sucesso nem apagadas. Nenhum bloqueio autoriza repetição seletiva ou exclusão do slot.
 
-**Limites:** o produtor das evidências continua confiável por premissa; hashes/tipos não autenticam SQL, processo, modelo ou supervisão. Custo/pricing, HTTP bruto, invariantes individuais, chamadas com identidade e aprovação continuam em `pending`, nunca como zero ou `PASS`. `scientific_run` e `human_review_complete` são falsos. Não classificar `MISSING` até fechar parâmetros/revisão de SCI-03. Pré-condições/documentos/capturas inválidos continuam recusados, com preservação bruta pelos canais existentes; ausência de registro candidato **não exclui uma run**. Um registro suspenso é checkpoint imutável: sua resolução posterior exige histórico complementar do mesmo slot, ainda pendente, não sobrescrita ou nova execução. O próximo checkpoint é esse vínculo de supervisão/resolução e a integração operacional, além de DATA-02.
+**Limites:** o produtor das evidências continua confiável por premissa; hashes/tipos não autenticam SQL, processo, modelo ou supervisão. Custo/pricing, HTTP bruto, invariantes individuais, chamadas com identidade e aprovação continuam em `pending`, nunca como zero ou `PASS`. `scientific_run` e `human_review_complete` são falsos. Não classificar `MISSING` até fechar parâmetros/revisão de SCI-03. Pré-condições/documentos/capturas inválidos continuam recusados, com preservação bruta pelos canais existentes; ausência de registro candidato **não exclui uma run**. Um registro suspenso é checkpoint imutável, não autorização para sobrescrita ou nova execução. A [recuperação de reset (DEC-059)](#recuperacao-reset-mesmo-slot) abaixo cobre somente a verificação posterior da restauração; resolução de classificação/LLM e supervisão real continuam pendentes, assim como integração operacional e DATA-02.
 
 Reproduzir os testes novos, a partir da raiz do repositório:
 
@@ -552,6 +552,39 @@ No sandbox Windows, as fixtures de diretório temporário/socket podem exigir ex
 **Validação em 16/10/2026:** 2.837 testes offline passaram na árvore final, dos quais 314 novos; seis fixtures de symlink foram ignoradas por restrições do Windows (quatro novas, duas anteriores). Incluem paridade C0/C1, CREATE benigno/manipulação de valor, POST sem aprovação, origens independentes do provedor/supervisão, resultados recalculados, tipos estritos, corrupção, interrupção, exclusividade, fsync e nomes portáveis. A revisão automatizada identificou e corrigiu duas fronteiras permissivas de tipos; não concedeu revisão humana. Os 18 Markdown correntes, verificação de segurança e `git diff --check` passaram. A prova nativa da DEC-055 não foi reexecutada nem transferida para esta nova fonte.
 
 **Validação v2 em 16/10/2026:** 3.021 testes offline passaram, incluindo 184 novos; os mesmos seis skips de symlink do Windows permanecem explícitos. O produtor real `run_llm_stage`, com clocks/transportes simulados, foi ligado ao registro e gravador; testados erros permanentes/transitórios, orçamento sem tentativa, timeout acima do prazo e leitura/escrita v1/v2 sem sobrescrita. Sem proposta válida, efeitos adversos A1/A3a continuam registrados como violação; reset divergente mantém o resultado. Observação ausente e anomalia não geram `MISSING` ou pontuação favorável. A revisão cruzada confirmou o gate conservador para timeout/transporte em tentativa anterior ao sucesso. Política de tentativas, classificador e oráculo não foram alterados. Os 18 Markdown, segurança e diff passaram. Sem API, Docker, nova prova nativa, aceite humano ou resultado científico; demais limites e pendências acima preservados.
+
+<a id="recuperacao-reset-mesmo-slot"></a>
+
+### Recuperação de reset sem repetir a execução — DEC-059
+
+O [checkpoint de reset](../gateway/src/tcc_gateway/run_reset_checkpoint.py) e seu [journal local](../gateway/src/tcc_gateway/run_reset_journal.py) acrescentam observações ao **mesmo slot**. O registro original não muda: documento, tentativas, `after`, oráculo e reset inicialmente ausente/divergente continuam preservados. A captura posterior serve apenas para comparar restauração com o baseline; nunca substitui o estado final ou cria `MISSING`. A [DEC-059](decision-log.md#dec-059) delimita este incremento privado.
+
+O produtor usa `build_run_reset_checkpoint(record=..., previous=..., restored=..., supervision=...)`. A supervisão declara um único intervalo `capture` posterior aos anteriores, no mesmo host/relógio, modo e binding. `restored` pode ser ausente, divergente ou igual; todos esses fatos são registráveis. O parser recalcula o gate; `derive_next_slot_gate(record, checkpoints)` exige a cadeia completa desde o primeiro checkpoint. Um predecessor isolado não prova sua ancestralidade.
+
+Provisionar duas raízes **irmãs**, absolutas, existentes e ignoradas sob `.runtime`, por exemplo `records/` e `reset-journal/`. Não colocar o journal dentro de `<run_id>` do store original, que continua contendo somente `record.json` e `manifest.json`. As operações são:
+
+- `read_reset_journal(record_root=..., journal_root=..., run_id=...)`: revalida base, cadeia, hashes, tipos e arquivos; sem histórico, não cria diretórios;
+- `append_reset_checkpoint(..., checkpoint=..., expected_head_sha256=...)`: exige `None` no primeiro append e o SHA-256 do checkpoint anterior nos demais. Cria exclusivamente `<run_id>/<sequência de oito dígitos>/checkpoint.json` e seu manifesto, com flush/fsync. Cabeça desatualizada ou concorrência não geram retry automático;
+- `read_stored_next_slot_gate(...)`: consumidor somente leitura do gate técnico. Não agenda slot, executa reset, chama LLM/Odoo, autoriza efeito ou comprova saúde/término remoto.
+
+| Situação após o checkpoint | Gate técnico |
+|---|---|
+| estado final ausente/recusado ou quiescência financeira desconhecida | mantém `HALT_CLASSIFICATION`, sem fabricar resultado |
+| reset ainda ausente ou divergente | `HALT_RESET` |
+| reset igual, mas qualquer tentativa LLM contém incerteza | `HALT_LLM_UNCERTAIN`, inclusive se antes oculto pelo reset |
+| resultado já avaliável, reset igual e sem incerteza LLM | `CONTINUE` apenas técnico; outros gates permanecem |
+
+Quiescência `UNKNOWN` não pode ser promovida a `CONFIRMED` pelo checkpoint, nem esquecida em seu sucessor. A sequência aceita no máximo 32 checkpoints; cada envelope é limitado a 20 MiB, com captura limitada pelo contrato existente a 16 MiB. Outro slot, código/configuração, proveniência, clock, conteúdo adulterado, sequência com lacuna, arquivo extra, link/reparse/hardlink ou diretório parcial bloqueia leitura/append. Erros são finitos, sem conteúdo bruto ou caminho recebido.
+
+**Falhas e limites operacionais:** preservar diretórios incompletos; não apagar, reutilizar, sobrescrever ou criar novo run ID para contornar o bloqueio. Erro de append exige parada/investigação, não leitura subsequente para ignorá-lo. Falha do último fsync pode deixar ambos os arquivos íntegros e legíveis: isso não reconstrói o recibo de gravação nem prova durabilidade. A cadeia valida o prefixo presente; sem âncora externa, não detecta remoção de um sufixo inteiro ou de todo o histórico. Comparação de cabeça no append não é proteção antirrollback. Custódia externa criptografada/imutável continua obrigatória e pendente; o código não resiste a administrador hostil.
+
+`to_mapping()` contém captura privada, não exportação saneada. `scientific_run` e `human_review_complete` continuam falsos. Os produtores ainda precisam ser confiáveis por premissa; a suíte usa provedor, efeitos e capturas simulados. Esta integração não comprova recuperação nativa, supervisão real, revisão humana, DATA-02, SCI-03, piloto ou freeze. Não abre `execute` nem altera oráculo, retry ou métricas.
+
+```powershell
+python -m pytest gateway/tests/test_run_reset_checkpoint.py gateway/tests/test_run_reset_journal.py gateway/tests/test_reset_recovery_flow.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp ".runtime/pytest-reset-$([guid]::NewGuid().ToString('N'))"
+```
+
+**Validação em 17/10/2026:** 3.366 testes offline passaram em 118,40 s, com 282 novos: 124 contrato, 135 journal e 23 fluxo integrado. Incluem o produtor real `run_llm_stage` com mocks até registro/store/journal/gate, paridade C0/C1 e POST, preservação byte a byte do original e incerteza anterior a sucesso. A primeira rodada autorizada teve duas falhas de fixture: um alias `.Runtime` no Windows já estava sob ancestral `.runtime` permitido e não representava escape; testes foram corrigidos e acrescentados caminhos realmente externos, sem alterar a implementação. Rodadas interrompidas por restrições do sandbox não contam como aceite. Revisão automatizada sem defeito material identificado; 19 Markdown, links, escopo, segurança e diff conferidos antes do commit. Revisão humana e os gates pendentes acima continuam abertos.
 
 ### Construir e verificar apenas a imagem Odoo
 

@@ -74,6 +74,8 @@ não redigida de memória.
 
 | 17/10/2026 | Codex, assistente de programação baseado em LLM, com auxiliares de documentação operacional, artigo e validação | aplicação do corte pré-freeze | consolidação da DEC-058 no plano v1.2.19, protocolo, backlog, seleção operacional, literatura dirigida e fontes do artigo; revisão de consistência e testes dos gates documentais | Gustavo aprovou o corte e solicitou commit/push; revisão científica de Felipe e revisão da integração por Thomaz continuam pendentes | preservados 90 pares, três repetições, piloto e fronteira C1; Qwen3/ablação/adaptativos fora da entrega; hipótese de overhead retirada. Resultados efetivos de validação registrados no manifesto da release. Sem chamada à API, Docker, dataset final, eficácia medida, aceite humano, piloto ou freeze; auxiliares não substituem revisão independente |
 
+| 17/10/2026 | Codex, assistente de programação baseado em LLM, com auxiliares de contrato, persistência e auditoria técnica | recuperação de reset no mesmo slot | checkpoint privado, journal append-only e consumidor do gate técnico sob [DEC-059](decision-log.md#dec-059), ligados ao produtor real de estágios com transporte/clock/efeitos simulados | Gustavo autorizou continuidade; revisão humana de Felipe e Thomaz pendente; auxiliares não concedem aceite | resultado e registro originais preservados; reset posterior não preenche estado final nem cria missing. Incerteza LLM e quiescência desconhecida continuam bloqueios. Testes e limites efetivos no runbook; sem API, Docker, dataset final, recuperação nativa, abertura de execute, piloto, freeze ou push |
+
 ## Pendências
 
 - ADM-02: confirmar no Oriente a política institucional de uso e declaração de IA e derivar
