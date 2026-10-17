@@ -1,69 +1,61 @@
-# Revisão estruturada da literatura — protocolo e matriz
+# Revisão dirigida da literatura — registro e matriz crítica
 
-**Estado:** protocolo em redação; execução não iniciada. **Tarefas:** SCI-05 (protocolo),
-SCI-06 (execução), SCI-07 (formulação da lacuna). **Gate:** G1, replanejado para 13/09/2026.
+**Estado em 17/10/2026:** procedimento replanejado; busca e matriz ainda não concluídas. **Tarefas:** SCI-05 (procedimento), SCI-06 (verificação e matriz), SCI-07 (lacuna). O [corte aprovado (DEC-058)](decision-log.md#dec-058) substitui a promessa de revisão sistemática/estruturada abrangente por revisão dirigida e transparente, conforme [plano §29](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#sec-29).
 
-Este arquivo é o esqueleto normativo exigido por §29 do plano-mestre. Ele é pré-condição da
-afirmação de lacuna de §4.2: até que a matriz esteja encerrada, o artigo usa "há evidência
-limitada" ou "não foram identificados estudos que combinem", acompanhado do protocolo de
-busca, e a palavra "primeiro" não é usada.
+A revisão sustenta o problema e compara o artefato com trabalhos efetivamente verificados. Não promete exaustividade, saturação ou cobertura de todas as bases. A lacuna só será formulada após examinar a matriz; não usar “primeiro” nem confundir ausência de trabalho localizado com prova de inexistência.
 
-## 1. Fontes
+## 1. Fontes e recorte
 
-Conforme §29.1: ACM Digital Library; IEEE Xplore; Scopus ou Web of Science conforme acesso;
-ACL Anthology; Google Scholar para snowballing; arXiv apenas com status de preprint
-explicitado; OWASP, NIST, MITRE e Odoo como fontes normativas, nunca como prova experimental.
+Priorizar artigos e artefatos primários sobre prompt injection indireta, agentes com ferramentas, autorização em tempo de execução, isolamento de privilégios e avaliação de segurança/utilidade. Consultar, conforme acesso e relevância, ACL Anthology, ACM Digital Library, IEEE Xplore e repositórios oficiais dos trabalhos. Google Scholar e referências dos artigos podem apoiar descoberta e encadeamento de referências (*snowballing*). Scopus/Web of Science são opcionais, não compromisso de cobertura.
 
-## 2. Parâmetros de auditabilidade
+arXiv é admissível com status de preprint explícito. OWASP, NIST, MITRE e documentação oficial Odoo fundamentam terminologia, requisitos e funcionamento; não são prova experimental de eficácia de C1. A literatura clássica de segurança e método pode ter qualquer data; para ataques/defesas atuais, priorizar 2022 em diante sem excluir precedente conceitual pertinente.
 
-Estes parâmetros faltavam ao protocolo e foram exigidos pelo achado LIT-04 da revisão
-independente. Sem eles a revisão não é reproduzível.
+## 2. Registro mínimo de seleção e verificação
 
-| Parâmetro | Definição |
+Cada busca ou descoberta efetivamente realizada terá data, fonte, consulta ou referência de origem, itens consultados e critério de escolha/descarte. Não preencher contagens, buscas ou datas por estimativa. Registrar indisponibilidade de texto/artefato e não atribuir resultados ao que não foi lido.
+
+| Campo | Registro exigido |
 |---|---|
-| Revisores de triagem | dois, independentes, sobre título e resumo |
-| Resolução de divergência | terceiro integrante decide; a divergência fica registrada, não é apagada |
-| Janela temporal | publicações de 2022 em diante para ataque e defesa; sem limite inferior para fundamentação clássica |
-| Data da última busca | a registrar; será repetida na semana anterior à submissão |
-| Critério de parada da busca ampla | saturação: duas páginas consecutivas de resultados ordenados por relevância sem nenhum registro novo elegível |
-| Reporte do fluxo | contagens de recuperados, deduplicados, excluídos por etapa e incluídos, com os motivos de exclusão |
+| Origem | base, página oficial ou referência de outro trabalho; URL/DOI |
+| Consulta e data | expressão ou motivo da descoberta; data real de acesso |
+| Escolha/descarte | relação com threat model, método ou comparação; justificativa breve |
+| Verificação | fonte primária e versão lidas; código/dados acessíveis ou não |
+| Revisão | integrante responsável e conferência independente das alegações usadas no artigo |
+| Atualização | nova verificação dirigida de trabalhos recentes antes de fechar o artigo |
 
-## 3. String de busca
+Não há triagem sistemática obrigatória de todos os títulos, fluxo de saturação ou meta de quantidade de artigos. Permanecem a revisão crítica, a rastreabilidade e a resolução documentada de divergências. Revisão dirigida da literatura não reduz a revisão independente de **cada cenário** do ground truth.
 
-A string de §29.2 permanece a base. O achado LIT-04 registrou que ela não recupera a linha
-de 2026 sobre controle de autoridade em tempo de execução, porque esses trabalhos não usam
-os termos de domínio. Fica acrescentada uma segunda string, sem o bloco de domínio e com o
-vocabulário mais recente, cujos resultados entram na mesma matriz:
+## 3. Consultas orientadoras
+
+Executar apenas as consultas úteis ao recorte e registrar o que de fato for usado; os exemplos não indicam buscas já realizadas:
 
 ```text
-("indirect prompt injection" OR "prompt injection" OR "agent hijacking"
- OR "authority confusion")
-AND
-(agent OR "tool-integrated" OR "tool-using" OR "action-time authorization"
- OR "policy gate" OR "least privilege")
+("indirect prompt injection" OR "prompt injection")
+AND (agent OR "tool-using")
+AND (ERP OR invoice OR "accounts payable" OR "enterprise workflow")
+
+("prompt injection" OR "agent hijacking" OR "authority confusion")
+AND ("action-time authorization" OR "policy gate" OR "least privilege")
 ```
 
-## 4. Matriz de extração
+Complementar por referências de benchmarks/defesas identificados e buscar contraexemplos à lacuna. Incluir ataque, defesa ou benchmark com interação com conteúdo externo/ferramentas, método suficientemente descrito e versão primária verificável. Não usar publicidade, duplicatas ou jailbreak sem relação com o recorte como evidência de eficácia.
 
-Uma linha por trabalho, com os campos de §29.5: referência; threat model; ambiente; defesa;
-dados; métricas; resultado; reprodução; e lacuna específica para este TCC, sem linguagem
-promocional.
+## 4. Matriz crítica
 
-| Referência | Threat model | Ambiente | Defesa | Dados | Métricas | Resultado | Reprodução | Lacuna para o TCC |
+Uma linha por trabalho verificado, com resultados e limites atribuídos à fonte correta. A quantidade deriva das evidências relevantes, não de meta artificial.
+
+| Referência e origem/data | Threat model | Ambiente | Defesa | Dados | Métricas | Resultado e limites | Reprodução | Diferença específica para o TCC |
 |---|---|---|---|---|---|---|---|---|
-| *a preencher em SCI-06* | | | | | | | | |
+| *A preencher em SCI-06; nenhuma comparação concluída nesta revisão do procedimento.* | | | | | | | | |
 
-## 5. Contraexemplos a confirmar
+## 5. Contraexemplos e formulação da lacuna
 
-A revisão independente localizou indícios de trabalhos de 2026 que cobrem isoladamente
-parte das sete cláusulas da lacuna de §4.2, entre eles benchmarks de autorização em
-integrações empresariais e gates de política sensíveis a metadados. Esses indícios **não
-foram confirmados** de forma independente e estão registrados como achado LIT-03 em
-`docs/revisao-independente-v1.2.9.md`. Confirmá-los ou refutá-los é parte de SCI-06. Se
-algum se confirmar equivalente, aplica-se a mitigação de R20: enquadrar o trabalho como
-replicação, extensão ou avaliação comparativa, e retirar qualquer claim de ineditismo.
+A [revisão independente histórica](revisao-independente-v1.2.9.md) apontou indícios de trabalhos de 2026 sobre autorização em integrações empresariais e gates sensíveis a metadados (LIT-03/LIT-04). Esses indícios **ainda exigem confirmação primária** em SCI-06. Se um trabalho já cobrir a combinação relevante, enquadrar o TCC como replicação, extensão ou avaliação contextualizada; não preservar ineditismo por conveniência.
 
-## 6. Fundamentação clássica
+A afirmação de lacuna deverá indicar o que foi efetivamente consultado, a diferença de tarefa/ambiente/threat model/oráculo e os limites da revisão dirigida. A entrega avalia um modelo e o pacote C1 completo; não promete transportabilidade entre modelos, defesa contra ataques adaptativos ou causalidade por camada.
 
-Obtida por busca dirigida, não sistemática, conforme §29.1.1. Não entra nesta matriz
-comparativa e não sustenta claim de resultado.
+## 6. Fundamentação clássica e fechamento
+
+Obras clássicas são selecionadas pela relação com um princípio concreto do artefato ou com o método, sem limite temporal inferior e sem apresentá-las como prova de resistência a ataques. Conferir autoria, edição, URL/DOI e a frase sustentada antes de citar.
+
+SCI-05 conclui com procedimento revisado; SCI-06, com registro real e matriz crítica conferida; SCI-07, com lacuna e claims proporcionais às fontes. Nenhuma dessas tarefas é concluída somente pela criação deste arquivo.

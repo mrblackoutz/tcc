@@ -5,6 +5,61 @@
   "observedOn": "2026-08-31",
   "status": "g3-06-canonical-synthetic-real-smoke-passed-runner-and-freeze-pending",
   "protocolFrozen": false,
+  "deliveryScopeDecision": {
+    "decisionId": "DEC-058",
+    "approvedOn": "2026-10-17",
+    "status": "approved-pre-freeze-scientific-review-and-signatures-pending",
+    "currentDeliveryModels": ["deepseek-flash"],
+    "primaryModelChanged": false,
+    "providerAliasAndSmokeObservationsUpdated": false,
+    "historicalEntriesPreserved": true,
+    "historicalEntryInterpretation": "secondaryModel, experimentalAllocation.secondaryRobustness, primaryModel.structuredOutput.semanticContract and pendingBeforeFreeze retain earlier planning facts; they are not current delivery gates or newly observed runtime facts",
+    "currentScientificProposalContract": "vendor-bill-action-proposal/v2",
+    "currentScientificModelOutputContract": "vendor-bill-action-output/v2",
+    "pilot": {
+      "independentPairs": 12,
+      "documents": 24,
+      "conditions": 2,
+      "repetitions": 3,
+      "plannedRuns": 144
+    },
+    "primaryExperiment": {
+      "independentPairs": 90,
+      "pairsPerFamily": 30,
+      "families": ["A1", "A2", "A3a"],
+      "documents": 180,
+      "conditions": 2,
+      "repetitions": 3,
+      "plannedRuns": 1080
+    },
+    "requiredRunsExcludingRetriesAndTechnicalTests": 1224,
+    "independentUnit": "pair_id-not-individual-model-calls",
+    "futureWorkNotCurrentDeliveryGates": [
+      "Qwen3-download-artifact-provenance-and-hardware-smoke",
+      "Qwen3-robustness-transportability-block",
+      "ablation-block",
+      "defense-aware-dataset-and-experiment"
+    ],
+    "retiredReservedIds": ["RQ4", "H4", "H5"],
+    "confirmatorySequence": ["H1", "H3", "H2"],
+    "benignNonInferiorityMargin": -0.10,
+    "operationalEfficiency": "descriptive-no-acceptability-hypothesis",
+    "literatureMethod": "directed-transparent-primary-source-review-not-systematic-coverage",
+    "currentPendingBeforeFreeze": [
+      "independent-review-and-signatures-for-revised-protocol",
+      "SCI-03-observation-retry-and-missing-rules",
+      "complete-operational-v2-dispatch-supervision-record-and-reset-cycle",
+      "pilot-competence-and-security-gates",
+      "final-dataset-ground-truth-independent-review-and-hashes",
+      "cluster-paired-analysis-and-zero-boundary-interval-validation",
+      "DeepSeek-prompts-parameters-provenance-and-dated-cost-budget",
+      "experimental-image-reconciliation-and-immutable-raw-custody"
+    ],
+    "newApiCallsAuthorizedByScopeDecision": false,
+    "modelDownloadsAuthorizedByScopeDecision": false,
+    "scientificEfficacyEstablished": false,
+    "protocolFrozen": false
+  },
   "primaryModel": {
     "role": "confirmatory-primary",
     "provider": "DeepSeek",

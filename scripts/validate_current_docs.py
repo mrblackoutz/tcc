@@ -23,7 +23,7 @@ FILES = (
     "docs/releases/v1.2.12.md", "docs/releases/v1.2.13.md",
     "docs/releases/v1.2.14.md", "docs/releases/v1.2.15.md",
     "docs/releases/v1.2.16.md", "docs/releases/v1.2.17.md",
-    "docs/releases/v1.2.18.md", "paper/README.md",
+    "docs/releases/v1.2.18.md", "docs/releases/v1.2.19.md", "paper/README.md",
     "paper/SUBMISSION_CHECKLIST.md",
 )
 LINK = re.compile(r"(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)")
@@ -106,6 +106,94 @@ def validate_markdown(relative: str) -> None:
                     errors.append(f"{relative}:{number}: missing anchor {parsed.fragment}")
 
 
+def scope_section(current: str, ident: str) -> str:
+    """Read an existing normative section, never the historical release table."""
+    marker = f'<a id="{ident}"></a>'
+    if marker not in current:
+        return ""
+    return re.split(r'(?m)^<a id="sec-\d+(?:-\d+)*"></a>', current.split(marker, 1)[1], maxsplit=1)[0]
+
+
+def validate_prefreeze_scope(current: str) -> list[str]:
+    """Guard the approved DEC-058 core without validating efficacy or human signoff.
+
+    These checks are editorial regression guards. They do not validate the future
+    statistical implementation, dataset, pilot, competence or freeze readiness.
+    """
+    findings = []
+    distribution = scope_section(current, "sec-12-3").split("Dentro de cada família", 1)[0]
+    pairs = re.findall(r"^\| (A1|A2|A3a) —[^|]+\| (\d+) \| (\d+) \|", distribution, re.M)
+    if pairs != [("A1", "30", "30"), ("A2", "30", "30"), ("A3a", "30", "30")]:
+        findings.append("Final dataset distribution is not 30 pairs per retained objective")
+
+    for ident, expected in (("sec-14-3", (24, 144)), ("sec-14-5", (180, 1080))):
+        section = scope_section(current, ident)
+        matrices = re.findall(r"\b(\d+)\s*×\s*(\d+)\s*×\s*(\d+)\s*=\s*([\d.]+)", section)
+        normalized = [tuple(int(value.replace(".", "")) for value in row) for row in matrices]
+        if normalized != [(expected[0], 2, 3, expected[1])]:
+            findings.append(f"{ident}: required two-condition, three-repetition execution matrix changed")
+    if not re.search(r"\b1\.224 execuções\b", current):
+        findings.append("Mandatory pilot plus principal total is not 1.224 executions")
+    pilot = scope_section(current, "sec-14-3")
+    if not re.search(r"\b12 pares\b", pilot) or "DeepSeek" not in pilot:
+        findings.append("Pilot must retain 12 independent pairs and the principal DeepSeek model")
+    if not re.search(r"\b90 pares\b", current) or "DeepSeek" not in scope_section(current, "sec-14-5"):
+        findings.append("Principal block must retain 90 independent pairs and DeepSeek")
+
+    for ident in ("RQ4", "H4", "H5"):
+        row = re.search(rf'^\| <a id="{ident.lower()}"></a>{ident} \|([^\n]+)', current, re.M)
+        if not row or not re.search(r"\breservad[oa]\b", row.group(1), re.I):
+            findings.append(f"{ident} must keep its reserved ID without an active delivery hypothesis")
+        elif ident == "H4" and not re.search(r"descritiv[oa]", row.group(1), re.I):
+            findings.append("H4 must be descriptive, not a confirmatory acceptability hypothesis")
+        elif ident != "H4" and not re.search(r"retirada da entrega", row.group(1), re.I):
+            findings.append(f"{ident} must be retired from the current delivery")
+    for ident in ("sec-14-7", "sec-14-8", "sec-14-9"):
+        section = scope_section(current, ident)
+        if not re.search(r"trabalho futuro", section, re.I) or not re.search(r"entrega", section, re.I):
+            findings.append(f"{ident}: removed block must be explicitly future work outside this delivery")
+        if re.search(r"\b\d+\s*×\s*\d+\s*×\s*\d+\s*=", section):
+            findings.append(f"{ident}: retired execution matrix remains in the current delivery")
+    for value in ("2.016", "2.448", "2.160", "2.592", "7.776", "6.480"):
+        if value in current:
+            findings.append(f"Obsolete total remains: {value}")
+
+    principles = scope_section(current, "sec-15-1")
+    sequence = re.findall(r"\(#h([1-5])\)", principles)
+    if sequence[:3] != ["1", "3", "2"] or "4" in sequence or "5" in sequence:
+        findings.append("Confirmatory sequence must retain H1 then H3 then H2 only")
+    primary = scope_section(current, "sec-15-2")
+    for token in ("pair_id", "10.000", "BCa", "percentil", "McNemar exato", "ever_compromised", "Newcombe", "Wilson"):
+        if token not in primary:
+            findings.append(f"Primary paired analysis safeguard missing: {token}")
+    if not re.search(r"zero.*fronteira|fronteira.*zero", primary, re.I):
+        findings.append("Explicit zero and boundary handling is missing")
+    boundary = primary.partition("**Regra de células zero e de fronteira.**")[2]
+    if not re.search(r"somente a outcomes binários no nível independente do cenário", boundary):
+        findings.append("Wilson/Newcombe must be limited to independent binary scenario summaries")
+    if "não usar esses intervalos tratando as três repetições como observações independentes" not in boundary:
+        findings.append("Boundary intervals must not pool correlated repetitions as independent Bernoulli observations")
+    if "não usar `[0, 0]` como prova de risco nulo" not in boundary:
+        findings.append("Degenerate bootstrap intervals must not be treated as evidence of zero risk")
+    if not all(token in boundary for token in ("implementada", "testada", "revisada", "antes do freeze", "não está assinável")):
+        findings.append("The grouped-endpoint boundary rule remains a tested and reviewed prerequisite to freeze")
+    utility = scope_section(current, "sec-15-3")
+    if "−0,10" not in utility or "limite inferior" not in utility:
+        findings.append("Non-inferiority must retain its fixed absolute margin and interval decision")
+    missing = scope_section(current, "sec-14-6")
+    if not all(token in missing for token in ("missing", "C1", "C0", "H1", "H2", "H3")):
+        findings.append("Condition-specific conservative missing analysis was removed")
+    if not all(token in missing for token in (
+        "`missing` em C1 conta como violação e em C0 como não violação",
+        "conta como falha benigna em C1 e sucesso em C0",
+    )):
+        findings.append("Conservative missing directions must disadvantage H1/H2 security and H3 utility claims")
+    prerequisites = scope_section(current, "sec-14-1")
+    if not all(token in prerequisites for token in ("falha segura", "dataset", "congelamento")):
+        findings.append("Safety, dataset and signed freeze prerequisites must not be cut")
+    return findings
+
+
 for name in FILES:
     validate_markdown(name)
 
@@ -127,16 +215,7 @@ for ident in ("C03", "C11", "R-POL-08", "I9"):
     if re.search(r"^\| (?:<a[^>]+></a>)?" + ident + r" \|", current, re.M):
         errors.append(f"Retired {ident} still appears in an active definition table")
 
-distribution = current.split("## 12.3 Distribuição do teste v1", 1)[1].split("Dentro de cada família", 1)[0]
-pairs = re.findall(r"^\| (A1|A2|A3a) —[^|]+\| (\d+) \| (\d+) \|", distribution, re.M)
-if pairs != [("A1", "30", "30"), ("A2", "30", "30"), ("A3a", "30", "30")]:
-    errors.append("Final dataset distribution is not 30 pairs per retained objective")
-for expected in ("48 × 4 × 3 = 576", "1.224 execuções", "2.016 execuções", "2.448 execuções"):
-    if expected not in current:
-        errors.append(f"Execution count missing: {expected}")
-for value in ("2.160", "2.592", "7.776", "6.480"):
-    if value in current:
-        errors.append(f"Obsolete total remains: {value}")
+errors.extend(validate_prefreeze_scope(current))
 
 tex_files = list((ROOT / "paper/sections").glob("*.tex"))
 tex = "\n".join(p.read_text(encoding="utf-8-sig") for p in tex_files)

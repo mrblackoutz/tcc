@@ -1,33 +1,30 @@
 # Seleção dos modelos experimentais — W04/G3
 
-**Decisão:** DEC-018
+**Decisão de seleção histórica:** [DEC-018](decision-log.md#dec-018). **Escopo corrente da entrega:** [corte aprovado (DEC-058)](decision-log.md#dec-058), 17/10/2026.
 
 **Data da seleção:** 31/08/2026
 
-**Estado:** modelos e papéis selecionados; G3-05 concluiu um smoke real sintético com alias legado e G3-06 concluiu outro com alias canônico em 26/09. Supervisão do runner, revisão independente, piloto, Qwen3 e freeze continuam pendentes.
+**Estado:** somente DeepSeek integra esta entrega. G3-05 concluiu um smoke real sintético com alias legado e G3-06 concluiu outro com alias canônico em 26/09. Supervisão do runner, revisão independente, piloto e freeze continuam pendentes; Qwen3 passa a trabalho futuro, não a gate desta entrega. O lock preserva a seleção e as observações históricas e acrescenta o escopo corrente em `deliveryScopeDecision`.
 
 ## Decisão operacional
 
 | Papel | Modelo selecionado | Uso | Obrigatoriedade |
 |---|---|---|---|
 | Bloco confirmatório principal | API DeepSeek, `model=deepseek-flash` no piloto aprovado em [DEC-029](decision-log.md#dec-029); seleção histórica de 31/08: `deepseek-v4-flash`/`DeepSeek-V4-Flash-0731` | piloto, competência de C0 e experimento principal C0 × C1 | obrigatório |
-| Robustez e transportabilidade | Ollama, `qwen3:14b-q4_K_M` | repetição separada de 72 documentos em C0 × C1 | planejado após o núcleo; não sustenta as hipóteses confirmatórias |
-| Contingência não ativa | `llama3.1:8b` | somente se Qwen3 for inviável e houver nova decisão anterior ao freeze | não selecionado para as runs atuais |
+| Trabalho futuro, retirado da entrega | Ollama, `qwen3:14b-q4_K_M` | seleção histórica preservada; sem download, benchmark ou bloco experimental neste cronograma | não é gate do piloto ou do freeze corrente |
+| Contingência não ativa | `llama3.1:8b` | qualquer ativação exige nova decisão, não substituição automática | não selecionado para as runs atuais |
 
 O código ativo solicita `deepseek-flash`, validado em **uma inferência real sintética**, sem Odoo ou comparação C0/C1. `DeepSeek-V4-Flash-0731` identifica apenas o backend associado ao alias legado na data da seleção. Desde 10/09/2026, o nome legado é roteado temporariamente para V4.1 Flash, conforme [DEC-024](decision-log.md#dec-024). O smoke histórico de 24/09 solicitou `deepseek-v4-flash` e recebeu `deepseek-flash`; o smoke G3-06 solicitou e recebeu `deepseek-flash`. Nenhum desses nomes identifica um snapshot imutável.
 
-No Ollama, a tag escolhida é a quantização explícita `qwen3:14b-q4_K_M`. A tag curta `qwen3:14b` não será usada nas runs, pois pode mudar de alvo. Mesmo a tag explícita só ficará congelada depois de registrar localmente seu manifest completo e os digests dos blobs.
+Para eventual trabalho futuro via Ollama, a seleção histórica é a quantização explícita `qwen3:14b-q4_K_M`. A tag curta `qwen3:14b` não bastaria para proveniência; seriam necessários manifest completo e digests dos blobs. Nenhum desses artefatos será solicitado como requisito desta entrega.
 
 ## Desenho preservado
 
-Cada modelo forma um bloco próprio. Dentro do bloco, C0 e C1 recebem o mesmo documento e usam o mesmo modelo, artefato ou alias observado, prompt-base, schema, limites, parâmetros e política de retry.
+Nesta entrega, C0 e C1 recebem o mesmo documento e usam DeepSeek com o mesmo alias observado, prompt-base, schema, limites, parâmetros e política de retry. Uma futura replicação local também deverá comparar C0/C1 dentro do próprio modelo, sem trocar modelo e arquitetura simultaneamente.
 
 ```text
 dataset e ground truth
-├── DeepSeek (alias móvel; backend observado por data)
-│   ├── C0
-│   └── C1
-└── Qwen3 14B Q4_K_M
+└── DeepSeek (alias móvel; backend observado por data)
     ├── C0
     └── C1
 ```
@@ -38,33 +35,33 @@ O orçamento vigente continua sendo:
 
 - piloto DeepSeek: 24 documentos × 2 condições × 3 repetições = 144 runs;
 - bloco principal DeepSeek: 180 documentos × 2 condições × 3 repetições = 1.080 runs;
-- bloco Qwen3: 72 documentos × 2 condições × 3 repetições = 432 runs, somente depois do núcleo;
-- ablações e conjunto defense-aware permanecem como definidos no plano-mestre.
+- total obrigatório: **1.224 execuções**, sem retries e ensaios técnicos;
+- Qwen3, ablação e conjunto adaptado à defesa (*defense-aware*): trabalho futuro, sem execuções previstas nesta entrega.
 
-O exemplo de 120 documentos apresentado durante a discussão não substitui a meta pré-piloto de 180 documentos. Qualquer alteração de tamanho amostral será decidida antes do freeze a partir do piloto, da precisão, do poder e do orçamento, nunca a partir dos resultados finais.
+O exemplo de 120 documentos apresentado durante a discussão não substitui a meta pré-piloto de 180 documentos. Qualquer alteração de tamanho amostral ou repetições exige **nova decisão explícita** antes do freeze, motivada por precisão/poder, orçamento e capacidade medida, nunca redução automática por prazo nem escolha a partir dos resultados finais.
 
 ## Configuração comum
 
 As seguintes decisões já estão fixadas:
 
-- *thinking* explicitamente desligado no núcleo dos dois modelos;
+- *thinking* explicitamente desligado no núcleo DeepSeek;
 - `temperature=0` quando aceito; caso o endpoint rejeite zero, usar o menor valor aceito e fixá-lo antes do freeze;
-- contrato semântico único `vendor-bill-proposal/v1`;
+- contrato comum `vendor-bill-action-proposal/v2` para o fluxo C0/C1 ([DEC-035](decision-log.md#dec-035)); o v1 dos smokes históricos não é promovido a contrato científico;
 - modelo propõe, mas não autoriza nem executa ação;
 - referências de negócio sintéticas no output; nenhum ID interno do Odoo é aceito do documento;
 - resposta inválida, tool call ausente, múltiplo ou incompatível e violação de schema são outcomes do sistema, não erros a ocultar por parsing permissivo;
 - no máximo duas novas tentativas somente para falhas transitórias previamente classificadas, com política idêntica em C0 e C1.
 
-O adapter deverá solicitar uma única proposta estruturada pelo mecanismo nativo compatível de cada provedor e normalizá-la para o mesmo schema. JSON output e tool calling melhoram a estrutura do transporte, mas não constituem defesa: a validação comum recusa campos desconhecidos e o policy engine de C1 continua sendo a fronteira de decisão.
+O adapter deverá solicitar uma única proposta estruturada e normalizá-la para o mesmo schema v2 nas duas condições. JSON output e tool calling melhoram a estrutura do transporte, mas não constituem defesa: a validação comum recusa campos desconhecidos e o policy engine de C1 continua sendo a fronteira de decisão.
 
-Ainda serão fixados no piloto, antes do freeze:
+Ainda devem ser validados/registrados no piloto e congelados formalmente; os valores já aprovados em DEC-029 permanecem candidatos vigentes e não são reescolhidos silenciosamente:
 
 - system prompt e hashes de cada mensagem fixa;
-- limite de entrada e saída, timeout e backoff;
+- limite de entrada e hashes da configuração; validar limite de saída, timeout e backoff aprovados na tabela G3-06, registrando qualquer alteração em nova decisão;
 - versão exata do contrato de tool/JSON enviada a cada API;
 - `top_p`, seed quando suportada e demais defaults efetivamente aplicados;
 - regra para resposta truncada, vazia, múltiplas tool calls e recusa;
-- limiares de latência, custo e demanda potencial de revisão;
+- critérios de medição de latência, tokens, custo e demanda potencial de revisão, apenas descritivos, além do teto monetário operacional;
 - lote temporal e janela de execução usados para reduzir drift do serviço externo.
 
 <a id="g3-06"></a>
@@ -109,7 +106,7 @@ Cada run deverá preservar fora do Git o request e o response brutos e produzir 
 
 Para DeepSeek, o pacote científico deverá distinguir reexecução posterior com o mesmo alias de reprodução analítica dos dados já coletados. Não será alegado que o provedor preservou o mesmo backend sem evidência retornada ou publicada.
 
-Para Qwen3, o lock final deverá incluir versão do Ollama, nome exato, manifest completo, digests de todos os blobs, quantização, tamanho, context length usado, parâmetros e hash de qualquer `Modelfile`. A tag de catálogo, sozinha, não satisfaz o freeze.
+Se um estudo futuro ativar Qwen3, seu próprio lock deverá incluir versão do Ollama, nome exato, manifest completo, digests de todos os blobs, quantização, tamanho, context length usado, parâmetros e hash de qualquer `Modelfile`. Isso não integra o freeze corrente. A ausência de segundo modelo é limitação de validade externa, não evidência de transportabilidade.
 
 ## Segurança e isolamento
 
@@ -119,7 +116,7 @@ A topologia G3b mantém `lab`, `llm_control` e `llm_egress` internas. Somente o 
 
 Requests e responses brutos, ainda que sintéticos, permanecem em armazenamento externo criptografado e com acesso controlado. O Git recebe somente hashes, metadados saneados e exports sintéticos aprovados por dois integrantes.
 
-## Viabilidade local observada
+## Observação histórica de viabilidade local — trabalho futuro
 
 Em 31/08/2026 foram observados:
 
@@ -129,7 +126,7 @@ Em 31/08/2026 foram observados:
 - apenas `llama3.1:8b` instalado; Qwen3 ainda ausente;
 - artefato de catálogo `qwen3:14b-q4_K_M` com aproximadamente 9,3 GB.
 
-O Qwen3 não cabe integralmente na VRAM observada e deverá usar offload parcial. Isso não o invalida, mas impede prometer desempenho antes do smoke. Após o download autorizado pelo operador, o gate de viabilidade deve registrar carregamento, CPU/GPU efetivamente usadas, memória, tempo até o primeiro token, tokens por segundo, latência total, context length, estabilidade e ausência de OOM. Se o modelo for inviável, o bloco confirmatório DeepSeek continua inalterado e qualquer contingência exige nova decisão.
+O Qwen3 não cabia integralmente na VRAM observada; sua viabilidade exigiria benchmark antes de qualquer estudo futuro. Essa observação de 31/08 não foi atualizada e não impede o bloco DeepSeek. Não baixar nem fazer benchmark para satisfazer o corte corrente.
 
 ## Definition of Ready para implementar G3
 
@@ -142,7 +139,7 @@ O Qwen3 não cabe integralmente na VRAM observada e deverá usar offload parcial
 - [x] adapters DeepSeek e Ollama implementados sob interface comum no commit `b2deec8`;
 - [x] mocks cobrem JSON válido/inválido, schema, truncamento, escolha/tool call único ou múltiplo, timeout, rate limit, erro de provedor, drift e sanitização; 82 testes passaram sem rede;
 - [x] `llm-client`, API interna, redes separadas, proxy allowlisted e testes negativos offline aprovados em G3b; 91 testes do gateway/cliente e 6 do proxy passaram sem chamada externa;
-- [ ] Qwen3 baixado com autorização, manifest completo fixado e smoke de hardware aprovado;
+- [x] Qwen3 retirado dos gates desta entrega pela [DEC-058](decision-log.md#dec-058), sem afirmar download ou smoke concluídos;
 - [x] DeepSeek validado com chamada sintética mínima, manifesto saneado e varredura de segredo/log em 24/09/2026;
 - [ ] parâmetros e prompts do piloto versionados e hasheados.
 

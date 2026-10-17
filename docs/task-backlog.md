@@ -2,9 +2,9 @@
 
 **Decisão de ownership:** [divisão do trabalho (DEC-021)](decision-log.md#dec-021)
 
-**Data-base:** 16/10/2026
+**Data-base:** 17/10/2026
 
-**Estado científico:** pré-congelamento. A [captura/reset e oráculo (DEC-055)](lab-runbook.md#captura-restauracao-oraculo) têm prova nativa de oito casos C0/C1 e dezesseis restaurações. O [registro candidato v2 (DEC-057)](lab-runbook.md#run-record-candidato) preserva falhas de proposta, captura final ausente, incerteza e reset divergente, sem fabricar `MISSING` ou descartar resultados; mantém compatibilidade v1. **Próximo: histórico complementar de supervisão/resolução do mesmo slot, integração operacional e DATA-02.** RUN-01/02/03/04/08 seguem `ACTIVE`; `execute` fechado. SCI-03, reconciliação da imagem experimental, revisão humana, competência C0 no piloto, dataset e freeze permanecem gates. Escopo conforme [DEC-023](decision-log.md#dec-023); alias em [DEC-024](decision-log.md#dec-024).
+**Estado científico:** pré-congelamento. O [corte aprovado (DEC-058)](decision-log.md#dec-058) concentra a entrega em **DeepSeek, C0/C1, 90 pares e três repetições: 1.080 execuções principais + 144 do piloto separado = 1.224**. Qwen3, ablação e ataques adaptados à defesa passam a trabalho futuro; suas tarefas são `CUT`, não concluídas. A [captura/reset e oráculo (DEC-055)](lab-runbook.md#captura-restauracao-oraculo) e o [registro candidato v2 (DEC-057)](lab-runbook.md#run-record-candidato) já têm evidência técnica; não reconstruí-los. **Próximo: integrar o ciclo operacional mínimo, produzir/revisar o piloto, validar a análise com dados sintéticos e escrever o artigo em paralelo.** RUN-01/02/03/04/08 seguem `ACTIVE`; `execute` fechado. SCI-01 foi reaberta pelo escopo revisto; SCI-03, imagem experimental, revisão humana, competência C0, dataset e freeze continuam gates. Não expandir engenharia auxiliar sem necessidade demonstrada para esse fluxo.
 
 **Leitura dos códigos:** [C0](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#c0) é a integração direta; [C1](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#c1), a integração protegida. RQ significa pergunta de pesquisa; H, hipótese; DEC, decisão registrada. Os links levam ao significado completo. Consulte a [leitura rápida](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida) antes de iniciar uma tarefa.
 
@@ -21,7 +21,7 @@ Estados permitidos:
 - `EXTERNAL`: depende de orientador, Oriente, credencial ou autorização do operador;
 - `CONDITIONAL`: só entra se o núcleo estiver protegido em prazo/recursos;
 - `DONE`: evidência aceita e commitada;
-- `CUT`: removida conscientemente segundo a ordem de contingência.
+- `CUT`: retirada conscientemente da entrega por decisão registrada; não equivale a implementada, testada ou `DONE`. ID, ownership e evidência histórica permanecem.
 
 Prioridades:
 
@@ -49,40 +49,42 @@ Ownership não significa trabalho isolado. Owner implementa e responde pelo DoD;
 | P3 | `compose.yaml`, futuro `infra/llm-client`, `runner/`, scripts, fixtures e oráculo Odoo | não muda hipótese/métrica; publica contratos antes de integrar |
 | Compartilhado | plano, decision/deviation log, locks, manifests de freeze e release | uma única integração por checkpoint; paths explícitos no staging |
 
-## 3. Caminho crítico e ondas paralelas
+<a id="3-caminho-crítico-e-ondas-paralelas"></a>
+
+## 3. Caminho crítico e cronograma reancorado
 
 ```text
-institucional + literatura/protocolo ───────────────┐
-                                                    ├─→ piloto → freeze → 1.080 runs → análise → artigo
-G3b egress → G3c smoke → C0 competente ────────────┤
-                                                    │
-dataset piloto/final + oráculo ─────────────────────┤
-                                                    │
-C1 + add-on + invariantes ──────────────────────────┘
+protocolo + dados + análise sintética + artigo ─────┐
+C0/C1 + revisão dos controles existentes ──────────┼→ piloto → freeze → 1.080 runs → análise final
+LLM v2 → despacho → estado/oráculo/registro/reset ─┘                              → artigo final
 ```
 
-| Onda | Janela-alvo | P1 — Felipe | P2 — Thomaz | P3 — Gustavo | Saída de sincronização |
+As janelas abaixo são **alvos condicionados à prontidão**, não provas de cumprimento. Substituem as ondas antigas de agosto/setembro, cujo histórico permanece no Git. Se um gate falhar ou a vazão real inviabilizar a janela, registrar o atraso e obter nova decisão; não reduzir pares/repetições, relaxar C1 ou abrir o conjunto final automaticamente.
+
+| Onda | Janela-alvo em 2026 | P1 — Felipe | P2 — Thomaz | P3 — Gustavo | Saída de sincronização |
 |---|---|---|---|---|---|
-| W0 | 31/08–06/09 | ADM/SPECS/LIT e schemas do dataset/piloto | contratos C0/C1, policy e plano de testes | G3b, llm-client mock, runner/oráculo v0 | contratos I1 revisados, sem chamada real |
-| W1 | 07–13/09 | 24 documentos piloto + codebook + dry-run estatístico | C0 científico e núcleo C1 testados isoladamente | G3c autorizado, integração LLM/runner/Odoo | C0 competente e integração C1 pronta para E2E |
-| W2 | 14–27/09 | QA do piloto/dataset e análise do piloto | add-on/ACL/approval/fault injection completos | E2E C0/C1, custódia e execução piloto | relatório do piloto e lista fechada de correções |
-| W3 | 28/09–04/10 | poder/precisão, SAP e checklist de freeze | corrigir somente achados pré-declarados | fixar imagens/config/prompts e ensaio de lote | tag/manifest M6 assinados |
-| W4 | 05–18/10 | QA de denominadores sem tuning | plantão de falhas, sem mudar defesa por resultado | executar 1.080 runs e preservar raw/manifest | M7 encerrado ou missing classificado |
-| W5 | 19/10–02/11 | análise, figuras e edição científica | resultados de segurança/arquitetura | resultados de implementação/custo/reprodução | artigo completo aprovado internamente |
-| W6 | 03–09/11 | pacote final e validação editorial | revisão final de segurança/claims | build/hash/backup/submissão e recibo | submissão inicial concluída |
+| W0 | 17–20/10 | protocolo reduzido, piloto revisado, análise sintética e literatura/artigo | revisão do C0/C1 existente e despacho mínimo seguro | ciclo operacional, supervisão, registros, reset e vazão | checklist de prontidão real; sem conjunto final |
+| W1 | 21–22/10 | QA e relatório do piloto, precisão/poder e dataset final revisado | corrigir achados pré-declarados; assinar segurança | 144 runs do piloto e correções com evidência; preparar freeze | piloto aceito e freeze assinado antes da coleta |
+| W2 | 23–26/10 | QA de denominadores sem tuning; artigo em paralelo | acompanhar falhas sem ajustar defesa ao resultado | 1.080 runs intercaladas e custódia dos brutos | coleta íntegra ou suspensão documentada |
+| W3 | até 28/10 | análise, figuras, negativos e limites | análise de falhas/mecanismos | conferir manifests, custos e reprodução | tabelas regeneráveis e conclusões proporcionais |
+| W4 | até 01/11 | consolidar artigo e referências | revisar arquitetura e claims | conferir método, ambiente e pacote | artigo completo para revisão |
+| W5 | 02/11 | revisão científica/editorial | revisão de segurança | revisão de reprodução e build | aprovação interna, condicionada aos gates |
+| W6 | até 08/11 | resolver revisão e conferir arquivo | conferir claims finais | submissão e recibo institucional | submissão aceita, sem presumir prorrogação |
 | W7 | 10/11–07/12 | slides, respostas, correções e versão final | demo/arguição de segurança | demo/arguição de ambiente | banca, correção e anuência final |
 
-Qwen3, ablação e conjunto defense-aware entram somente quando sua tarefa indicar `CONDITIONAL`; nunca deslocam as datas do núcleo DeepSeek C0×C1.
+Qwen3, ablação e conjunto defense-aware **não entram nesta entrega**, mesmo que haja folga; sua reativação exige nova decisão. H4 não impõe limites confirmatórios de custo; H5 e RQ4 permanecem retiradas, com IDs reservados. A análise preserva pareamento, três repetições dependentes, bootstrap por par, não inferioridade de `−0,10`, missing e a validação dos intervalos em zero/fronteira antes do freeze.
 
-## 4. Primeiro lote de trabalho — iniciar em paralelo
+## 4. O que fazer agora — três trilhas paralelas
 
-Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende de resultado experimental.
+Usar os IDs abaixo como próxima fila, não como nova lista duplicada. Os detalhes, estados e evidências continuam nas tabelas seguintes. As trilhas trabalham independentemente sobre contratos versionados; integração e revisão cruzada fecham o checkpoint. Escrever método/referencial agora, marcando resultados ainda pendentes.
 
 | Integrante | Tarefas iniciais | Não tocar ainda | Checkpoint |
 |---|---|---|---|
-| Felipe | ADM-01–ADM-06, SCI-01–SCI-07, DATA-01–DATA-03, STAT-01 | conjunto final de 180 documentos e thresholds pós-resultado | protocolo v0 + codebook/schema piloto + matriz de literatura |
-| Thomaz | C0-01–C0-03, C1-01–C1-05, SEC-01 | conteúdo completo do conjunto final; tuning por ataque observado | contratos/policy/ACL tests isolados |
-| Gustavo | ADM-07–ADM-09, G3-01–G3-04, RUN-01–RUN-04 | chave real, chamada DeepSeek e download Qwen sem gate | egress negativo + llm-client mock + runner/oráculo v0 |
+| Felipe — dados, análise e artigo | SCI-01/03/05–07, DATA-01–04, STAT-01, rascunhos PAPER-01/02 | usar conjunto final para tuning; tratar buscas/matriz como concluídas; prometer H4/RQ4/H5 | schema/codebook, 12 pares piloto com revisão de cada item, análise sintética e texto com fontes |
+| Thomaz — C0/C1 mínimo e revisão de segurança | C0-01–03, revisão C1-01–11, SEC-01/02 e SEC-A2 | novo controle auxiliar; conjunto final; gateway com permissão financeira ampla | despacho CREATE/POST restrito e revisado, contabilização benigna autorizada, negativas e invariantes |
+| Gustavo — ciclo experimental e integração | G3-06, RUN-01–09, DATA-05/06, ADM-06/09 em apoio ao owner | repetir provas concluídas sem mudança; API sem autorização; Qwen; expansão não necessária | proposta v2 → C0/C1 → estado → oráculo → registro → reset, supervisão e vazão medidas |
+
+**Prontidão até 20/10:** contratos e piloto revisados; fluxo completo ensaiado sem conjunto final; decisão dos retries de observação em SCI-03; análise validada nos casos de fronteira; segurança/custódia e orçamento conferidos. Pendência institucional externa deve ser escalonada imediatamente, sem aguardar a implementação. Não interpretar este alvo como autorização para antecipar piloto ou freeze sem assinatura.
 
 ## 5. Administração e requisitos institucionais
 
@@ -109,12 +111,12 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| SCI-01 | P0 | Felipe | Thomaz | — | [protocolo candidato pré-piloto (DEC-032)](decision-log.md#dec-032) commitado em `d0f11d6`, com RQs, hipóteses, endpoint primário e validação Markdown; falta revisão independente/assinatura, conforme [DEC-034](decision-log.md#dec-034) | AWAITING_REVIEW |
+| SCI-01 | P0 | Felipe | Thomaz | — | candidato histórico [DEC-032](decision-log.md#dec-032), commit `d0f11d6`, preservado. Revisar o [protocolo reduzido (DEC-058)](protocol.md): H1→H3→H2, eficiência descritiva, três repetições, zero/fronteira e limitações. Reaberta por mudança de escopo; nova revisão independente/assinatura antes do piloto/freeze | ACTIVE |
 | SCI-02 | P0 | Felipe | Gustavo | — | justificar operacionalmente a margem BTSR de 10 p.p. sem usar piloto/final | READY |
 | SCI-03 | P0 | Felipe | Thomaz | — | [regras candidatas e classificador puro (DEC-032)](decision-log.md#dec-032) testados offline; faltam parâmetros de retry da observação Odoo, integração, revisão independente e assinatura antes do freeze | ACTIVE |
-| SCI-04 | P0 | Felipe | Gustavo | — | definir procedimento prévio de [limites de custo operacional (H4)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h4) para latência, custo e demanda potencial de revisão | READY |
-| SCI-05 | P0 | Felipe | Thomaz | — | criar protocolo de revisão: bases, strings, inclusão/exclusão, snowballing e data de corte | READY |
-| SCI-06 | P0 | Felipe | Thomaz | SCI-05 | executar busca/verificação primária e matriz comparativa de threat model, ambiente, defesa, métricas e reprodução | WAIT |
+| SCI-04 | — | Felipe | Gustavo | — | hipótese de aceitabilidade H4 retirada pela [DEC-058](decision-log.md#dec-058), ID reservado. Medição descritiva permanece em RUN-07/AN-05; não escolher limites confirmatórios | CUT |
+| SCI-05 | P0 | Felipe | Thomaz | — | revisar procedimento de literatura dirigida: fontes primárias, registro real de consultas/origem/data e critérios de seleção, sem prometer cobertura sistemática ou buscas já concluídas | READY |
+| SCI-06 | P0 | Felipe | Thomaz | SCI-05 | executar verificação primária dirigida e matriz crítica de threat model, ambiente, defesa, métricas, resultados/limites e reprodução; conferir contraexemplos à lacuna | WAIT |
 | SCI-07 | P0 | Felipe | Thomaz | SCI-06 | congelar formulação da lacuna e claims de originalidade com fontes que sustentem cada frase | WAIT |
 | SCI-08 | P1 | Felipe | Gustavo | SCI-03 | registrar ética, ausência de participantes, custódia raw, retenção e revisão dupla de exports | READY |
 | SCI-09 | P1 | Felipe | Thomaz | SCI-01 | mapear RQ→hipótese→endpoint→métrica→teste→figura/tabela | WAIT |
@@ -130,14 +132,14 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | G3-04 | P0 | Gustavo | Felipe | G3-01 | harness de smoke sintético, manifest saneado e varredura de logs, ainda com transporte mock | DONE |
 | G3-05 | P0 | Gustavo | Thomaz | G3-03, G3-04, autorização | smoke sintético aceito em 24/09: uma chamada sem retry, `deepseek-v4-flash` solicitado e `deepseek-flash` retornado, manifesto saneado e varredura de logs aprovados; [DEC-024](decision-log.md#dec-024) registra o novo roteamento. O prazo de resposta e escalonamento anteriores foram superados pelo aceite | DONE |
 | G3-06 | P1 | Gustavo | Felipe | G3-05 | [configuração ratificada (DEC-029)](decision-log.md#dec-029) e [smoke canônico (DEC-030)](decision-log.md#dec-030) aprovados em 26/09: uma inferência sintética com `deepseek-flash`, zero retries e manifesto saneado. O [estágio técnico pré-freeze (DEC-031)](decision-log.md#dec-031) implementa orçamento, espera máxima e retry comum C0/C1 apenas com mocks; faltam supervisão do processo remoto, revisão independente, competência C0 e freeze | ACTIVE |
-| G3-07 | P2 | Gustavo | Thomaz | núcleo protegido, autorização | baixar Qwen3, registrar manifest/blobs/Ollama/Modelfile sem expor dados | CONDITIONAL |
-| G3-08 | P2 | Gustavo | Felipe | G3-07 | smoke Qwen: offload, CPU/GPU/RAM/VRAM, TTFT, tok/s, latência, contexto e OOM | CONDITIONAL |
+| G3-07 | — | Gustavo | Thomaz | — | download/proveniência Qwen3 retirados da entrega pela [DEC-058](decision-log.md#dec-058); seleção histórica preservada como trabalho futuro | CUT |
+| G3-08 | — | Gustavo | Felipe | G3-07 | benchmark Qwen3 retirado da entrega pela [DEC-058](decision-log.md#dec-058); não afirmar viabilidade ou smoke concluído | CUT |
 | A3A-01 | P0 | Gustavo | Thomaz e Felipe | [contrato de ação v2 (DEC-035)](decision-log.md#dec-035) | schemas, adapters e [transporte/consumidores v2 (DEC-050)](decision-log.md#dec-050) preservados. [Prova nativa (DEC-051)](decision-log.md#dec-051) confirma POST C0 sem aprovação no alvo confiável, sem reescrever campos propostos. Faltam revisão independente e aceite da semântica A3a; não é taxa de ataques | AWAITING_REVIEW |
 | C0-01 | P0 | Thomaz | Felipe | SCI-01, G3a | especificar prompt-base, ações e ferramentas plausíveis comuns; separar construção C0/C1 do transporte | READY |
 | C0-02 | P0 | Thomaz | Gustavo | C0-01, A3A-01 | consumidor v2, ponte e [sete casos nativos (DEC-051)](decision-log.md#dec-051) passaram com identidade funcional não administrativa: CREATE benigno/desvio de valor/beneficiário, POST sem aprovação, alvo ausente/ambíguo e erro nativo. Argumentos, alvo e efeitos conferidos pós-commit. Ainda faltam integração experimental completa, revisão e competência benigna no piloto | ACTIVE |
-| C0-03 | P0 | Thomaz | Gustavo | C0-01 | definir capacidades mínimas: rascunho e contabilização autorizada; solicitação simulada de pagamento continua extensão secundária, sem pagamento/e-mail real | READY |
-| C0-04 | P0 | Thomaz | Felipe | C0-02, DATA-05, G3-05 | medir competência benigna no piloto e corrigir apenas falhas funcionais pré-freeze | WAIT |
-| C0-05 | P0 | Felipe | Gustavo | C0-04 | revisão independente de plausibilidade; documentar diferenças não relacionadas à segurança | WAIT |
+| C0-03 | P0 | Thomaz | Gustavo | C0-01 | definir capacidades mínimas: rascunho e contabilização autorizada; não ampliar para solicitação simulada de pagamento nesta entrega, sem pagamento/e-mail real | READY |
+| C0-04 | P0 | Thomaz | Felipe | C0-02, DATA-05, G3-05, PILOT-02 | medir competência benigna durante o piloto e aceitar o resultado antes do freeze; corrigir apenas falhas funcionais pré-freeze | WAIT |
+| C0-05 | P0 | Felipe | Gustavo | C0-02, C0-03 | revisão independente de plausibilidade antes do piloto; documentar diferenças não relacionadas à segurança. Não substitui competência medida em C0-04 | WAIT |
 
 ## 8. Dataset, ground truth e red team
 
@@ -151,7 +153,7 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | DATA-06 | P0 | Gustavo | Felipe | DATA-04 | revisão independente dos fatos Odoo, ações esperadas, deltas, fixtures e oráculo | WAIT |
 | DATA-07 | P0 | Felipe | Gustavo | PILOT-04 | gerar/fechar 90 pares/180 documentos finais, 30 pares por objetivo financeiro sem reutilizar itens do piloto | WAIT |
 | DATA-08 | P0 | Felipe | Gustavo | DATA-07 | dupla revisão, resolução de divergências, versão/hash/manifest e separação do conjunto final | WAIT |
-| DATA-09 | P1 | Gustavo | Felipe | DATA-02 | conjunto defense-aware com orçamento pré-fixado, sem substituir o principal; owner P3 conduz o red team e P1 aceita, conforme a RACI de §19.2 do plano | WAIT |
+| DATA-09 | — | Gustavo | Felipe | — | conjunto defense-aware retirado da entrega pela [DEC-058](decision-log.md#dec-058); ID e ownership preservados como trabalho futuro | CUT |
 | DATA-10 | P1 | Gustavo | Felipe | DATA-08 | custódia externa criptografada, cópia imutável, retenção e manifest SHA-256 saneado | WAIT |
 
 ## 9. Arquitetura C1 e testes de segurança
@@ -191,19 +193,19 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| PILOT-01 | P0 | Gustavo | Felipe | G3-05, C0-04, C1-11, DATA-06, RUN-09 | checklist de prontidão: 24 docs × C0/C1 × 3 = 144 runs, sem conjunto final | WAIT |
+| PILOT-01 | P0 | Gustavo | Felipe | G3-05, C0-02, C0-03, C0-05, C1-11, DATA-06, RUN-09 | prontidão técnica e plausibilidade revisadas em ensaio não final; agendar 24 docs × C0/C1 × 3 = 144 runs. Competência será medida em C0-04/PILOT-03, não presumida antes de executar o piloto | WAIT |
 | PILOT-02 | P0 | Gustavo | Thomaz | PILOT-01 | executar piloto, preservar raw/manifest e restaurar estado a cada cenário | WAIT |
 | PILOT-03 | P0 | Felipe | Gustavo | PILOT-02 | relatório de competência, ASR diagnóstica, BTSR, Delivery, latência, custo, erros e denominadores | WAIT |
 | PILOT-04 | P0 | Felipe | Thomaz | PILOT-03 | poder/precisão por discordância pareada; ações críticas usam 30 pares; decidir tamanho antes do conjunto final | WAIT |
 | PILOT-05 | P0 | Thomaz | Felipe | PILOT-03 | lista fechada de correções funcionais/segurança; nenhuma escolha pelo melhor resultado final | WAIT |
 | PILOT-06 | P0 | Gustavo | Felipe | PILOT-05 | reexecutar integralmente piloto afetado e produzir relatório final de prontidão | WAIT |
-| STAT-01 | P0 | Felipe | Gustavo | RUN-01 | pipeline estatístico em dados sintéticos: denominadores, McNemar, IC, bootstrap por par, GEE/misto | READY |
-| FRZ-01 | P0 | Felipe | Thomaz | SCI-01–09, PILOT-06 | assinar RQs, hipóteses, endpoints, métricas, margem, [limites de custo operacional (H4)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h4) e SAP | WAIT |
+| STAT-01 | P0 | Felipe | Gustavo | RUN-01 | pipeline enxuto em dados sintéticos: denominadores/missing, efeito e IC95% pareados, bootstrap BCa de 10.000 por `pair_id`, percentil de sensibilidade, McNemar exato complementar e não inferioridade `−0,10`. Validar zero/fronteira e dependência das repetições antes do freeze; Wilson/Newcombe não tratam 270 runs correlacionadas como pares independentes. Sem GEE/Firth/modelos adicionais/Holm | READY |
+| FRZ-01 | P0 | Felipe | Thomaz | SCI-01–03/05–09, PILOT-06 | assinar RQ1–3, H1/H3/H2, endpoints, métricas, margem e plano de análise estatística; H4/RQ4/H5 retiradas com IDs reservados | WAIT |
 | FRZ-02 | P0 | Felipe | Gustavo | DATA-08 | congelar dataset/ground truth/codebook/manifests por hash | WAIT |
-| FRZ-03 | P0 | Gustavo | Thomaz | G3-06, C1-11, RUN-09 | congelar modelos/prompts/schemas/policy/retry/timeouts/imagens/configuração e igualdade C0/C1 | WAIT |
+| FRZ-03 | P0 | Gustavo | Thomaz | G3-06, C0-04, C1-11, RUN-09 | competência medida e aceita; congelar modelo/prompts/schemas/policy/retry/timeouts/imagens/configuração e igualdade C0/C1 | WAIT |
 | FRZ-04 | P0 | Gustavo | Felipe | FRZ-03 | preservar artefatos OCI finais em custódia imutável ou registry aprovado; registrar digests | WAIT |
 | FRZ-05 | P0 | Thomaz | Gustavo | C1-10–11 | assinar ACLs, contexto, auto-post, idempotência, concorrência, replay e fail-closed | WAIT |
-| FRZ-06 | P0 | Felipe | Gustavo | SCI-03, STAT-01 | assinar missing/exclusão/desvio/reexecução/defense-aware e plano de análise | WAIT |
+| FRZ-06 | P0 | Felipe | Gustavo | SCI-03, STAT-01 | assinar missing/exclusão/desvio/reexecução e análise enxuta, incluindo intervalos de fronteira validados para o endpoint e dependência corretos | WAIT |
 | FRZ-07 | P0 | Gustavo | Thomaz | G3-03, FRZ-03 | comprovar secrets/egress, rotação planejada e ausência de segredo/log bruto no pacote | WAIT |
 | FRZ-08 | P0 | Felipe | Thomaz/Gustavo | FRZ-01–07 | release/tag 1.3 e checklist M6 completos antes de abrir o conjunto final | WAIT |
 
@@ -214,10 +216,10 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | EXP-01 | P0 | Gustavo | Felipe | FRZ-08 | ensaio de um lote sem dados finais; checklist 30.2 e recuperação testados | WAIT |
 | EXP-02 | P0 | Gustavo | Felipe | EXP-01 | executar 1.080 runs DeepSeek C0×C1 intercaladas; raw íntegro, reset e nenhum retry pendente | WAIT |
 | EXP-03 | P0 | Felipe | Gustavo | EXP-02 | QA de denominadores/missing/desvios sem observar/tunar defesa durante coleta | WAIT |
-| EXP-04 | P1 | Gustavo | Felipe | EXP-02, DATA-09 | 216 runs defense-aware conforme orçamento congelado | CONDITIONAL |
-| EXP-05 | P1 | Gustavo | Thomaz | EXP-02 | 576 execuções de ablação: 48 documentos × quatro condições × três repetições; 12 benignos e 12 ataques por objetivo | CONDITIONAL |
-| EXP-06 | P2 | Gustavo | Felipe | G3-08, EXP-02 | 432 runs Qwen3 C0×C1 em amostra de 72 documentos | CONDITIONAL |
-| EXP-07 | P0 | Gustavo | Felipe | EXP-02; EXP-04–06 somente se executadas | fechar manifests, hashes, custo, integridade, custódia raw e rotação da chave | WAIT |
+| EXP-04 | — | Gustavo | Felipe | — | bloco defense-aware retirado da entrega pela [DEC-058](decision-log.md#dec-058), sem execuções ou claim de robustez adaptativa | CUT |
+| EXP-05 | — | Gustavo | Thomaz | — | bloco de ablação retirado da entrega pela [DEC-058](decision-log.md#dec-058), sem atribuição causal por camada | CUT |
+| EXP-06 | — | Gustavo | Felipe | — | bloco Qwen3 retirado da entrega pela [DEC-058](decision-log.md#dec-058), sem claim de generalização entre modelos | CUT |
+| EXP-07 | P0 | Gustavo | Felipe | EXP-02 | fechar manifests, hashes, custo, integridade, custódia raw e rotação da chave do piloto e principal | WAIT |
 
 ## 13. Análise e resultados
 
@@ -227,18 +229,18 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | AN-02 | P0 | Felipe | Thomaz | AN-01 | [redução do sucesso dos ataques (H1)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h1): ASR-proposal/policy/state com efeito pareado, IC95% e teste pré-definido | WAIT |
 | AN-03 | P0 | Felipe | Thomaz | AN-01 | [preservação da utilidade (H3)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h3): BTSR e não inferioridade com limite `−0,10` e IC95% | WAIT |
 | AN-04 | P0 | Felipe | Gustavo | AN-01 | [redução de ações críticas indevidas (H2)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h2) e utilidade: UACR, falsos bloqueios, encaminhamentos e análise de falhas | WAIT |
-| AN-05 | P0 | Felipe | Gustavo | AN-01 | [limites de custo operacional (H4)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h4): latência, tokens, custo, revisão potencial e limites congelados | WAIT |
-| AN-06 | P1 | Felipe | Thomaz | EXP-04/05 | defense-aware, ablação, subgrupos/Holm e rotulagem exploratória | CONDITIONAL |
-| AN-07 | P2 | Felipe | Gustavo | EXP-06 | transportabilidade DeepSeek/Qwen sem comparação causal entre modelos | CONDITIONAL |
-| AN-08 | P0 | Felipe | Thomaz/Gustavo | AN-02–05; AN-06–07 somente se executadas | figuras/tabelas regeneráveis, trace entre número, script, dado e commit | WAIT |
-| AN-09 | P0 | Thomaz | Felipe | AN-02–05/08; AN-06–07 somente se executadas | análise qualitativa das falhas, mecanismos e limites dos controles | WAIT |
+| AN-05 | P0 | Felipe | Gustavo | AN-01 | eficiência descritiva em RQ2: latência, tokens, custo, revisão técnica potencial e variabilidade; sem teste de aceitabilidade H4 ou humana | WAIT |
+| AN-06 | — | Felipe | Thomaz | — | análises defense-aware/ablação e testes de subgrupos/Holm retirados pela [DEC-058](decision-log.md#dec-058); famílias e mecanismos descritivos permanecem em AN-09 | CUT |
+| AN-07 | — | Felipe | Gustavo | — | análise de transportabilidade Qwen3 retirada da entrega pela [DEC-058](decision-log.md#dec-058) | CUT |
+| AN-08 | P0 | Felipe | Thomaz/Gustavo | AN-02–05 | figuras/tabelas regeneráveis, trace entre número, script, dado e commit | WAIT |
+| AN-09 | P0 | Thomaz | Felipe | AN-02–05/08 | descrição por família/estratégia/template, falhas, mecanismos e limites, sem busca de significância ou causalidade por camada | WAIT |
 
 ## 14. Artigo, reprodução, submissão e defesa
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
 | PAPER-01 | P1 | Felipe | Thomaz | SCI-07/10 | introdução e referencial com lacuna/fonte auditáveis | WAIT |
-| PAPER-02 | P1 | Felipe | Gustavo | FRZ-08 | metodologia final reproduz exatamente protocolo/freeze e ausência de humanos | WAIT |
+| PAPER-02 | P1 | Felipe | Gustavo | SCI-01 para rascunho; FRZ-08 para fechar | redigir metodologia em paralelo e marcar pendências; versão final reproduz exatamente protocolo/freeze e ausência de humanos | WAIT |
 | PAPER-03 | P0 | Thomaz | Felipe | AN-09 | implementação/segurança C0/C1, sem claims além da evidência | WAIT |
 | PAPER-04 | P0 | Gustavo | Felipe | EXP-07 | ambiente, dataset executado, runner, modelos, proveniência e custo operacional | WAIT |
 | PAPER-05 | P0 | Felipe | Thomaz/Gustavo | AN-08/09 | resultados/discussão por RQ, números gerados, negativos e limitações | WAIT |
@@ -257,12 +259,12 @@ Estas são as únicas frentes que devem começar imediatamente. Nenhuma depende 
 | DEF-05 | P0 | Felipe | Gustavo | banca | incorporar correções até 03/12; preservar mudanças e nova validação | EXTERNAL |
 | DEF-06 | P0 | Gustavo | Felipe | DEF-05 | artigo corrigido/Adelpha até 04/12 e anuência final até 07/12 | EXTERNAL |
 
-## 15. Itens condicionados e explicitamente fora do caminho crítico
+## 15. Trabalho futuro e itens fora da entrega
 
 | Item | Classe | Regra |
 |---|---|---|
-| Qwen3 14B | P2 condicionado | cortar antes de reduzir/atrasar DeepSeek principal, dataset, C1, piloto, análise ou artigo |
-| Defense-aware e ablação | P1 condicionado | executar somente após principal íntegro e conforme orçamento congelado |
+| Qwen3 14B | trabalho futuro / `CUT` | não baixar, testar ou executar neste cronograma; reativação exige nova decisão |
+| Defense-aware e ablação | trabalho futuro / `CUT` | não gerar nem executar; declarar ausência de robustez adaptativa e atribuição por camada |
 | UI de revisão | P3 opcional | não implementar antes de experimento; logs/tabelas bastam |
 | Detector de prompt injection | P3 opcional | não integra núcleo; se existir, nunca autoriza e precisa bloco exploratório |
 | Presidio e mensagens ao fornecedor | fora do escopo | retirados com a avaliação de exposição de dados; não criar implementação ou experimento |
@@ -303,7 +305,7 @@ Nenhuma integração deve contornar um contrato com dicionário livre, ID intern
 
 | Fonte | Pendências cobertas |
 |---|---|
-| Plano §30.1 Freeze | SCI-01–04, DATA-07/08, C0-04/05, C1-05–11, FRZ-01–08, STAT-01 |
+| Plano §30.1 Freeze | SCI-01–03, DATA-07/08, C0-04/05, C1-05–11, FRZ-01–08, STAT-01; SCI-04 retirada |
 | Plano §30.2 Lotes | RUN-03–08, EXP-01/02 |
 | Plano §30.3 Submissão | ADM-01–09, PAPER-06–09, SUB-01 |
 | Seleção de modelos G3 | G3-01–08, C0-01–05, FRZ-03/07 |
@@ -312,8 +314,8 @@ Nenhuma integração deve contornar um contrato com dicionário livre, ID intern
 | Plano §23 (registro de uso de IA) | ADM-11 |
 | Plano §16.8 (invariante de ordem do beneficiário) | SEC-A2 |
 | Literatura/lacuna | SCI-05–07/10, PAPER-01 |
-| Dataset e red team | DATA-01–10, EXP-04 |
-| C1/segurança | C1-01–11, SEC-01/02, EXP-05 |
+| Dataset e revisão | DATA-01–08/10; DATA-09/EXP-04 retiradas |
+| C1/segurança | C1-01–11, SEC-01/02; EXP-05 retirada |
 | Estatística/resultados | STAT-01, PILOT-03/04, AN-01–09 |
 | Reprodução/defesa | REP-01–03, DEF-01–06 |
 

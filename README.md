@@ -2,9 +2,9 @@
 
 Este repositório contém o plano-mestre editável do TCC em Ciência da Computação sobre mitigação de prompt injection indireta em um fluxo de Contas a Pagar integrado ao Odoo 19.0 Community self-hosted.
 
-**Comece pela [leitura rápida do experimento](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida).** A versão 1.2.18 mantém a avaliação em alteração de campos, troca de beneficiário e contabilização sem autorização; esclarece idempotência e valores fixos do executor, preservando o contrato de ação v2. A frente de exposição de dados foi retirada na v1.2.12. A meta continua em 90 pares, 30 por objetivo; não houve coleta de resultados finais.
+**Comece pela [leitura rápida do experimento](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida) e pelas [prioridades do grupo](docs/task-backlog.md).** A versão 1.2.19 aplica o [corte da entrega (DEC-058)](docs/decision-log.md#dec-058): mantém DeepSeek, C0/C1, 90 pares/180 documentos, três repetições e 1.080 execuções principais, mais 144 de piloto separado. Qwen3, ablação e ataques adaptados à defesa ficam para trabalho futuro. Overhead e subgrupos serão descritivos; a revisão de literatura será dirigida e transparente. Não houve coleta de resultados finais.
 
-As referências têm descrição e destino: [contribuição das camadas (RQ4)](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#rq4) é uma pergunta de pesquisa; [revisão independente do plano (DEC-022)](docs/decision-log.md#dec-022) é uma decisão histórica; [retirada da exposição de dados (DEC-023)](docs/decision-log.md#dec-023) registra esta mudança. Outros termos estão no [glossário do plano](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#glossario).
+As referências têm descrição e destino: [segurança (RQ1)](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#rq1) é uma pergunta de pesquisa; [revisão independente do plano (DEC-022)](docs/decision-log.md#dec-022) é uma decisão histórica. IDs retirados permanecem reservados, não renumerados. Outros termos estão no [glossário do plano](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#glossario).
 
 ## Artefatos principais
 
@@ -24,12 +24,12 @@ Estado técnico atual: a [captura/reset e oráculo (DEC-055)](docs/lab-runbook.m
 - `docs/g3a-llm-adapters.md`: evidência técnica saneada da implementação simulada e dos 82 testes de G3a.
 - `docs/g3b-egress-topology.md`: evidência da API interna, topologia executável, proxy allowlisted e testes negativos offline de G3b.
 - `docs/revisao-independente-v1.2.9.md`: dossiê da revisão adversarial em doze dimensões, com 120 achados verificados, evidência literal, veredito e correção recomendada, conforme [revisão independente do plano (DEC-022)](docs/decision-log.md#dec-022).
-- `docs/task-backlog.md`: inventário operacional de 116 tarefas, dependências, revisões, DoD e ondas paralelas dos três integrantes conforme [divisão do trabalho (DEC-021)](docs/decision-log.md#dec-021).
+- `docs/task-backlog.md`: prioridades e três trilhas paralelas, com os 123 IDs preservados, donos, revisores, dependências e DoD; blocos retirados têm estado `CUT`, não `DONE`.
 - `paper/`: fonte LaTeX editável, referências, validação e PDF pré-experimental do artigo institucional do TCC II, conforme [fonte do artigo (DEC-019)](docs/decision-log.md#dec-019).
-- `docs/releases/v1.2.18.md`: manifesto da versão corrente; versões anteriores permanecem em `docs/releases/` para auditoria, sem fazer parte do roteiro de leitura.
+- `docs/releases/v1.2.19.md`: manifesto da versão corrente; versões anteriores permanecem em `docs/releases/` para auditoria, sem fazer parte do roteiro de leitura.
 - `reproducibility/odoo-source.lock.json`: lock legível por máquina da fonte Odoo selecionada.
 - `reproducibility/lab-environment.lock.json`: versões, digests e últimos aceites M1/M2 saneados do laboratório.
-- `reproducibility/model-selection.lock.json`: seleção datada do DeepSeek e Qwen3, fatos observados e evidências ainda pendentes para o freeze.
+- `reproducibility/model-selection.lock.json`: seleção histórica dos modelos, escopo atual somente DeepSeek e evidências pendentes para o freeze.
 - `reproducibility/institutional-sources.lock.json`: hashes, requisitos e anomalias das fontes institucionais locais.
 - `reproducibility/institutional-evidence.lock.json`: hashes e conclusões saneadas de evidências institucionais privadas mantidas fora do Git.
 - `scripts/check_repository_safety.ps1`: verificação de caminhos proibidos e padrões de credenciais sem exibir o valor suspeito.
@@ -45,9 +45,9 @@ O marco M2 também foi validado em 31/08/2026. Ele gera localmente um PDF sinté
 
 M2 é uma baseline de desenvolvimento do encanamento, não o C0 científico: o adaptador `deterministic-development/v1` não usa LLM e está proibido nas runs experimentais. Esses aceites M1/M2 não incluem modelo LLM, prompt injection, C1, add-on de autorização, postagem ou pagamento; os checkpoints posteriores têm provas próprias. O manifesto OCI é local e não foi publicado em registry. O estado verificável corrente está em `reproducibility/lab-environment.lock.json`; PDF, credenciais e evidências detalhadas permanecem em `.runtime`, fora do Git.
 
-Os modelos de G3 foram selecionados em [seleção dos modelos (DEC-018)](docs/decision-log.md#dec-018). O piloto do bloco principal está configurado para solicitar `model=deepseek-flash` conforme [pacote técnico pré-piloto (DEC-029)](docs/decision-log.md#dec-029); o alias legado `deepseek-v4-flash` usado no smoke de 24/09 é preservado como evidência histórica. Ambos são móveis: o [roteamento atualizado (DEC-024)](docs/decision-log.md#dec-024) registra a passagem para V4.1 Flash. O bloco posterior de robustez usará `qwen3:14b-q4_K_M` via Ollama. Cada bloco preserva C0/C1 com o mesmo modelo e configuração e usa *thinking* desligado. G3a aprovou adapters e mocks; G3b materializou `llm-client`, redes internas e proxy de destino fixo. O [smoke canônico G3-06 (DEC-030)](docs/decision-log.md#dec-030) passou em uma chamada sintética real, sem retry e com manifesto saneado. O [estágio de tentativas (DEC-031)](docs/decision-log.md#dec-031) e o [classificador pré-freeze (DEC-032)](docs/decision-log.md#dec-032) passaram em testes offline, mas o runner Odoo completo, a competência C0, a revisão independente e a avaliação C0/C1 continuam pendentes; o smoke não é run científica. O [contrato comum v2 (DEC-050)](docs/decision-log.md#dec-050) e o [POST nativo C0 (DEC-051)](docs/decision-log.md#dec-051) cobrem a lacuna técnica original de A3a; revisão da semântica, competência C0 e gates do piloto continuam pendentes.
+Os modelos de G3 foram selecionados na [DEC-018](docs/decision-log.md#dec-018); a [DEC-058](docs/decision-log.md#dec-058) mantém somente DeepSeek na entrega. O piloto solicita `model=deepseek-flash` conforme o [pacote pré-piloto (DEC-029)](docs/decision-log.md#dec-029), igual em C0/C1, com *thinking* desligado. O alias legado e seu backend documentado permanecem evidência histórica, não garantia atual de snapshot imutável. O backend deve ser registrado por execução e conferido antes da coleta. G3a/G3b, o [smoke canônico (DEC-030)](docs/decision-log.md#dec-030), os estágios offline e as provas privadas do contrato v2 têm seus aceites técnicos próprios; não demonstram competência C0, eficácia C1 ou prontidão científica. Integração operacional, supervisão e revisão continuam pendentes.
 
-O host observado possui Ollama 0.30.10 e RTX 3060 Ti com 8 GiB de VRAM. Como o Qwen quantizado ocupa aproximadamente 9,3 GB, sua inclusão depende de smoke com offload parcial e manifest completo registrado. O modelo não foi baixado por esta release. A rede do laboratório permanece interna; a chave DeepSeek foi lida somente pelo cliente no profile real e permanece em arquivo local ignorado, sem versionamento.
+Qwen3 não exige download, benchmark ou smoke nesta entrega. Seus contratos e registros históricos não serão apagados. A rede do laboratório permanece interna e a chave DeepSeek continua em arquivo local ignorado, acessível somente ao cliente no profile real, sem versionamento.
 
 Os três workstreams foram atribuídos em [divisão do trabalho (DEC-021)](docs/decision-log.md#dec-021): Felipe lidera ciência e dados, Thomaz lidera arquitetura e segurança, e Gustavo lidera Odoo e experimentação. Todas as pendências conhecidas estão identificadas em `docs/task-backlog.md`, com responsáveis, revisores, dependências e critérios objetivos de conclusão para permitir execução paralela sem perder os pontos de integração.
 
@@ -66,7 +66,7 @@ Não use `new_local_env.ps1 -Force` com um banco existente sem planejar a rotaç
 
 ## Artigo institucional do TCC II
 
-O artigo separado já está disponível em `paper/`. A compilação corrente tem 17 páginas e passou pelos gates de extensão, contagem de Resumo/Abstract, estrutura, reconciliação de 20 citações com 20 referências, metadados e inspeção visual. Ela registra somente os resultados técnicos comprovados de M1/M2; C1, piloto, freeze e resultados confirmatórios ainda estão pendentes. Portanto, é uma versão profissional para revisão com o orientador, não o arquivo final de submissão.
+O artigo separado está em `paper/`. A compilação de 17/10/2026 tem 18 páginas e passou pelas verificações de extensão, Resumo/Abstract (213/189 palavras), estrutura, 20 citações/referências, metadados e inspeção visual. Distingue M1/M2 históricos dos incrementos técnicos privados posteriores, sem apresentar eficácia medida. Integração/revisão, piloto, freeze e coleta continuam pendentes: é versão para revisão, não arquivo final de submissão.
 
 ## Edição do plano
 

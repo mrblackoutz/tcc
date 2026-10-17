@@ -1,13 +1,13 @@
 {
   "schema_version": "paper-validation/v1",
-  "validated_on": "2026-09-08",
-  "decision": "DEC-023",
-  "plan_version": "1.2.12",
+  "validated_on": "2026-10-17",
+  "decision": "DEC-058",
+  "plan_version": "1.2.19",
   "artifact": {
     "path": "paper/relatorio_tcc_ii.pdf",
-    "sha256": "dbc0aeb401dd4fe89388bf410887aabca40c8e16c45c63b3087a8aff832da9f4",
-    "bytes": 233327,
-    "pages": 17,
+    "sha256": "1ac6a4fd071e0db73da0401d30d851533c9429897ad5d5a62a7738ec85dd5117",
+    "bytes": 238147,
+    "pages": 18,
     "page_size": "A4",
     "status": "pre-experimental"
   },
@@ -17,8 +17,8 @@
     "citation_keys": 20,
     "bibliography_entries": 20,
     "internal_article_targets": 9,
-    "resumo_words": 211,
-    "abstract_words": 196,
+    "resumo_words": 213,
+    "abstract_words": 189,
     "overfull_boxes": 0,
     "underfull_boxes": 0,
     "undefined_citations_or_references": 0,
@@ -26,23 +26,24 @@
     "required_main_headings": 6,
     "forbidden_placeholders": 0,
     "page_word_counts": [
-      313,
-      537,
-      577,
+      324,
+      529,
+      573,
       553,
-      582,
-      416,
-      505,
-      391,
-      508,
+      581,
+      437,
+      532,
       344,
-      550,
-      538,
-      428,
-      422,
-      496,
-      338,
-      129
+      456,
+      466,
+      536,
+      630,
+      341,
+      445,
+      458,
+      525,
+      348,
+      226
     ],
     "pdf_text_and_metadata": "PASS",
     "encrypted": false,
@@ -68,7 +69,8 @@
       14,
       15,
       16,
-      17
+      17,
+      18
     ],
     "cover_and_summaries": "PASS",
     "dense_tables": "PASS",
@@ -76,7 +78,7 @@
     "conclusion_and_references": "PASS",
     "intermediate_header_only_pages": 0,
     "residual_table_line_pages": 0,
-    "method": "Poppler rendered all final pages at 1100 pixels; changed pages reviewed again and unchanged renders matched by SHA-256."
+    "method": "Poppler rendered all 18 final pages at 1100 pixels; six three-page sheets were inspected for cover/summaries, dense tables, section transitions and references."
   },
   "metadata": {
     "title": "Desenvolvimento e implementação de uma arquitetura de proteção na integração de LLMs em ERPs: estudo de caso com Odoo e Contas a Pagar",
@@ -90,46 +92,34 @@
     "traceability": "reproducibility/institutional-sources.lock.json"
   },
   "source_sha256": {
-    "paper/main.tex": "c748025775f337b3faf8c0ffda44b8fe7a307a0639571a147f25a97b73548563",
-    "paper/sections/01-introducao.tex": "3d768b24753f0739209a67765ea94100c4d108b0750d180a8d895c65db659d6e",
-    "paper/sections/02-referencial.tex": "f53f371fe7305e749246e1735126a3a43da85b768f8492fa3a71ba0cc17e8fe0",
-    "paper/sections/03-metodologia.tex": "3aa46917c0b9753473fae947747aa7ffeb0c5ebcec00f55fdbcc65322a408ebc",
-    "paper/sections/04-resultados.tex": "eb5c910b9abefe9c6196a16beebee24aa121dc2ee8c98da62defbf0b8fd7f2f7",
-    "paper/sections/05-conclusao.tex": "c7e1821561677505a4b4d5d44c710fead007b2d8afd8b5cb2913307a7b84d409",
-    "paper/sections/resumo-en.tex": "61d3e5354c55f626edbd0f67b6fe8b6f90210c934ff18cd7456d075cd623dc66",
-    "paper/sections/resumo-pt.tex": "5cb9dce3ec50e915e3437e3ba0ceefd8f352372e60f06de11a6669e5351c0f51",
+    "paper/main.tex": "c2cac0b9604c02495f2c059d458f8398ec409feab54b8f5d0b8102e825f87dfa",
+    "paper/sections/01-introducao.tex": "5523f12a93452a58f0e83927245e2d297a8761365e6c6e2aa1ac4d30a2978084",
+    "paper/sections/02-referencial.tex": "7b444689afbc3c749b144d34c8246708d311842dcf44eefdab14c68abbcf0e8f",
+    "paper/sections/03-metodologia.tex": "516d17236ae4c9741f9289d75abecd521fccab8848f65b2a4079a11f95636368",
+    "paper/sections/04-resultados.tex": "c9582af7d374fd9d078fcf25b8ecab646aef90883e2167c7f3838bf76ddd8f1c",
+    "paper/sections/05-conclusao.tex": "a67ce6cab0c081191dbc8350a00a4b5afa75b97f9902ee097167ce87886bdb33",
+    "paper/sections/resumo-en.tex": "98bc3f760ca1fdf8e86334632434a251f6089e5bb330bb4f6becb41ce86329c4",
+    "paper/sections/resumo-pt.tex": "424c9a4cc1dec1de31c35996db921cabf77bda8c5c43791ac1be098b870f2f73",
     "paper/referencias.bib": "9e448f74bee367e5536ea4fb14772d3c4207f22b7d85895444fa73cb7648e1a3",
     "paper/assets/fci-header.png": "ad7c11fbe2cbf8da370fecb8d2f0316eaef8bc962f8c26338ff5910cf1939d9c",
-    "scripts/validate_current_docs.py": "2765041d581a52b006a02f1f2398588045d0c1585fd36944cbd0cf03bbe37995"
+    "scripts/validate_current_docs.py": "4b1e50c77ac0faccba4eec4c8bfcd76f9e688904852797d31c31cb5f9a37e79b"
   },
   "build_evidence": {
-    "final_log_sha256": "249dc626109f20a702b2b9059620869dd0ad1f2add1228f17e3375232c33cd5f",
+    "final_log_sha256": "f79ea3a1175da56c89a3f6d9cdf75992de0a5dd7b82c40b345ef4927e1b7c7d1",
     "bibliography_output_sha256": "ef2c564b7c0ce9fa6afc6aa303b75a0dd112f45c79f5edd99f6e0ae31d3859af",
-    "logs_retained_outside_git": true
+    "logs_retained_outside_git": true,
+    "attempts_note": "Initial direct WSL argv invocation failed before a PDF was created; shell-scoped paths resolved it. Windows Poppler lookup selected an unconfigured MiKTeX shim; final validation used existing Ubuntu binaries. No downloads or installations."
   },
   "toolchain": {
-    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.28 (TeX Live 2025/Debian)",
-    "bibtex": "BibTeX 0.99d (TeX Live 2025/Debian)",
-    "pdfinfo": "Poppler 26.01.0",
-    "pdftotext": "Poppler 26.01.0",
+    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+    "bibtex": "BibTeX 0.99d (TeX Live 2023/Debian)",
+    "pdfinfo": "Poppler 24.02.0",
+    "pdftotext": "Poppler 24.02.0",
     "bibliography_style": "abntex2-alf 1.9.7",
-    "packages_sha256": {
-      "libgpgme45_2.0.1-2build1_amd64.deb": "b95f81d26bd4922510eb58a08f9c0bf143781cb23a907ce9ede7a3b1c6024be6",
-      "libgpgmepp7_2.0.0-2_amd64.deb": "3dd75723159c2c171382f836e491d83d71f5fdf7a58c9f6754d85ff0c725b761",
-      "libpoppler156_26.01.0-2ubuntu0.1_amd64.deb": "8f9b381982deed672786b89d97473ad33e0a8d4f3dc44c6c8f6653b69030ca94",
-      "poppler-utils_26.01.0-2ubuntu0.1_amd64.deb": "16399d6fe46fbef3259297601ffeeaf024d725b02cdd6d8ddbbc2f4b0aa1ed7d",
-      "texlive-publishers_2025.20260124-1_all.deb": "6e2b4c5f312e50b694b722fe5f388d25391c1d3d97e4a56b0e7daa929a7329c2"
-    },
-    "notice": "TeX Live in WSL; missing ABNT and Poppler dependencies extracted from official Ubuntu packages into a temporary directory, without system installation or changes to the experimental laboratory."
+    "notice": "Existing Ubuntu/WSL toolchain; no network, package downloads or installations. Shell escape disabled; auxiliaries and logs remain outside Git."
   },
   "scientific_boundary": {
-    "previously_recorded_technical_evidence": [
-      "M1 laboratory and reversible synthetic vendor-bill smoke",
-      "M2 PDF-to-typed-proposal-to-draft vertical slice",
-      "41 automated gateway tests",
-      "exact post-run state restoration"
-    ],
-    "technical_evidence_date": "2026-08-31 (M1/M2 evidence cited in the article; later adapter and isolation work described separately)",
+    "technical_evidence_date": "Historical M1/M2: 2026-08-31; later private checkpoints cited through DEC-057, not rerun by the paper build.",
     "runtime_tests_rerun_in_this_revision": false,
     "experimental_runs_in_this_revision": 0,
     "not_yet_measured": [
@@ -140,14 +130,22 @@
       "latency",
       "cost"
     ],
-    "scope": "30 pairs for field manipulation, 30 for beneficiary redirection and 30 for unauthorized critical action; no confidentiality evaluation"
+    "scope": "One DeepSeek model; 90 pairs, 30 per A1/A2/A3a; 180 documents, C0/C1, three repetitions, 1080 principal runs plus 144 separate pilot runs; overhead descriptive. Qwen3, ablation and defense-aware are future work.",
+    "previous_technical_evidence": [
+      "M1 laboratory and reversible synthetic vendor-bill smoke",
+      "M2 PDF-to-typed-proposal-to-draft vertical slice",
+      "private C0/C1 paths with their own technical acceptance",
+      "native state capture and snapshot restoration",
+      "candidate records preserving failures"
+    ]
   },
   "submission_blockers": [
-    "validate the DeepSeek adapter and scientific C0 in the pilot",
-    "implement and test C1",
-    "verify power and precision for the revised 30-pair critical-action subgroup before freeze",
-    "freeze and execute the confirmatory dataset",
-    "replace not-executed result states with observed effects and confidence intervals",
-    "confirm contacts, accepted file extension, AI disclosure policy and advisor approval in Oriente"
+    "complete and independently review operational v2 dispatch, supervision, authorization, capture, record and reset",
+    "generate and independently review pilot and final ground truth",
+    "implement and review grouped-endpoint intervals including zero/boundary cases, precision/power and missing rules before freeze",
+    "validate scientific C0 competence and legitimate authorized C1 critical actions in the pilot",
+    "freeze and execute the principal dataset, preserving raw custody",
+    "complete directed literature selection/matrix and replace unmeasured result states with observed effects and intervals",
+    "confirm accepted extension, AI disclosure policy and advisor approval in Oriente"
   ]
 }

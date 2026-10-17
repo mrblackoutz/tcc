@@ -1,19 +1,19 @@
 # Checklist de submissão — artigo TCC II
 
-**Estado:** versão de trabalho pré-experimental, revisada em 08/09/2026 conforme a [retirada da exposição de dados (DEC-023)](../docs/decision-log.md#dec-023). Este checklist diferencia um PDF tecnicamente válido de um arquivo autorizado para envio.
+**Estado:** versão pré-experimental de 17/10/2026, plano v1.2.19 e [corte da entrega (DEC-058)](../docs/decision-log.md#dec-058). Compilação, validação automática e inspeção das 18 páginas renovadas na mesma árvore; hashes no `validation-report.json`. O checklist diferencia PDF tecnicamente válido, revisão humana e autorização de envio; a submissão continua bloqueada pelos gates científicos/institucionais.
 
 ## Estrutura e formato
 
-- [x] PDF possui entre 10 e 20 páginas, incluindo referências
-- [x] Resumo possui entre 150 e 250 palavras
-- [x] Abstract possui entre 150 e 250 palavras e é semanticamente equivalente ao Resumo
-- [x] Palavras-chave e Keywords estão presentes
-- [x] seis títulos principais aparecem literalmente na ordem exigida
-- [x] referências seguem estilo autor-data compatível com ABNT NBR 6023:2018
-- [x] toda citação possui referência e toda referência é citada
-- [x] PDF foi comparado visualmente com o template FCI 2026
-- [x] capa, tabelas densas, mudanças de seção e página de referências foram inspecionadas
-- [x] não existe página intermediária formada apenas por cabeçalho ou linha residual de tabela
+- [x] PDF corrente possui entre 10 e 20 páginas, incluindo referências: 18
+- [x] Resumo corrente possui entre 150 e 250 palavras: 213
+- [x] Abstract corrente possui entre 150 e 250 palavras e é semanticamente equivalente ao Resumo: 189
+- [x] Palavras-chave e Keywords foram conferidos no PDF corrente
+- [x] seis títulos principais aparecem literalmente na ordem exigida no PDF corrente
+- [ ] referências correntes seguem estilo autor-data compatível com ABNT NBR 6023:2018
+- [x] toda citação corrente possui referência e toda referência é citada: 20/20
+- [ ] PDF corrente foi comparado visualmente com o template FCI 2026
+- [x] capa, tabelas densas, mudanças de seção e referências correntes foram inspecionadas
+- [x] PDF corrente não tem página intermediária formada apenas por cabeçalho ou linha residual de tabela
 
 ## Conteúdo científico
 
@@ -21,13 +21,18 @@
 - [x] caso de uso delimitado a Contas a Pagar e Odoo 19.0 Community
 - [x] problema, público-alvo, lacuna, RQs, hipóteses e objetivo estão explícitos
 - [x] método diferencia C0/C1, unidade, ameaça, dataset, métricas, freeze e análise
-- [x] avaliação de exposição de dados retirada de fontes, PDF e métricas; 90 pares distribuídos igualmente entre três objetivos
-- [x] perguntas e hipóteses possuem definição e links internos no PDF
+- [x] fontes mantêm 90 pares/180 documentos, três repetições e três objetivos financeiros, sem exposição de dados
+- [x] fontes preservam 1.080 execuções principais e 144 piloto; Qwen3, ablação e ataques adaptados à defesa são trabalhos futuros
+- [x] fontes retiram RQ4/H4/H5 como compromissos, preservam IDs e tratam eficiência e subgrupos como descrição
+- [x] fontes preservam H1 → H3 → H2, margem −0,10, dependência das repetições e gates de poder/intervalos
+- [ ] perguntas e hipóteses possuem definição e links internos conferidos no PDF corrente
 - [x] ausência de participantes humanos está declarada
-- [x] M1/M2 são relatados como resultados técnicos, não como eficácia de C1
+- [x] M1/M2 e incrementos privados posteriores são relatados como provas técnicas, não eficácia de C1
 - [x] não há percentuais confirmatórios inventados
 - [ ] adapter LLM e C0 científico competente foram validados no piloto
 - [ ] C1 e seus testes de autorização foram concluídos
+- [ ] revisão dirigida tem matriz crítica e registro verificável de origem/data/seleção; não é apresentada como busca sistemática executada
+- [ ] transporte, supervisão, autorização, captura, registro e reset estão integrados e revisados; `execute` não é aberto por este corte
 - [ ] dataset final e ground truth foram revisados, hasheados e congelados
 - [ ] experimento principal foi executado e todos os denominadores foram reconciliados
 - [ ] Resultados, Resumo, Abstract e Conclusão foram atualizados com efeitos e IC95% reais
@@ -49,5 +54,5 @@
 - [ ] alinhamento do tema à área/projeto do orientador foi confirmado formalmente
 - [ ] grupo e orientador aprovaram o conteúdo e a versão final
 - [ ] autores e orientador constam corretamente no cadastro do Oriente
-- [ ] arquivo foi enviado dentro da janela de 03 a 09/11/2026
+- [ ] grupo aprovou a versão interna até 02/11; arquivo foi enviado até 08/11 dentro da janela institucional de 03 a 09/11/2026
 - [ ] recibo de submissão foi preservado fora do Git

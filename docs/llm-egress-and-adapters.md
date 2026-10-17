@@ -2,11 +2,13 @@
 
 **Decisão:** DEC-020
 
-**Estado:** G3a/G3b aprovados offline e G3c aceito em smoke sintético com `deepseek-flash` retornado; C0 científico, artefato/smoke Qwen3 e piloto pendentes
+**Estado:** G3a/G3b aprovados offline e G3c aceito em smoke sintético; integração científica e piloto pendentes. Qwen3 está fora da entrega pela [DEC-058](decision-log.md#dec-058).
 
 **Data:** 31/08/2026
 
 ## 1. Objetivo e limite desta etapa
+
+Este é o desenho/evidência histórica dos adapters G3, não a configuração corrente de coleta. Contratos v1, alias legado e topologia Ollama abaixo permanecem rastreáveis, sem autorizar seu uso no piloto. O [protocolo atual](protocol.md) usa contrato de ação v2 e alias DeepSeek da DEC-029; [seleção operacional](model-selection.md) delimita a entrega somente DeepSeek. Não abrir rede, baixar modelo ou remover isolamento para aplicar o corte.
 
 Este documento transforma a seleção de modelos da DEC-018 em um desenho implementável sem abrir a rede do laboratório nem antecipar o piloto. G3a implementou adapters, schema, mocks e saneamento; G3b materializou `llm-client`, redes e proxy e aprovou os testes offline em 01/09/2026. Em 02/09/2026, o caminho G3c foi preparado com serviço real separado, runner sem segredo, chave montada por arquivo exato somente para leitura, recusa de repetição automática e manifesto saneado. As três primeiras tentativas foram inconclusiva, diagnosticada como HTTP 502 e recusada com HTTP 402, respectivamente. Após a adição de saldo, a quarta expôs uma lacuna de telemetria e a quinta identificou divergência entre o alias solicitado e o modelo retornado. A DEC-024 registrou a mudança de roteamento documentada pelo provedor antes da correção. Em 24/09/2026, a sexta tentativa concluiu uma inferência sintética tipada, sem retry, com um túnel permitido e manifesto saneado. Isso conclui G3-05, mas não demonstra competência do C0 científico, eficácia C1 ou resultados experimentais; esses gates continuam pendentes.
 
@@ -122,7 +124,7 @@ O Git recebe hashes e metadados saneados. Requests/responses brutos pertencem ao
 - **G3a — código isolado:** adapters, schema e mocks passam; nenhuma rede real é usada.
 - **G3b — egress executável:** **atendido offline em 01/09/2026**; topologia, API mock, política e testes negativos passaram sem contato externo, conforme `docs/g3b-egress-topology.md`.
 - **G3c — smoke DeepSeek:** concluído em 24/09/2026 com uma chamada sintética aceita, manifesto saneado, varredura de logs e DEC-024 para o roteamento V4.1 do alias legado; não mede competência científica do C0.
-- **G3d — smoke Qwen3:** download autorizado, manifest/blobs fixados e hardware aprovado sem OOM.
+- **G3d — reservado, fora da entrega:** smoke/download Qwen3 retirados pela DEC-058; não é gate pendente.
 - **G3e — piloto:** prompts, parâmetros, retry, competência, custo e latência aprovados antes do freeze.
 
 O transporte real só é acessível pelo serviço `llm-client-g3c`, profile `g3c` e modo explícito `deepseek-smoke`; G3b continua mock e rejeita a chave. DeepSeek passou o smoke sintético; Qwen3 permanece `not-smoked`.

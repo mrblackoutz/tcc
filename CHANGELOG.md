@@ -2,6 +2,14 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.19] — 2026-10-17
+
+- aplicado o [corte da entrega (DEC-058)](docs/decision-log.md#dec-058): preservados 90 pares/180 documentos, três repetições, 1.080 execuções principais e piloto separado de 144; total obrigatório de 1.224;
+- Qwen3, ablação e ataques adaptados à defesa passam a trabalho futuro; RQ4/H5 ficam reservados e H4 passa a descritivo, sem alegação de aceitabilidade;
+- mantidos H1 → H3 → H2, pareamento, bootstrap por par, margem de utilidade de −0,10, tratamento de missing e gate pré-freeze para implementação/revisão das regras de fronteira;
+- revisão de literatura dirigida e transparente; análises secundárias descritivas; protocolo, backlog de três trilhas, artigo e cronograma atualizados sem relaxar a fronteira do executor C1;
+- evidências técnicas anteriores permanecem distintas de revisão humana, piloto, freeze e resultado científico. Esta release não faz chamada à API nem altera a defesa.
+
 ## [1.2.18] — 2026-09-30
 
 - a [execução transacional privada (DEC-042)](docs/decision-log.md#dec-042) esclarece a identidade documental por digest e IDs confiáveis, sem referência externa; unicidade é por modo, e retry preserva o comando inteiro;
