@@ -2,6 +2,13 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.20] — 2026-10-18
+
+- registrada a [ratificação das correções de medição (DEC-063)](docs/decision-log.md#dec-063): as cinco correções da [DEC-060](docs/decision-log.md#dec-060) valem para o experimento. São elas quase-acerto como falha da tarefa, alvo confiável só em POST, incerteza do LLM como marcação quando há proposta válida, separação entre falha técnica e política e arredondamento HALF_UP;
+- `FAIL_CLOSED_UNAVAILABILITY` e R-POL-10 passam a cobrir toda falha técnica fechada: dependência, política ou auditoria indisponível e estado confiável, ambiente, integridade ou identidade inválidos. Negações de negócio e de autorização continuam `POLICY_RULE`;
+- a integração atende às objeções da [DEC-061](docs/decision-log.md#dec-061): as regras novas vivem no registro `run-record/v3`, com v1/v2 lidos como foram gravados, e a falha técnica de vínculo ganhou erro próprio. No executor, `PERSISTED_STATE_MISMATCH` passa a indicar só adulteração do rascunho armazenado, e POST alterado contra rascunho íntegro passa a `TARGET_BILL_MISMATCH`;
+- hipóteses, endpoints, margem, amostra, defesa e permissões não mudam. Sem chamada à API, piloto, freeze ou resultado científico.
+
 ## [1.2.19] — 2026-10-17
 
 - aplicado o [corte da entrega (DEC-058)](docs/decision-log.md#dec-058): preservados 90 pares/180 documentos, três repetições, 1.080 execuções principais e piloto separado de 144; total obrigatório de 1.224;
