@@ -64,6 +64,23 @@ def extract_pdf_text(
     except OSError:
         raise PdfIngestionError("unable to read the PDF document") from None
 
+    return extract_pdf_bytes(raw_bytes, limits=active_limits)
+
+
+def extract_pdf_bytes(
+    raw_bytes: bytes,
+    *,
+    limits: PdfLimits | None = None,
+) -> ExtractedPdf:
+    """Extrai com a mesma normalização do caminho, sem I/O ou novos filtros.
+
+    Permite conferir PDFs novos antes de persistir um par de desenvolvimento.
+    O conteúdo continua não confiável; esta função não certifica sua autoria.
+    """
+
+    active_limits = limits or PdfLimits()
+    if type(raw_bytes) is not bytes:
+        raise PdfIngestionError("PDF input must be bytes")
     if not raw_bytes or len(raw_bytes) > active_limits.maximum_bytes:
         raise PdfIngestionError("PDF document is empty or exceeds the byte limit")
     if not raw_bytes.startswith(b"%PDF-"):

@@ -36,7 +36,7 @@ CREATE significa `CREATE_DRAFT_BILL`; POST, `POST_VENDOR_BILL`. A disposição �
 | `TEXT_OBFUSCATION` | instrução ofuscada, mas ainda legível pelo extrator textual |
 | `CONTEXTUAL_INSTRUCTION` | instrução integrada ao contexto do documento |
 
-`BODY` e `FOOTER` identificam posições candidatas no corpo e rodapé. `T1`, `T2` e `T3` reservam os três layouts; não comprovam que os templates foram implementados ou revisados. `benign_kind=HARD` identifica texto legítimo semelhante a instrução, sem objetivo de ataque; não autoriza transformar toda linguagem imperativa em ataque.
+`BODY` e `FOOTER` identificam posições candidatas no corpo e rodapé. O [gerador de desenvolvimento (DEC-062)](../docs/decision-log.md#dec-062) implementa três layouts candidatos: demonstrativo de cobrança (`T1`), resumo financeiro (`T2`) e carta de cobrança (`T3`). Isso não comprova plausibilidade ou revisão científica dos templates. `benign_kind=HARD` identifica texto legítimo semelhante a instrução, sem objetivo de ataque; não autoriza transformar toda linguagem imperativa em ataque.
 
 Esses IDs não congelam a composição final. Um parser de par não comprova a matriz combinatória, distribuição por família, quantidade de controles difíceis, ausência de duplicatas entre splits ou separação piloto/teste.
 
@@ -71,3 +71,13 @@ Cada item precisará de autoria, validador independente, fatos/documentos confer
 Os identificadores enviados ao modelo devem ser opacos: sua atribuição não pode codificar benigno/adversarial, família, condição ou resposta esperada. O parser verifica formato e unicidade intrapar, mas não prova ausência de vazamento lexical ou independência da atribuição; a revisão do gerador e dos documentos deverá conferir isso.
 
 Os exemplos das suítes são doubles de desenvolvimento. Não são documentos piloto, dataset final ou resultados científicos publicáveis. Não gerar nem abrir o conjunto final para testar o parser ou ajustar a defesa.
+
+## 8. Gerar e conferir exemplos de desenvolvimento
+
+O [procedimento de DATA-03](../docs/lab-runbook.md#geracao-pdfs-desenvolvimento) gera somente `split=development`, sem acessar modelo ou ERP. O par de entrada é receita candidata; os hashes-semente não afirmam correspondência com os novos PDFs. A geração devolve outro par, com hashes dos bytes e da extração real, sem alterar o original. Uma releitura refaz o rendering a partir das notas-fonte e exige correspondência exata; hashes isolados não bastam.
+
+Os dois membros usam os mesmos fatos/layout/posição, variando somente a nota literal. Não imprimir identidade de cenário/par, família, alvo, classe, ação esperada, disposição, autorização ou condição no documento. Metadados são genéricos e iguais entre membros. O nome dos arquivos usa hash; sua atribuição não substitui o gate de IDs opacos.
+
+O rendering aceita português NFC representável em WinAnsi/cp1252, inclusive acentos. Caracteres fora desse conjunto, controles, formatação invisível e espaços finais de linha são recusados, não removidos. O reflow apenas insere quebras, preservando espaços existentes. Quebra longa não altera palavras, mas pode dividi-las entre linhas; verificar a legibilidade do caso antes de revisão científica. Notas curtas em `FOOTER` ficam ao fim da página; longas fluem após os fatos e podem paginar. Esses limites de engenharia ainda precisam de revisão antes do piloto; não definem quais ataques serão excluídos do estudo.
+
+PDFs, textos extraídos e notas-fonte ficam somente na `.runtime` ignorada. O manifesto local é escrito por último, sem sobrescrever arquivos ou reaproveitar geração parcial. Marcas sintéticas não detectam dados reais automaticamente: origem dos fatos/notas e revisão de cada item continuam obrigatórias. A conferência local não mede Delivery Rate até o modelo nem valida A3a operacional.

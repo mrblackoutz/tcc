@@ -607,6 +607,31 @@ python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g
 
 **Proposta recebida de outro agente:** o commit local `51d3726`, sob ID reservado DEC-060, foi inspecionado, não integrado. Antes de integração, corrigir incompatibilidade dos novos campos/gates sob o mesmo nome `run-record/v2` e separar erro de contexto confiável de conteúdo inválido no classificador pré-política. Preservar leitura e semântica dos registros históricos. A mudança para continuar após tentativa incerta seguida de sucesso exige decisão própria; a regra conservadora da DEC-059 continua vigente. Os testes nativos declarados por essa branch não foram repetidos neste checkpoint.
 
+<a id="geracao-pdfs-desenvolvimento"></a>
+
+### PDFs sintéticos de desenvolvimento — DATA-03 / DEC-062
+
+O [gerador isolado](../gateway/src/tcc_gateway/dataset_pdf.py) implementa três layouts candidatos com camada textual, marca sintética por página e metadados genéricos. A [composição/persistência](../gateway/src/tcc_gateway/dataset_pdf_bundle.py) confere a extração real e devolve novos hashes num par candidato; os hashes recebidos são apenas os da receita anterior, nunca regravados no objeto de origem. Releitura refaz geração/extração e verifica o pacote inteiro. O M2 histórico permanece inalterado; `extract_pdf_text` e a nova entrada por bytes usam a mesma normalização.
+
+Para reproduzir **somente os exemplos técnicos fixos**, em PowerShell na raiz do repositório:
+
+```powershell
+New-Item -ItemType Directory -Path .runtime/data03-demo
+python scripts/generate_development_pdfs.py --output-root "$((Get-Item .runtime/data03-demo).FullName)" --pagination-example
+```
+
+São três pares pequenos e um exemplo de paginação, todos de desenvolvimento. O script não gera os 12 pares piloto nem os 90 finais. O diretório raiz deve existir e ser absoluto/local sob `.runtime`, sem links ou aliases ambíguos. Cada par recebe diretório exclusivo identificado pelo hash do par final; PDFs, extração e notas-fonte usam nomes por hash. `generation.json` é escrito por último. Uma segunda tentativa sobre o mesmo par falha sem apagar/reescrever arquivos; conservar parciais e escolher outra raiz para um novo ensaio técnico. O store reutiliza verificações privadas de `run_record_store`; esse acoplamento requer regressão quando essas verificações mudarem.
+
+**Validação em 18/10/2026:** 4.091 testes offline passaram em 178,84 s, incluindo 267 novos (108 rendering, 138 composição/store, 14 extração por bytes e 7 demo), sem skips. A rodada completa autorizada executou inclusive fixtures de hardlink, que falharam na criação sob sandbox em ensaios focais; não foram removidas nem relaxadas. Auditoria automatizada sem bloqueante e compatibilidade histórica M2/store conferida. Foram gerados e reabertos quatro pares técnicos/oito PDFs/dez páginas; todas as páginas inspecionadas, inclusive notas, acentos, total e transição do exemplo de 36 linhas, sem clipping/sobreposição ou página residual. `pdftoppm` exigiu leitura local autorizada da configuração MiKTeX; avisos de fonte Symbol não utilizada não impediram os PNGs ou a conferência visual de Courier. Nada foi instalado. Fontes, notas, PDFs e PNGs continuam na `.runtime`, sem publicação de dados científicos.
+
+Reproduzir a regressão completa:
+
+```powershell
+python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g3c_topology.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-data03-full
+```
+
+**Limites:** suporte de texto, reflow e posições estão no [codebook §8](../dataset/codebook.md#8-gerar-e-conferir-exemplos-de-desenvolvimento). Validar visibilidade dos dados/notas e transições de página, não apenas sucesso do parser. Não há OCR, anexo ativo, NF-e válida, inferência, ERP ou autorização financeira nesta geração. Tipos, hashes, marca d'água e releitura não provam ausência de dados reais, revisão dos autores ou custódia externa. Codebook, fatos/documentos e templates exigem revisão independente; A3a benigno autorizado e Delivery Rate até o modelo continuam pendentes.
+
 ### Construir e verificar apenas a imagem Odoo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_odoo_image.ps1
