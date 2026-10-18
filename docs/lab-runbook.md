@@ -586,6 +586,27 @@ python -m pytest gateway/tests/test_run_reset_checkpoint.py gateway/tests/test_r
 
 **Validação em 17/10/2026:** 3.366 testes offline passaram em 118,40 s, com 282 novos: 124 contrato, 135 journal e 23 fluxo integrado. Incluem o produtor real `run_llm_stage` com mocks até registro/store/journal/gate, paridade C0/C1 e POST, preservação byte a byte do original e incerteza anterior a sucesso. A primeira rodada autorizada teve duas falhas de fixture: um alias `.Runtime` no Windows já estava sob ancestral `.runtime` permitido e não representava escape; testes foram corrigidos e acrescentados caminhos realmente externos, sem alterar a implementação. Rodadas interrompidas por restrições do sandbox não contam como aceite. Revisão automatizada sem defeito material identificado; 19 Markdown, links, escopo, segurança e diff conferidos antes do commit. Revisão humana e os gates pendentes acima continuam abertos.
 
+<a id="contrato-pares-oraculo"></a>
+
+### Contrato candidato dos pares e ligação ao oráculo — DEC-061
+
+O [codebook candidato v0.1](../dataset/codebook.md) concentra a semântica de DATA-01/02. O schema `ap-ipi-pair/v1` e `parse_dataset_pair` validam fatos compartilhados e dois membros, versões, taxonomia, datas, hashes, tipos exatos, totais e limites. O parser complementa o JSON Schema; os exemplos dos testes são doubles, não os 12 pares piloto ou 90 finais. IDs dos cenários de exemplo são opacos, sem sufixo de classe/família.
+
+`build_oracle_inputs(pair, scenario_id, fixture)` devolve `OracleCase` e `ExpectedEffect` após conferir hash integral do par, referências e conjunto exato de itens. `OracleFixtureBinding` recebe IDs ERP de um produtor confiável separado e preserva sua ordem de linhas. Não consulta Odoo, propõe ações, escolhe C0/C1 ou concede aprovação. O contrato não deve alimentar o modelo nem o policy engine. O produtor ainda precisa provar a origem do binding e conferir hashes contra PDF/texto efetivos.
+
+Reproduzir o incremento e a regressão completa, respectivamente, na raiz do repositório:
+
+```powershell
+python -m pytest gateway/tests/test_dataset_pair.py gateway/tests/test_dataset_oracle.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-data-contract-focused
+python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g3c_topology.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-data-contract-full
+```
+
+**Validação em 18/10/2026:** 3.824 testes offline passaram em 153,80 s, incluindo 458 novos: 356 do contrato e 102 da ponte, sem skips. Paridade C0/C1, expectativas CREATE/POST, efeitos observados com doubles, tipos/corrupção/vínculos e regressão dos registros/journal históricos incluídos. Auditoria automatizada estática e documental sem bloqueante; sem aceite humano. A primeira rodada restrita foi interrompida; a diagnóstica confirmou bloqueio de socket localhost (`WinError 10013`) em teste HTTP anterior ao incremento. Rodada completa autorizada passou sem remover casos ou alterar os testes existentes. Os 19 Markdown correntes e o codebook adicional, segurança e diff passaram. Sem API externa, Docker ou prova nativa nova.
+
+**Limites e próximos gates:** DATA-01/02 permanecem `ACTIVE`, não concluídos. Este candidato BRL exige produtos exatos ao centavo; não resolve a regra final de arredondamento. Faltam gerador/extração, distribuição e unicidade globais/splits, revisão independente dos documentos e do codebook, A3a benigno com autorização exata e integração operacional. Não escolher autorização pelo label. O núcleo de classificação, os formatos históricos e os bloqueios LLM/reset não foram alterados. Supervisão real, SCI-03, imagem/custódia, revisão humana, piloto e freeze continuam pendentes; `execute` público fechado.
+
+**Proposta recebida de outro agente:** o commit local `51d3726`, sob ID reservado DEC-060, foi inspecionado, não integrado. Antes de integração, corrigir incompatibilidade dos novos campos/gates sob o mesmo nome `run-record/v2` e separar erro de contexto confiável de conteúdo inválido no classificador pré-política. Preservar leitura e semântica dos registros históricos. A mudança para continuar após tentativa incerta seguida de sucesso exige decisão própria; a regra conservadora da DEC-059 continua vigente. Os testes nativos declarados por essa branch não foram repetidos neste checkpoint.
+
 ### Construir e verificar apenas a imagem Odoo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_odoo_image.ps1
