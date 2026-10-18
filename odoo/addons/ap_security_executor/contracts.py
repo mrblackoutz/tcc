@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
-from decimal import Context, Decimal, DecimalException, ROUND_HALF_EVEN, localcontext
+from decimal import Context, Decimal, DecimalException, ROUND_HALF_UP, localcontext
 import hashlib
 import json
 import re
@@ -198,7 +198,7 @@ def _action(action: Any) -> None:
         _invalid()
     codes = []
     total = Decimal("0.00")
-    with localcontext(Context(prec=32, rounding=ROUND_HALF_EVEN)):
+    with localcontext(Context(prec=32, rounding=ROUND_HALF_UP)):
         for line in lines:
             _closed(line, "canonicalLine")
             _match(line["item_code"], "reference")
@@ -208,7 +208,7 @@ def _action(action: Any) -> None:
             if quantity <= 0 or price <= 0:
                 _invalid()
             codes.append(line["item_code"])
-            total += (quantity * price).quantize(_CENT, rounding=ROUND_HALF_EVEN)
+            total += (quantity * price).quantize(_CENT, rounding=ROUND_HALF_UP)
         if Decimal(action["amount"]) <= 0 or Decimal(action["amount"]) != total:
             _invalid()
     if codes != sorted(codes) or len(codes) != len(set(codes)):

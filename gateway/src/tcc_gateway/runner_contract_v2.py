@@ -21,13 +21,20 @@ from .llm_client_service import (
     REQUEST_SCHEMA_VERSION_V2, parse_client_request_v2, validate_v2_client_response,
 )
 from .oracle import OracleProposal
-from .operational_observation import ObservedTrustedState, prepare_observed_policy_input
+from .operational_observation import (
+    ObservedTrustedState, OperationalObservationError, prepare_observed_policy_input,
+)
 from .pdf_ingestion import ExtractedPdf
 from .pilot_llm_runner import LLMStageResult
-from .policy_contracts import CapabilityCommand, PolicyDecision, PolicyInput
+from .policy_contracts import (
+    CapabilityCommand, DenyClass, PolicyContractError, PolicyDecision, PolicyInput, ReasonCode,
+)
 from .policy_engine import evaluate_policy
 from .state import canonical_json_sha256
-from .trusted_resolution import ResolvedTrustedState, prepare_policy_input
+from .trusted_resolution import (
+    CanonicalizationError, ResolvedTrustedState, TrustedBindingError, TrustedStateResolutionError,
+    prepare_policy_input,
+)
 
 
 class RunnerContractError(ValueError):
@@ -219,3 +226,38 @@ def prepare_c1_observed_draft_command_v2(
         )
         command.validate_binding(policy_input)
     return C1DraftPreparation(policy_input, decision, command)
+
+
+@dataclass(frozen=True, slots=True)
+class C1PrePolicyRejection:
+    """DEC-060: negação registrável de erro anterior à política; nunca autoriza efeito."""
+
+    reason_code: ReasonCode
+    deny_class: DenyClass
+
+
+def classify_c1_prepolicy_error(
+    error: BaseException, *, proposal_action: str | None, trusted_phase: str | None,
+) -> C1PrePolicyRejection:
+    """Separa falha técnica de decisão de política antes do policy engine.
+
+    Canonicalização inválida vem do conteúdo proposto e é negação de política:
+    POST na fase de rascunho é ``PHASE_MISMATCH`` (R-POL-01); o restante é
+    ``SCHEMA_INVALID`` (C04). Leitura confiável e observação operacional usam
+    só chaves do workflow, então sua falha é técnica (R-POL-10). Vínculo
+    confiável inválido (DEC-063) e erro de contrato da política também são
+    técnicos. Qualquer outro erro não é classificado: o chamador deve
+    interromper o lote, sem inventar resultado.
+    """
+    if isinstance(error, (TrustedStateResolutionError, OperationalObservationError)):
+        return C1PrePolicyRejection(ReasonCode.DEPENDENCY_UNAVAILABLE, "FAIL_CLOSED_UNAVAILABILITY")
+    if isinstance(error, TrustedBindingError):
+        # Subclass of CanonicalizationError: test it first.
+        return C1PrePolicyRejection(ReasonCode.POLICY_UNAVAILABLE, "FAIL_CLOSED_UNAVAILABILITY")
+    if isinstance(error, CanonicalizationError):
+        if proposal_action == "POST_VENDOR_BILL" and trusted_phase == "DRAFT_INTAKE":
+            return C1PrePolicyRejection(ReasonCode.PHASE_MISMATCH, "POLICY_RULE")
+        return C1PrePolicyRejection(ReasonCode.SCHEMA_INVALID, "POLICY_RULE")
+    if isinstance(error, PolicyContractError):
+        return C1PrePolicyRejection(ReasonCode.POLICY_UNAVAILABLE, "FAIL_CLOSED_UNAVAILABILITY")
+    raise RunnerContractError("unclassified C1 pre-policy failure")

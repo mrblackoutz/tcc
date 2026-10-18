@@ -22,6 +22,7 @@ from tcc_gateway.policy_contracts import DependencyStatus, ReasonCode
 from tcc_gateway.policy_engine import POLICY_VERSION, evaluate_policy
 from tcc_gateway.trusted_resolution import (
     CanonicalizationError,
+    TrustedBindingError,
     TrustedOperationalStatus,
     TrustedStateResolutionError,
     TrustedWorkflow,
@@ -777,3 +778,30 @@ def test_read_path_through_actual_json2_client_with_mock_http_transport(post, de
         resolved = read_trusted_state(client, _workflow(post=post), _operational(), policy_version=POLICY_VERSION)
     assert evaluate_policy(_prepare(_proposal(post=post), resolved)).decision == decision
     assert fake.calls and all(method == "search_read" for _, method, _ in fake.calls)
+
+
+def test_proposed_post_in_draft_phase_stays_a_content_failure() -> None:
+    """DEC-063: proposed content that does not canonicalize is a policy denial."""
+    with pytest.raises(CanonicalizationError) as captured:
+        _prepare(_proposal(post=True), _read(FakeOdoo()))
+    assert type(captured.value) is CanonicalizationError
+
+
+@pytest.mark.parametrize("problem", ["policy_version", "lifetime", "provenance"])
+def test_trusted_binding_failures_are_technical(problem) -> None:
+    """DEC-063: binding faults come from the runner or workflow, not from the proposal."""
+    post = problem == "policy_version"
+    resolved = _read(FakeOdoo(post=post), post=post)
+    proposal = _proposal(post=post)
+    args = {"policy_version": POLICY_VERSION, "evaluated_at": "2026-09-30T12:00:00Z",
+            "expires_at": "2026-09-30T12:01:00Z"}
+    if problem == "policy_version":
+        args["policy_version"] = "policy-other-v1"
+    elif problem == "lifetime":
+        args["expires_at"] = args["evaluated_at"]
+    else:
+        value = proposal.to_mapping()
+        value["scenario_id"] = "SCN-002"
+        proposal = ActionProposalV2.from_mapping(value)
+    with pytest.raises(TrustedBindingError):
+        prepare_policy_input(proposal, resolved, **args)

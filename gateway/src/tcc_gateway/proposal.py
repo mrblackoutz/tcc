@@ -6,7 +6,7 @@ import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
-from decimal import Decimal, ROUND_HALF_EVEN
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Any
 
 from .proposal_schema import validate_proposal_mapping
@@ -79,7 +79,7 @@ class VendorBillLineProposal:
         _require_money(self.unit_price, "unit_price")
         _require_money(self.line_total, "line_total")
         calculated = (self.quantity * self.unit_price).quantize(
-            _CENT, rounding=ROUND_HALF_EVEN
+            _CENT, rounding=ROUND_HALF_UP
         )
         if calculated != self.line_total:
             raise ProposalValueError("proposal line total does not reconcile")

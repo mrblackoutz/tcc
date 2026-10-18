@@ -7,7 +7,7 @@ attachments and complete audit/runner integration are separate gates.
 
 from dataclasses import fields as dataclass_fields
 from datetime import date
-from decimal import Context, Decimal, DecimalException, ROUND_HALF_EVEN, localcontext
+from decimal import Context, Decimal, DecimalException, ROUND_HALF_UP, localcontext
 
 from odoo import SUPERUSER_ID, Command, api
 from odoo.exceptions import AccessError, ValidationError
@@ -167,7 +167,7 @@ def _business(env, workflow, action, company, po, vendor, journal, lines,
         for proposed, trusted in zip(action["lines"], facts)
     ))
     expected_total = sum((Decimal(row["quantity"]) * Decimal(row["unit_price"])).quantize(
-        Decimal("0.01"), rounding=ROUND_HALF_EVEN) for row in facts)
+        Decimal("0.01"), rounding=ROUND_HALF_UP) for row in facts)
     _require(Decimal(str(po.amount_total)) == expected_total)
     duplicate = env["account.move"].search_count([
         ("company_id", "=", company.id), ("partner_id", "=", vendor.id),
@@ -260,7 +260,7 @@ def _postconditions(move, action, company, po, vendor, journal, account, facts, 
     for item in facts:
         line = by_id[item["line"].id]
         amount = (Decimal(item["quantity"]) * Decimal(item["unit_price"])).quantize(
-            Decimal("0.01"), rounding=ROUND_HALF_EVEN)
+            Decimal("0.01"), rounding=ROUND_HALF_UP)
         _require(line.display_type == "product" and line.partner_id == vendor.commercial_partner_id
             and Decimal(str(line.balance)) == amount
             and Decimal(str(line.amount_currency)) == amount,
@@ -369,7 +369,7 @@ def create_draft_atomic(env, *, command, workflow):
                           "ap.security.vendor.guard")
             for operation in ("read", "write", "create", "unlink")), "EXECUTOR_IDENTITY_INVALID")
         private = api.Environment(admin.cr, SUPERUSER_ID, _context(company.id), su=True)
-        with localcontext(Context(prec=32, rounding=ROUND_HALF_EVEN)):
+        with localcontext(Context(prec=32, rounding=ROUND_HALF_UP)):
             # Both explicit denials and unexpected errors escape this savepoint
             # before being caught. PG concurrency errors intentionally propagate.
             with admin.cr.savepoint():

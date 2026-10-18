@@ -251,3 +251,30 @@ def test_audit_contracts_remain_stdlib_only_without_odoo_io_or_gateway_imports()
             assert not ({alias.name.split(".")[0] for alias in node.names} & forbidden)
         elif isinstance(node, ast.ImportFrom) and node.level == 0:
             assert node.module.split(".")[0] not in forbidden
+
+
+@pytest.mark.parametrize("codes,expected", [
+    (["BANK_NOT_ALLOWED"], "POLICY_RULE"),
+    (["AMOUNT_MISMATCH", "LINE_MISMATCH"], "POLICY_RULE"),
+    (["SIGNATURE_INVALID"], "POLICY_RULE"),
+    (["BINDING_MISMATCH"], "POLICY_RULE"),
+    (["TARGET_MISMATCH"], "POLICY_RULE"),
+    (["TARGET_BILL_MISMATCH"], "POLICY_RULE"),
+    (["PERSISTED_STATE_MISMATCH"], "FAIL_CLOSED_UNAVAILABILITY"),
+    (["STATE_INVALID"], "FAIL_CLOSED_UNAVAILABILITY"),
+    (["DOCUMENT_HASH_MISMATCH"], "FAIL_CLOSED_UNAVAILABILITY"),
+    (["ATTACHMENT_INTEGRITY_INVALID"], "FAIL_CLOSED_UNAVAILABILITY"),
+    (["EXECUTOR_IDENTITY_INVALID"], "FAIL_CLOSED_UNAVAILABILITY"),
+    (["RESERVATION_INVALID"], "FAIL_CLOSED_UNAVAILABILITY"),
+    (["KERNEL_UNAVAILABLE"], "FAIL_CLOSED_UNAVAILABILITY"),
+    (["VENDOR_MISMATCH", "STATE_INVALID"], "FAIL_CLOSED_UNAVAILABILITY"),
+])
+def test_denial_class_separates_technical_from_policy_codes(codes, expected):
+    """DEC-060: technical, environment and integrity codes never look like policy."""
+    assert audit.denial_class(codes) == expected
+
+
+@pytest.mark.parametrize("codes", [[], "STATE_INVALID", [1], None])
+def test_denial_class_rejects_malformed_codes(codes):
+    with pytest.raises(audit.AuditContractError):
+        audit.denial_class(codes)

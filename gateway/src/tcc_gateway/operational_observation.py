@@ -24,8 +24,8 @@ from .action_proposal_v2 import ActionProposalV2
 from .policy_contracts import DependencyStatus, PolicyInput, TrustedPolicyState
 from .state import canonical_json_bytes, canonical_json_sha256
 from .trusted_resolution import (
-    ReadOnlyOdooCaller, ResolvedPurchaseLine, ResolvedTrustedState,
-    TrustedOperationalStatus, TrustedStateResolutionError, TrustedWorkflow,
+    CanonicalizationError, ReadOnlyOdooCaller, ResolvedPurchaseLine, ResolvedTrustedState,
+    TrustedBindingError, TrustedOperationalStatus, TrustedStateResolutionError, TrustedWorkflow,
     prepare_policy_input, read_trusted_state,
 )
 
@@ -386,7 +386,12 @@ def prepare_observed_policy_input(
     proposal: ActionProposalV2, observed: ObservedTrustedState, *, policy_version: str,
     evaluated_at: str, expires_at: str,
 ) -> PolicyInput:
-    """Revalida snapshot e toda ação; não escolhe fase, alvo nem corrige proposta."""
+    """Revalida snapshot e toda ação; não escolhe fase, alvo nem corrige proposta.
+
+    DEC-063: conteúdo proposto inválido sai como ``CanonicalizationError``, para
+    ser negado como política; não vira falha da observação. Vínculo confiável
+    ou observação inconsistentes continuam ``OperationalObservationError``.
+    """
     try:
         if type(observed) is not ObservedTrustedState or observed.policy_version != policy_version:
             raise ValueError("observed candidate-bound context required")
@@ -406,5 +411,9 @@ def prepare_observed_policy_input(
         if datetime.fromisoformat(observed_at.replace("Z", "+00:00")) > datetime.fromisoformat(evaluated_at.replace("Z", "+00:00")):
             raise ValueError("observation is later than evaluation")
         return policy_input
+    except TrustedBindingError:
+        raise OperationalObservationError("invalid observed candidate policy binding") from None
+    except CanonicalizationError:
+        raise
     except (AttributeError, KeyError, TypeError, ValueError):
         raise OperationalObservationError("invalid observed candidate policy binding") from None

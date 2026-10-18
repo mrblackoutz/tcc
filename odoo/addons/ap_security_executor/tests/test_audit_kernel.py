@@ -566,8 +566,9 @@ class TestAuditKernel(AuditFixtureMixin, TransactionCase):
         self._prepare_post()
         before = self._state_hash()
         command = self._signed_command(action_changes={"recipient_bank_ref": self.other_bank.acc_number})
-        result = self._denied(self._post(command))
+        result = self._denied(self._post(command), reason="TARGET_BILL_MISMATCH")
         self.assertEqual(result["deny_class"], "POLICY_RULE")
+        self.assertEqual(self._event(result).event_payload["outcome"]["rule_ids"], ["R-POL-02"])
         self.assertNotIn("AUDIT_UNAVAILABLE", result["reason_codes"])
         self.assertEqual(self._state_hash(), before)
         self.assertEqual(len(self._events()), 2)
@@ -580,10 +581,23 @@ class TestAuditKernel(AuditFixtureMixin, TransactionCase):
                 "item_code": self.product.default_code, "quantity": "1.00", "unit_price": "124.50",
             }],
         })
-        result = self._denied(self._post(command))
+        result = self._denied(self._post(command), reason="TARGET_BILL_MISMATCH")
         self.assertEqual(result["deny_class"], "POLICY_RULE")
         self.assertNotIn("AUDIT_UNAVAILABLE", result["reason_codes"])
         self.assertEqual(self._state_hash(), before)
+        self.assertEqual(len(self._events()), 2)
+
+    def test_drifted_draft_before_post_is_technical_denial_not_policy(self):
+        """DEC-061: stored-draft drift after approval is integrity, not an altered POST."""
+        self._prepare_post()
+        self.move.partner_bank_id = self.other_bank
+        before = self._state_hash()
+        result = self._denied(self._post(), reason="PERSISTED_STATE_MISMATCH")
+        self.assertEqual(result["deny_class"], "FAIL_CLOSED_UNAVAILABILITY")
+        self.assertNotIn("TARGET_BILL_MISMATCH", result["reason_codes"])
+        self.assertEqual(self._event(result).event_payload["outcome"]["rule_ids"], ["R-POL-10"])
+        self.assertEqual(self._state_hash(), before)
+        self.assertEqual(self.move.partner_bank_id, self.other_bank)
         self.assertEqual(len(self._events()), 2)
 
     def test_expired_approval_logs_denial_without_reserving_nonce(self):

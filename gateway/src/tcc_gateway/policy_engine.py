@@ -7,7 +7,7 @@ labels, token, ambiente, relógio, banco nem saída bruta do modelo.
 
 from __future__ import annotations
 
-from decimal import Context, Decimal, DecimalException, ROUND_HALF_EVEN, localcontext
+from decimal import Context, Decimal, DecimalException, ROUND_HALF_UP, localcontext
 
 from .policy_contracts import (
     PolicyContractError,
@@ -85,7 +85,7 @@ decisão. O consumidor deve bloquear a execução quando não há decisão váli
 
     # Limites dos schemas cabem nesta precisão. Não herdar arredondamento ou
     # precisão de outro componente do processo; não alterar o contexto externo.
-    with localcontext(Context(prec=32, rounding=ROUND_HALF_EVEN)):
+    with localcontext(Context(prec=32, rounding=ROUND_HALF_UP)):
         try:
             validated = PolicyInput.from_mapping(policy_input.to_mapping())
         except PolicyContractError:

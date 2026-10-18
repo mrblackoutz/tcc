@@ -64,11 +64,12 @@ class TestAttachmentKernel(AuditFixtureMixin, TransactionCase):
         self.assertIs(event.event_payload["provenance"]["document_bytes_verified"], True)
         return attachment
 
-    def _document_denied(self, document, *, reason, unavailable=False):
+    def _document_denied(self, document, *, reason):
         before = self._state_hash()
         before_attachments = tuple(self._attachments().ids)
         result = self._denied(self._create(document=document), reason=reason)
-        self.assertEqual(result["deny_class"], "FAIL_CLOSED_UNAVAILABILITY" if unavailable else "POLICY_RULE")
+        # DEC-060: document and attachment failures are technical fail-closed denials.
+        self.assertEqual(result["deny_class"], "FAIL_CLOSED_UNAVAILABILITY")
         self.assertEqual(self._state_hash(), before)
         self.assertEqual(tuple(self._attachments().ids), before_attachments)
         event = self._event(result)
@@ -84,7 +85,7 @@ class TestAttachmentKernel(AuditFixtureMixin, TransactionCase):
         before = self._state_hash(include_guard=False)
         before_count = len(self._attachments())
         denial = self._denied((operation or self._create)(), reason="ATTACHMENT_INTEGRITY_INVALID")
-        self.assertEqual(denial["deny_class"], "POLICY_RULE")
+        self.assertEqual(denial["deny_class"], "FAIL_CLOSED_UNAVAILABILITY")
         self.assertEqual(self._state_hash(include_guard=False), before)
         self.assertEqual(len(self._attachments()), before_count)
         return attachment
@@ -153,7 +154,7 @@ class TestAttachmentKernel(AuditFixtureMixin, TransactionCase):
         command["policy_decision"]["proposed_action_hash"] = _action_hash(command["action"])
         before = self._state_hash()
         result = self._denied(self._create(command), reason="DOCUMENT_HASH_MISMATCH")
-        self.assertEqual(result["deny_class"], "POLICY_RULE")
+        self.assertEqual(result["deny_class"], "FAIL_CLOSED_UNAVAILABILITY")
         self.assertEqual(self._state_hash(), before)
         self.assertFalse(self._attachments())
 
@@ -170,7 +171,7 @@ class TestAttachmentKernel(AuditFixtureMixin, TransactionCase):
     def test_filestore_configuration_fails_closed_without_creating_a_file(self):
         self.env["ir.config_parameter"].sudo().set_param("ir_attachment.location", "file")
         with patch.object(type(self.env["ir.attachment"]), "_file_write", side_effect=AssertionError("No filestore write permitted")):
-            self._document_denied(self.document, reason="ATTACHMENT_CONFIG_INVALID", unavailable=True)
+            self._document_denied(self.document, reason="ATTACHMENT_CONFIG_INVALID")
 
     def test_database_storage_does_not_invoke_filestore_writer(self):
         with patch.object(type(self.env["ir.attachment"]), "_file_write", side_effect=AssertionError("No filestore write permitted")):
@@ -180,18 +181,18 @@ class TestAttachmentKernel(AuditFixtureMixin, TransactionCase):
         module = self.env["ir.module.module"].sudo().search([("name", "=", "attachment_indexation")])
         self.assertTrue(module, "Pinned source lacks the native module metadata required for this negative case.")
         module.write({"state": "installed"})
-        self._document_denied(self.document, reason="ATTACHMENT_CONFIG_INVALID", unavailable=True)
+        self._document_denied(self.document, reason="ATTACHMENT_CONFIG_INVALID")
 
     def test_global_attachment_defaults_are_not_consumed_or_removed(self):
         defaults = self.env["ir.default"].sudo()
         defaults.set("ir.attachment", "public", True)
         before_defaults = defaults.search_count([])
-        self._document_denied(self.document, reason="ATTACHMENT_CONFIG_INVALID", unavailable=True)
+        self._document_denied(self.document, reason="ATTACHMENT_CONFIG_INVALID")
         self.assertEqual(defaults.search_count([]), before_defaults)
 
     def test_service_attachment_defaults_are_rejected(self):
         self.env["ir.default"].sudo().set("ir.attachment", "public", True, user_id=SUPERUSER_ID)
-        self._document_denied(self.document, reason="ATTACHMENT_CONFIG_INVALID", unavailable=True)
+        self._document_denied(self.document, reason="ATTACHMENT_CONFIG_INVALID")
 
     def test_personal_c1_defaults_and_client_context_cannot_publish_attachment(self):
         self.env["ir.default"].sudo().set("ir.attachment", "public", True, user_id=self.executor_user.id)
@@ -309,7 +310,7 @@ class TestAttachmentKernel(AuditFixtureMixin, TransactionCase):
             raise RuntimeError("TCC-C109-ATTACHMENT-AFTER-CREATE-FAULT")
 
         with patch.object(attachment_kernel, "_after_attachment_create", side_effect=fail):
-            self._document_denied(self.document, reason="ATTACHMENT_UNAVAILABLE", unavailable=True)
+            self._document_denied(self.document, reason="ATTACHMENT_UNAVAILABLE")
         self.assertEqual(observed, [(True, True)])
         self.assertFalse(self._attachments())
         self._attachment(self._created())

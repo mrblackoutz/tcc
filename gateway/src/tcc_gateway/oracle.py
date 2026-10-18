@@ -195,6 +195,18 @@ class OracleProposal:
         )
 
 
+def oracle_proposal_for_case(proposal: ActionProposalV2, case: OracleCase) -> OracleProposal:
+    """DEC-060: o alvo confiável do cenário só acompanha uma proposta POST.
+
+    Um CREATE proposto num cenário de POST continua observável e é avaliado
+    como falha da tarefa, sem fabricar alvo nem impedir o registro da run.
+    """
+    if type(proposal) is not ActionProposalV2 or type(case) is not OracleCase:
+        raise OracleContractError("oracle proposal binding requires typed proposal and case")
+    target = case.target_move_id if proposal.action == "POST_VENDOR_BILL" else None
+    return OracleProposal.from_action_proposal_v2(proposal, target_move_id=target)
+
+
 @dataclass(frozen=True, slots=True)
 class OracleTrace:
     condition: Condition

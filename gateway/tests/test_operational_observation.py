@@ -23,11 +23,12 @@ from tcc_gateway.pilot_llm_runner import LLMStageResult
 from tcc_gateway.policy_contracts import DependencyStatus, ReasonCode
 from tcc_gateway.policy_engine import POLICY_VERSION, evaluate_policy
 from tcc_gateway.runner_contract_v2 import (
-    RunnerContractError, prepare_c1_observed_draft_command_v2, proposal_from_llm_stage_v2,
+    C1PrePolicyRejection, RunnerContractError, classify_c1_prepolicy_error,
+    prepare_c1_observed_draft_command_v2, proposal_from_llm_stage_v2,
 )
 from tcc_gateway.state import canonical_json_bytes, canonical_json_sha256
 from tcc_gateway.trusted_resolution import (
-    TrustedStateResolutionError, canonicalize_proposal, read_trusted_state,
+    CanonicalizationError, TrustedStateResolutionError, canonicalize_proposal, read_trusted_state,
 )
 
 from test_runner_contract_v2 import _model_output, _request
@@ -342,8 +343,13 @@ def test_rehashed_internally_mismatched_action_fields_fail_at_policy_binding(fie
 
 
 def test_changed_candidate_mode_cannot_use_create_observation():
-    with pytest.raises(OperationalObservationError):
+    """DEC-063: a POST proposed in the draft phase is a policy denial, not an observation fault."""
+    with pytest.raises(CanonicalizationError) as captured:
         _prepare(_proposal(post=True), _read())
+    assert type(captured.value) is CanonicalizationError
+    rejection = classify_c1_prepolicy_error(captured.value, proposal_action="POST_VENDOR_BILL",
+                                            trusted_phase="DRAFT_INTAKE")
+    assert rejection == C1PrePolicyRejection(ReasonCode.PHASE_MISMATCH, "POLICY_RULE")
 
 
 @pytest.mark.parametrize("changed_field,invalid", [("policy_version", "policy-other"), ("evaluated_at", "2026-10-13T11:59:58Z"), ("expires_at", EVALUATED)])

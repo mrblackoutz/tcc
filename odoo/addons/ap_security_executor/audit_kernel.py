@@ -21,7 +21,9 @@ from odoo.tools.misc import Callbacks
 
 from . import draft_kernel, post_kernel
 from .approval import ERROR_CODES
-from .audit_contracts import AuditContractError, TrustedAuditContext, audit_digest
+from .audit_contracts import (
+    AuditContractError, TECHNICAL_DENIAL_CODES, TrustedAuditContext, audit_digest, denial_class,
+)
 from .attachment_kernel import (
     AttachmentError, assert_attachment_environment, create_document_attachment,
     verify_document_attachment,
@@ -38,7 +40,7 @@ _CODES = ERROR_CODES | frozenset({
     "CURRENCY_MISMATCH", "DATE_OUTSIDE_WINDOW", "DUPLICATE_DOCUMENT",
     "EXECUTOR_IDENTITY_INVALID", "IDEMPOTENCY_CONFLICT", "IDEMPOTENCY_KEY_MISMATCH",
     "LINE_MISMATCH", "PERSISTED_STATE_MISMATCH", "PURCHASE_ORDER_MISMATCH",
-    "PURCHASE_ORDER_NOT_CONFIRMED", "STATE_INVALID", "TARGET_MISMATCH", "TARGET_NOT_DRAFT",
+    "PURCHASE_ORDER_NOT_CONFIRMED", "STATE_INVALID", "TARGET_BILL_MISMATCH", "TARGET_MISMATCH", "TARGET_NOT_DRAFT",
     "UNEXPECTED_NOTIFICATION", "UNEXPECTED_POST_EFFECT", "UNSUPPORTED_EXECUTOR_MODE",
     "UNSUPPORTED_POST_STATE", "UNTRUSTED_FINANCIAL_DEFAULTS", "VENDOR_MISMATCH",
     "WORKFLOW_MISMATCH", "DRAFT_CONSISTENT", "APPROVED_POST_CONSISTENT",
@@ -47,14 +49,15 @@ _CODES = ERROR_CODES | frozenset({
     "DOCUMENT_HASH_MISMATCH", "ATTACHMENT_CONFIG_INVALID", "ATTACHMENT_UNAVAILABLE",
     "ATTACHMENT_INTEGRITY_INVALID",
 })
-_UNAVAILABLE = frozenset({"DEPENDENCY_UNAVAILABLE", "KERNEL_UNAVAILABLE", "AUDIT_UNAVAILABLE",
-                         "ATTACHMENT_CONFIG_INVALID", "ATTACHMENT_UNAVAILABLE"})
+# DEC-060: every technical, environment or integrity denial is fail-closed (R-POL-10).
+_UNAVAILABLE = TECHNICAL_DENIAL_CODES
 _DOCUMENT_CODES = frozenset({"DOCUMENT_INVALID", "DOCUMENT_EMPTY", "DOCUMENT_TOO_LARGE",
                              "DOCUMENT_MIME_INVALID", "DOCUMENT_HASH_MISMATCH"})
 _RULES = {
     "AMOUNT_MISMATCH": "R-POL-02", "CURRENCY_MISMATCH": "R-POL-02",
     "LINE_MISMATCH": "R-POL-02", "VENDOR_MISMATCH": "R-POL-02",
     "PURCHASE_ORDER_MISMATCH": "R-POL-02", "PURCHASE_ORDER_NOT_CONFIRMED": "R-POL-02",
+    "TARGET_BILL_MISMATCH": "R-POL-02",
     "BANK_NOT_ALLOWED": "R-POL-03", "DUPLICATE_DOCUMENT": "R-POL-05",
     "IDEMPOTENCY_KEY_MISMATCH": "R-POL-05", "IDEMPOTENCY_CONFLICT": "R-POL-05",
     "DRAFT_CONSISTENT": "R-POL-06", "APPROVED_POST_CONSISTENT": "R-POL-07",
@@ -382,8 +385,7 @@ def _payload(admin, private, command, workflow, audit, checked, result, before, 
     codes = result["reason_codes"]
     if type(codes) is not list or not codes or any(type(code) is not str or code not in _CODES for code in codes):
         raise _AuditUnavailable()
-    deny_class = ("FAIL_CLOSED_UNAVAILABILITY" if any(code in _UNAVAILABLE for code in codes)
-                  else "POLICY_RULE") if status == "DENIED" else None
+    deny_class = denial_class(codes) if status == "DENIED" else None
     approval = None
     if result.get("receipt", {}).get("approval_ledger_id"):
         ledger = private["ap.security.approval.nonce"].browse(result["receipt"]["approval_ledger_id"])

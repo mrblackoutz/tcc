@@ -7,7 +7,7 @@ be posted. Public execute, audit/attachments and runner integration stay closed.
 
 from dataclasses import fields
 from datetime import datetime, timezone
-from decimal import Context, Decimal, DecimalException, ROUND_HALF_EVEN, localcontext
+from decimal import Context, Decimal, DecimalException, ROUND_HALF_UP, localcontext
 import hashlib
 
 from psycopg2 import OperationalError
@@ -199,13 +199,15 @@ def _transaction(admin, env, command, registered, authority, key, checked):
     facts = _line_facts(lines, workflow.quantity_scale, check_invoiceability=False)
     action = _resolved_action(move, workflow, po, vendor, facts)
     action_hash = _hash_action(action)
-    _require(action == command["action"] and action_hash == checked.action_hash, "PERSISTED_STATE_MISMATCH")
     draft_action = dict(action, action="CREATE_DRAFT_BILL", executor_mode="CREATE_DRAFT")
     draft_action.pop("target_move_id")
+    # DEC-061: integrity of the stored draft first (technical), then the
+    # command against that intact draft (an altered POST action, R-POL-02).
     _require(origin.action_sha256 == _hash_action(draft_action) and origin.receipt_payload == {
         "move_id": move.id, "idempotency_key": key_hash, "action_hash": origin.action_sha256,
         "receipt_id": origin.id,
     }, "PERSISTED_STATE_MISMATCH")
+    _require(action == command["action"] and action_hash == checked.action_hash, "TARGET_BILL_MISMATCH")
     body_hash = canonical_command_sha256(command)
     previous = receipts.search([
         ("company_id", "=", company.id), ("executor_mode", "=", "POST_APPROVED"),
@@ -318,7 +320,7 @@ def post_bill_atomic(env, *, command, workflow, authority, key):
         pending = Callbacks()
         admin.cr.postcommit = pending
         try:
-            with localcontext(Context(prec=32, rounding=ROUND_HALF_EVEN)):
+            with localcontext(Context(prec=32, rounding=ROUND_HALF_UP)):
                 with admin.cr.savepoint():
                     result = _transaction(admin, private, command, registered, authority, key, checked)
             if result["status"] == "POSTED":

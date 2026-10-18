@@ -13,7 +13,7 @@ from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import date
-from decimal import Context, Decimal, DecimalException, ROUND_HALF_EVEN, localcontext
+from decimal import Context, Decimal, DecimalException, ROUND_HALF_UP, localcontext
 from functools import lru_cache
 from importlib.resources import files
 from typing import Any, Literal
@@ -223,7 +223,7 @@ def revalidate_action_proposal_v2(proposal: ActionProposalV2) -> ActionProposalV
             raise ValueError("invalid evidence collection")
         if type(proposal.action) is not str or type(proposal.schema_version) is not str:
             raise ValueError("invalid action type")
-        with localcontext(Context(prec=32, rounding=ROUND_HALF_EVEN)):
+        with localcontext(Context(prec=32, rounding=ROUND_HALF_UP)):
             source.__post_init__()
             for line in bill.lines:
                 if (type(line) is not VendorBillLineProposal or type(line.item_code) is not str

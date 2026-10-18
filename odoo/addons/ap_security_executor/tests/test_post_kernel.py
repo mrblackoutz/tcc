@@ -364,7 +364,8 @@ class TestPostKernel(TransactionCase):
         self._denied(workflow=replace(self.workflow, target_move_id=self.move.id + 1000000))
 
     def test_registered_action_cannot_redirect_beneficiary(self):
-        self._denied(self._signed_command(action_changes={"recipient_bank_ref": self.other_bank.acc_number}))
+        self._denied(self._signed_command(action_changes={"recipient_bank_ref": self.other_bank.acc_number}),
+                     reason="TARGET_BILL_MISMATCH")
 
     def test_registered_action_cannot_change_financial_amount(self):
         command = self._signed_command(action_changes={
@@ -372,11 +373,12 @@ class TestPostKernel(TransactionCase):
                 "item_code": self.product.default_code, "quantity": "1.00", "unit_price": "124.50",
             }],
         })
-        self._denied(command)
+        self._denied(command, reason="TARGET_BILL_MISMATCH")
 
     def test_mutated_draft_bank_is_rejected_without_repair(self):
         self.move.partner_bank_id = self.other_bank
-        self._denied()
+        result = self._denied(reason="PERSISTED_STATE_MISMATCH")
+        self.assertNotIn("TARGET_BILL_MISMATCH", result["reason_codes"])
         self.assertEqual(self.move.partner_bank_id, self.other_bank)
 
     def test_bank_trust_revocation_blocks_post(self):

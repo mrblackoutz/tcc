@@ -57,6 +57,17 @@ def stage_outcome_uncertain(stage: LLMStageResult) -> bool:
     )
 
 
+def stage_uncertainty_blocks(stage: LLMStageResult) -> bool:
+    """DEC-060: uncertainty halts the batch only when no proposal resulted.
+
+    The model has no tools, so an uncertain attempt cannot change Odoo state.
+    When a later attempt returned a valid proposal, the earlier uncertainty is
+    recorded as a flag instead of stopping the batch. Without a proposal the
+    run outcome stays unresolved (missing vs. failure is an SCI-03 decision).
+    """
+    return stage_outcome_uncertain(stage) and stage.status != "success"
+
+
 def validate_terminal_llm_stage(
     request_value: dict, stage: LLMStageResult, *, elapsed_ns: int,
 ) -> ActionProposalV2 | None:

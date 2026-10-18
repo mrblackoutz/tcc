@@ -279,8 +279,11 @@ def test_supported_quantities_and_exact_gateway_hash(quantity: str) -> None:
     assert contracts.validate_command(command).action_hash == CapabilityCommand.from_mapping(command).action.action_hash
 
 
-@pytest.mark.parametrize("quantity,price,amount", [("0.50", "0.05", "0.02"), ("0.70", "0.05", "0.04")])
-def test_round_half_even_and_low_ambient_decimal_precision(quantity: str, price: str, amount: str) -> None:
+# DEC-060: cents round HALF_UP, as Odoo's res.currency.round does.
+@pytest.mark.parametrize("quantity,price,amount", [
+    ("0.50", "0.05", "0.03"), ("0.70", "0.05", "0.04"), ("0.50", "10.53", "5.27"),
+])
+def test_round_half_up_and_low_ambient_decimal_precision(quantity: str, price: str, amount: str) -> None:
     command = command_mapping()
     command["action"]["lines"][0].update(quantity=quantity, unit_price=price)
     command["action"]["amount"] = amount
@@ -290,6 +293,15 @@ def test_round_half_even_and_low_ambient_decimal_precision(quantity: str, price:
         context.rounding = ROUND_DOWN
         validated = contracts.validate_command(command)
     assert validated.action_hash == CanonicalAction.from_mapping(command["action"]).action_hash
+
+
+@pytest.mark.parametrize("quantity,price,half_even_amount", [("0.50", "0.05", "0.02"), ("0.50", "10.53", "5.26")])
+def test_half_even_tie_amount_is_rejected(quantity: str, price: str, half_even_amount: str) -> None:
+    command = command_mapping()
+    command["action"]["lines"][0].update(quantity=quantity, unit_price=price)
+    command["action"]["amount"] = half_even_amount
+    rebind(command)
+    assert_invalid(command)
 
 
 @pytest.mark.parametrize("text", [" leading", "trailing ", "\x00", "\x1f", "\n", "\t", "\u200b", "\u200d", "\u202e", "\u2066", "\ud800", "e\u0301"])

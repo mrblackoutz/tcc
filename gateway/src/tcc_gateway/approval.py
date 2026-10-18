@@ -8,7 +8,7 @@ implicitly. Authentication uses the stdlib independently of the Odoo verifier.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from decimal import Context, DecimalException, ROUND_HALF_EVEN, localcontext
+from decimal import Context, DecimalException, ROUND_HALF_UP, localcontext
 import hashlib
 import hmac
 import json
@@ -82,7 +82,7 @@ def issue_approval_fixture(
     if type(action) is not CanonicalAction:
         _fail("CONTRACT_INVALID")
     try:
-        with localcontext(Context(prec=32, rounding=ROUND_HALF_EVEN)):
+        with localcontext(Context(prec=32, rounding=ROUND_HALF_UP)):
             canonical = CanonicalAction.from_mapping(action.to_mapping())
         if canonical.executor_mode != "POST_APPROVED" or canonical.action != "POST_VENDOR_BILL":
             _fail("CONTRACT_INVALID")

@@ -12,7 +12,7 @@ from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime
-from decimal import Decimal, ROUND_HALF_EVEN
+from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from functools import lru_cache
 from importlib.resources import files
@@ -217,7 +217,7 @@ class CanonicalAction:
         _line_order(self.lines)
         total = sum((
             (Decimal(line.quantity) * Decimal(line.unit_price)).quantize(
-                Decimal("0.01"), rounding=ROUND_HALF_EVEN
+                Decimal("0.01"), rounding=ROUND_HALF_UP
             ) for line in self.lines
         ), Decimal("0.00"))
         if Decimal(self.amount) <= 0 or Decimal(self.amount) != total:

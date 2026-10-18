@@ -322,6 +322,10 @@ def parse_run_record(value: dict) -> RunRecord:
         # Explicit version dispatch; never relax the original v1 contract.
         from .run_record_v2 import parse_run_record_v2
         return parse_run_record_v2(value)
+    if type(value) is dict and value.get("schema_version") == "run-record/v3":
+        # DEC-063: v3 carries its own rules; v1/v2 keep theirs.
+        from .run_record_v3 import parse_run_record_v3
+        return parse_run_record_v3(value)
     try:
         value = _json_snapshot(value)
         _closed(value, _TOP_FIELDS)

@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
-from decimal import Context, Decimal, DecimalException, ROUND_HALF_EVEN, localcontext
+from decimal import Context, Decimal, DecimalException, ROUND_HALF_UP, localcontext
 import re
 import unicodedata
 from typing import Any, Literal, Protocol
@@ -25,6 +25,15 @@ from .policy_contracts import (
 
 class CanonicalizationError(PolicyContractError):
     """Proposta não canonicalizável; nenhuma execução pode ser autorizada."""
+
+
+class TrustedBindingError(CanonicalizationError):
+    """DEC-063: falha técnica ao ligar proposta válida ao contexto confiável.
+
+    Tipos, proveniência já ligada à requisição, versão da política ou janela de
+    avaliação não vêm do conteúdo proposto. Subclasse para que chamadores
+    antigos continuem fechando; o classificador a trata como falha técnica.
+    """
 
 
 class TrustedStateResolutionError(ValueError):
@@ -44,7 +53,7 @@ class ReadOnlyOdooCaller(Protocol):
     def call(self, model: str, method: str, *, arguments: Mapping[str, Any]) -> Any: ...
 
 
-_DECIMAL_CONTEXT = Context(prec=32, rounding=ROUND_HALF_EVEN)
+_DECIMAL_CONTEXT = Context(prec=32, rounding=ROUND_HALF_UP)
 _REFERENCE = re.compile(r"[A-Z0-9][A-Z0-9._ /-]{0,95}\Z")
 
 
@@ -479,7 +488,13 @@ def prepare_policy_input(
     proposal: ActionProposalV2, resolved: ResolvedTrustedState, *, policy_version: str,
     evaluated_at: str, expires_at: str,
 ) -> PolicyInput:
-    """Liga a proposta ao snapshot; não altera sua ação conforme fase/labels."""
+    """Liga a proposta ao snapshot; não altera sua ação conforme fase/labels.
+
+    DEC-063: só conteúdo proposto que não canonicaliza é ``CanonicalizationError``.
+    Vínculo confiável inválido é ``TrustedBindingError``: a resposta do LLM já
+    foi ligada ao cenário e ao documento da requisição, então divergência de
+    proveniência, versão ou janela vem do runner ou do workflow.
+    """
     try:
         if type(proposal) is not ActionProposalV2 or type(resolved) is not ResolvedTrustedState:
             raise ValueError("typed proposal and snapshot required")
@@ -487,13 +502,16 @@ def prepare_policy_input(
         if (proposal.scenario_id, proposal.document_sha256) != (state.scenario_id, state.document_sha256):
             raise ValueError("proposal provenance differs from workflow")
         target = state.target_bill
-        if target is not None and target.action.policy_version != policy_version:
+        if type(policy_version) is not str or target is not None and target.action.policy_version != policy_version:
             raise ValueError("target policy version differs")
-        action = canonicalize_proposal(
-            proposal, policy_version=policy_version, quantity_scale=state.quantity_scale,
-            target_move_id=target.move_id if proposal.action == "POST_VENDOR_BILL" and target else None,
-        )
+    except (AttributeError, TypeError, ValueError):
+        raise TrustedBindingError("invalid trusted policy binding") from None
+    action = canonicalize_proposal(
+        proposal, policy_version=policy_version, quantity_scale=state.quantity_scale,
+        target_move_id=target.move_id if proposal.action == "POST_VENDOR_BILL" and target else None,
+    )
+    try:
         with localcontext(_DECIMAL_CONTEXT):
             return PolicyInput.from_mapping(PolicyInput(action, state, evaluated_at, expires_at).to_mapping())
     except (AttributeError, TypeError, ValueError, DecimalException):
-        raise CanonicalizationError("invalid proposal and trusted state binding") from None
+        raise TrustedBindingError("invalid trusted policy binding") from None

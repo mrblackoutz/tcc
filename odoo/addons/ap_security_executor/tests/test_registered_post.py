@@ -262,9 +262,11 @@ class TestRegisteredPostExecution(AuditFixtureMixin, TransactionCase):
             command=self._signed_command(action_changes={"target_move_id": self.move.id + 999999}))
 
     def test_changed_amount_is_not_repaired_or_promoted_by_real_signature(self):
-        self._denied_registered(reason="PERSISTED_STATE_MISMATCH", command=self._signed_command(action_changes={
+        result = self._denied_registered(reason="TARGET_BILL_MISMATCH", command=self._signed_command(action_changes={
             "amount": "124.50", "lines": [{"item_code": self.product.default_code,
                                             "quantity": "1.00", "unit_price": "124.50"}]}))
+        # DEC-061: an altered POST against an intact draft is a policy denial.
+        self.assertEqual(result["deny_class"], "POLICY_RULE")
 
     def test_wrong_scenario_document_and_policy_fail_before_financial_kernel(self):
         for changes in ({"scenario_id": "TCC-OTHER-SCENARIO"}, {"document_sha256": "d" * 64},

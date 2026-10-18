@@ -17,9 +17,10 @@ from .company_capture import (
 )
 from .run_record import RunRecord, _closed, _digest, _json_snapshot, parse_run_record
 from .run_record_v2 import VERSION as RECORD_VERSION, _stage
+from .run_record_v3 import VERSION as RECORD_V3_VERSION
 from .run_supervision import RunSupervision
 from .state import canonical_json_bytes, canonical_json_sha256
-from .terminal_llm_stage import stage_outcome_uncertain
+from .terminal_llm_stage import stage_outcome_uncertain, stage_uncertainty_blocks
 
 
 VERSION = "run-reset-checkpoint/v1"
@@ -74,9 +75,20 @@ def _base(record: RunRecord) -> dict:
     if type(record) is not RunRecord:
         _fail()
     value = parse_run_record(record.to_mapping()).to_mapping()
-    if value["schema_version"] != RECORD_VERSION:
+    if value["schema_version"] not in {RECORD_VERSION, RECORD_V3_VERSION}:
         _fail()
     return value
+
+
+def _llm_blocks(base: dict) -> bool:
+    """Each record version keeps its own LLM gate (DEC-063).
+
+    v2 halts on any uncertain attempt; v3 only when no valid proposal resulted.
+    """
+    stage = _stage(base["evidence"]["stage"])
+    if base["schema_version"] == RECORD_V3_VERSION:
+        return stage_uncertainty_blocks(stage)
+    return stage_outcome_uncertain(stage)
 
 
 def _snapshot(value: dict) -> dict:
@@ -137,8 +149,8 @@ def _derive(value: dict, base: dict) -> dict:
         gate = "HALT_CLASSIFICATION"
     elif reset_status != "VERIFIED":
         gate = "HALT_RESET"
-    elif stage_outcome_uncertain(_stage(base["evidence"]["stage"])):
-        # The original HALT_RESET may have hidden uncertainty in any attempt.
+    elif _llm_blocks(base):
+        # The original HALT_RESET may have hidden a blocking LLM uncertainty.
         gate = "HALT_LLM_UNCERTAIN"
     else:
         gate = "CONTINUE"

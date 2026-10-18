@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tcc.local/schemas/run-record-v3.json",
+  "title": "Private candidate RunRecord with ratified measurement rules",
+  "$comment": "Structural envelope only. parse_run_record_v3 must revalidate nested contracts and recompute disposition, outcome, reset, batch gate and LLM flag (DEC-060/DEC-063). v2 records keep their own schema and rules. Not scientific completeness or authentication.",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "identity", "policy_sha256", "supervision", "evidence", "derived", "pending", "scientific_run", "human_review_complete"],
+  "properties": {
+    "schema_version": {"const": "run-record/v3"},
+    "scientific_run": {"const": false}, "human_review_complete": {"const": false},
+    "policy_sha256": {"$ref": "#/$defs/hash"},
+    "identity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["run_id", "scenario_id", "pair_id", "condition", "repetition", "order", "schedule_sha256", "provider_mode"],
+      "properties": {
+        "run_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "scenario_id": {"$ref": "#/$defs/identifier"}, "pair_id": {"$ref": "#/$defs/identifier"},
+        "condition": {"enum": ["C0", "C1"]}, "repetition": {"type": "integer", "minimum": 1, "maximum": 3},
+        "order": {"type": "integer", "minimum": 1}, "schedule_sha256": {"$ref": "#/$defs/hash"},
+        "provider_mode": {"enum": ["MOCKED", "OBSERVED"]}
+      }
+    },
+    "supervision": {"type": "object", "$comment": "Closed RunSupervision parser and slot binding mandatory; UNKNOWN must remain unknown."},
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["document_base64", "request", "stage", "case", "trace", "expected_effect", "captures"],
+      "properties": {
+        "document_base64": {"type": "string", "minLength": 1, "maxLength": 1398104},
+        "request": {"type": "object", "$comment": "Closed llm-client-request/v2 parser mandatory."},
+        "stage": {
+          "type": "object", "additionalProperties": false,
+          "required": ["condition", "status", "reason", "attempts", "response"],
+          "properties": {
+            "condition": {"enum": ["C0", "C1"]},
+            "status": {"enum": ["success", "classified_error", "uncertain", "budget_exhausted"]},
+            "reason": {"enum": ["SUCCESS", "PERMANENT_ERROR", "RETRY_EXHAUSTED", "BUDGET_EXHAUSTED", "UNCONFIRMED_WALL_OUTCOME"]},
+            "attempts": {"type": "array", "maxItems": 3, "items": {"type": "object"}},
+            "response": {"type": ["object", "null"]}
+          },
+          "$comment": "validate_terminal_llm_stage validates the full status/reason/history/budget/request/response matrix."
+        },
+        "case": {"type": "object"}, "expected_effect": {"type": "object"},
+        "trace": {
+          "type": "object", "additionalProperties": false,
+          "required": ["payload_delivered", "disposition", "approval_exact_valid", "executed_methods", "effect_move_id", "deny_class"],
+          "properties": {
+            "payload_delivered": {"type": "boolean"},
+            "disposition": {"enum": [null, "ALLOW_EFFECTIVE", "ALLOW", "DENY", "REVIEW_REQUIRED"]},
+            "approval_exact_valid": {"const": false},
+            "executed_methods": {"type": "array", "maxItems": 2, "items": {"enum": ["account.move.create", "account.move.action_post"]}},
+            "effect_move_id": {"anyOf": [{"type": "null"}, {"type": "integer", "minimum": 1}]},
+            "deny_class": {"enum": [null, "POLICY_RULE", "FAIL_CLOSED_UNAVAILABILITY"]}
+          },
+          "$comment": "deny_class is required when C1 denies (policy DENY, or ALLOW without effect after a confirmed executor denial), optional while the executor outcome is unconfirmed, and null otherwise."
+        },
+        "captures": {
+          "type": "object", "additionalProperties": false, "required": ["baseline", "before", "after", "restored"],
+          "properties": {"baseline": {"type": "object"}, "before": {"type": "object"}, "after": {"type": ["object", "null"]}, "restored": {"type": ["object", "null"]}},
+          "$comment": "Every present company-capture/v1 is fully parsed with the same binding; initial state must match baseline. Missing after is HOLD, not MISSING."
+        }
+      }
+    },
+    "derived": {
+      "type": "object", "additionalProperties": false,
+      "required": ["proposal_sha256", "technical_disposition", "oracle", "state_sha256", "reset_status", "assessment_status", "batch_gate", "llm_attempt_uncertain"],
+      "properties": {
+        "proposal_sha256": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/hash"}]},
+        "technical_disposition": {"type": "object"}, "oracle": {"type": ["object", "null"]},
+        "state_sha256": {
+          "type": "object", "additionalProperties": false, "required": ["baseline", "before", "after", "restored"],
+          "properties": {"baseline": {"$ref": "#/$defs/hash"}, "before": {"$ref": "#/$defs/hash"}, "after": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/hash"}]}, "restored": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/hash"}]}}
+        },
+        "reset_status": {"enum": ["VERIFIED", "DIVERGED", "UNOBSERVED"]},
+        "assessment_status": {"enum": ["EVALUATED", "FINAL_STATE_UNAVAILABLE", "EFFECT_UNQUIESCED", "ORACLE_CONTRACT_REJECTED"]},
+        "batch_gate": {"enum": ["CONTINUE", "HALT_RESET", "HALT_CLASSIFICATION", "HALT_LLM_UNCERTAIN"]},
+        "llm_attempt_uncertain": {"type": "boolean"}
+      },
+      "$comment": "All values must equal recomputation. batch_gate halts on an uncertain LLM outcome only when no valid proposal resulted; llm_attempt_uncertain flags any uncertain attempt. batch_gate never authorizes retry."
+    },
+    "pending": {"type": "array", "minItems": 16, "maxItems": 16, "uniqueItems": true, "items": {"type": "string"}, "$comment": "Must equal run_record_v2.PENDING, shared by v3. No scientific or human acceptance is implied."}
+  },
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "identifier": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$"}
+  }
+}

@@ -99,7 +99,7 @@ def _roots(record_root: Path, journal_root: Path):
 def _base(record_root: Path, run_id: str) -> tuple[RunRecord, str]:
     record = _fs.read_run_record(record_root, run_id)
     value = record.to_mapping()
-    if value["schema_version"] != "run-record/v2":
+    if value["schema_version"] not in {"run-record/v2", "run-record/v3"}:
         _fail()
     return record, _sha256(canonical_json_bytes(value))
 

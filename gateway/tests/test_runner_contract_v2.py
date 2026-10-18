@@ -24,13 +24,18 @@ from tcc_gateway.llm_config import DEEPSEEK_MODEL, DeepSeekConfig
 from tcc_gateway.pdf_ingestion import ExtractedPdf, extract_pdf_text
 from tcc_gateway.pilot_llm_runner import call_llm_client_once, run_llm_stage
 from tcc_gateway.policy_engine import POLICY_VERSION, evaluate_policy
+from tcc_gateway.operational_observation import OperationalObservationError
+from tcc_gateway.policy_contracts import PolicyContractError, ReasonCode
 from tcc_gateway.runner_contract_v2 import (
-    RunnerContractError, build_client_request_v2, dispatch_c0_llm_stage_v2,
+    C1PrePolicyRejection, RunnerContractError, build_client_request_v2,
+    classify_c1_prepolicy_error, dispatch_c0_llm_stage_v2,
     oracle_proposal_from_llm_stage_v2, prepare_c1_llm_stage_v2, proposal_from_llm_stage_v2,
 )
 from tcc_gateway.state import canonical_json_sha256
 from tcc_gateway.synthetic_pdf import build_text_layer_pdf
-from tcc_gateway.trusted_resolution import read_trusted_state
+from tcc_gateway.trusted_resolution import (
+    CanonicalizationError, TrustedBindingError, TrustedStateResolutionError, read_trusted_state,
+)
 
 from test_trusted_resolution import (
     COMPANY_NAME, DOCUMENT_REF, DOCUMENT_SHA256, SCENARIO_ID, FakeOdoo,
@@ -364,3 +369,32 @@ def test_common_revalidation_is_independent_of_ambient_decimal_context():
         validated = revalidate_action_proposal_v2(proposal)
         assert context.prec == 2
     assert validated == proposal
+
+
+@pytest.mark.parametrize("error,action,phase,code,deny_class", [
+    (TrustedStateResolutionError("DEPENDENCY_UNAVAILABLE"), "CREATE_DRAFT_BILL", "DRAFT_INTAKE",
+     "DEPENDENCY_UNAVAILABLE", "FAIL_CLOSED_UNAVAILABILITY"),
+    (TrustedStateResolutionError("REFERENCE_AMBIGUOUS"), None, None,
+     "DEPENDENCY_UNAVAILABLE", "FAIL_CLOSED_UNAVAILABILITY"),
+    (OperationalObservationError("observation unavailable"), "CREATE_DRAFT_BILL", "DRAFT_INTAKE",
+     "DEPENDENCY_UNAVAILABLE", "FAIL_CLOSED_UNAVAILABILITY"),
+    (CanonicalizationError("invalid"), "POST_VENDOR_BILL", "DRAFT_INTAKE", "PHASE_MISMATCH", "POLICY_RULE"),
+    (CanonicalizationError("invalid"), "CREATE_DRAFT_BILL", "DRAFT_INTAKE", "SCHEMA_INVALID", "POLICY_RULE"),
+    (CanonicalizationError("invalid"), "POST_VENDOR_BILL", "POST_REVIEW", "SCHEMA_INVALID", "POLICY_RULE"),
+    (TrustedBindingError("invalid"), "POST_VENDOR_BILL", "DRAFT_INTAKE",
+     "POLICY_UNAVAILABLE", "FAIL_CLOSED_UNAVAILABILITY"),
+    (TrustedBindingError("invalid"), "CREATE_DRAFT_BILL", "DRAFT_INTAKE",
+     "POLICY_UNAVAILABLE", "FAIL_CLOSED_UNAVAILABILITY"),
+    (PolicyContractError("invalid"), "CREATE_DRAFT_BILL", "DRAFT_INTAKE",
+     "POLICY_UNAVAILABLE", "FAIL_CLOSED_UNAVAILABILITY"),
+])
+def test_prepolicy_failures_are_classified_as_policy_or_technical(error, action, phase, code, deny_class):
+    """DEC-060/DEC-063: proposal-driven failures are policy; trusted-side failures are technical."""
+    rejection = classify_c1_prepolicy_error(error, proposal_action=action, trusted_phase=phase)
+    assert rejection == C1PrePolicyRejection(ReasonCode(code), deny_class)
+
+
+@pytest.mark.parametrize("error", [RuntimeError("bug"), RunnerContractError("bad handoff"), KeyError("x")])
+def test_unclassified_prepolicy_failure_halts_instead_of_inventing_an_outcome(error):
+    with pytest.raises(RunnerContractError):
+        classify_c1_prepolicy_error(error, proposal_action="CREATE_DRAFT_BILL", trusted_phase="DRAFT_INTAKE")
