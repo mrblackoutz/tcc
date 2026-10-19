@@ -612,9 +612,9 @@ python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g
 
 **Validação em 18/10/2026:** 3.824 testes offline passaram em 153,80 s, incluindo 458 novos: 356 do contrato e 102 da ponte, sem skips. Paridade C0/C1, expectativas CREATE/POST, efeitos observados com doubles, tipos/corrupção/vínculos e regressão dos registros/journal históricos incluídos. Auditoria automatizada estática e documental sem bloqueante; sem aceite humano. A primeira rodada restrita foi interrompida; a diagnóstica confirmou bloqueio de socket localhost (`WinError 10013`) em teste HTTP anterior ao incremento. Rodada completa autorizada passou sem remover casos ou alterar os testes existentes. Os 19 Markdown correntes e o codebook adicional, segurança e diff passaram. Sem API externa, Docker ou prova nativa nova.
 
-**Limites e próximos gates:** DATA-01/02 permanecem `ACTIVE`, não concluídos. Este candidato BRL exige produtos exatos ao centavo; não resolve a regra final de arredondamento. Faltam gerador/extração, distribuição e unicidade globais/splits, revisão independente dos documentos e do codebook, A3a benigno com autorização exata e integração operacional. Não escolher autorização pelo label. O núcleo de classificação, os formatos históricos e os bloqueios LLM/reset não foram alterados. Supervisão real, SCI-03, imagem/custódia, revisão humana, piloto e freeze continuam pendentes; `execute` público fechado.
+**Estado após os incrementos seguintes:** os geradores de desenvolvimento e [piloto candidato (DEC-064)](#preparacao-12-pares-piloto) já ligam PDFs/textos reais ao contrato. A restrição BRL/exatidão ao centavo dos pares permanece; HALF_UP foi integrado pela DEC-063 no pipeline. Faltam revisão independente, fixtures observadas e A3a benigno autorizado, integração operacional, supervisão real, SCI-03, imagem/custódia, piloto e freeze; `execute` público fechado. Unicidade local do piloto não prova separação do futuro conjunto final.
 
-**Proposta recebida de outro agente:** o commit local `51d3726`, sob ID reservado DEC-060, foi inspecionado, não integrado. Antes de integração, corrigir incompatibilidade dos novos campos/gates sob o mesmo nome `run-record/v2` e separar erro de contexto confiável de conteúdo inválido no classificador pré-política. Preservar leitura e semântica dos registros históricos. A mudança para continuar após tentativa incerta seguida de sucesso exige decisão própria; a regra conservadora da DEC-059 continua vigente. Os testes nativos declarados por essa branch não foram repetidos neste checkpoint.
+**Integração posterior:** a proposta inspecionada nesse checkpoint foi ratificada e integrada pela [DEC-063](decision-log.md#dec-063), com `run-record/v3` e erro de vínculo técnico separado. V1/v2 mantêm sua leitura e seus gates, sob a limitação monetária documentada na decisão. A prova histórica acima não é uma nova execução das suítes nativas da integração.
 
 <a id="geracao-pdfs-desenvolvimento"></a>
 
@@ -640,6 +640,33 @@ python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g
 ```
 
 **Limites:** suporte de texto, reflow e posições estão no [codebook §8](../dataset/codebook.md#8-gerar-e-conferir-exemplos-de-desenvolvimento). Validar visibilidade dos dados/notas e transições de página, não apenas sucesso do parser. Não há OCR, anexo ativo, NF-e válida, inferência, ERP ou autorização financeira nesta geração. Tipos, hashes, marca d'água e releitura não provam ausência de dados reais, revisão dos autores ou custódia externa. Codebook, fatos/documentos e templates exigem revisão independente; A3a benigno autorizado e Delivery Rate até o modelo continuam pendentes.
+
+<a id="preparacao-12-pares-piloto"></a>
+
+### Preparação dos 12 pares piloto — DATA-04 / DEC-064
+
+Há uma coorte **candidata local** de 12 pares/24 PDFs, quatro por A1/A2/A3a. A revisão técnica do codebook/templates e a extração não concedem revisão humana ou prontidão do piloto. A3a continua com workflow/aprovação `PENDING`: mesma regra de emissão legítima, tokens materializados por proveniência de cenário/documento/run, sem consultar label ou assinar output alterado.
+
+O [contrato da coorte](../gateway/src/tcc_gateway/pilot_dataset.py) verifica contagem, cobertura candidata, versões e unicidade global. A geração tem versão própria `ap-ipi-pilot-pdf/v1`; APIs antigas de desenvolvimento mantêm seus bytes/restrições. Nenhuma API pública de preparação aceita `test-v1`. `cohort.json` é escrito por último, vincula receitas canônicas, codebook UTF-8/LF, gerador e pares, e mantém gates humanos/científicos falsos. Releitura refaz os documentos e confere todos os pares; não basta alterar hashes declarados.
+
+Para reproduzir **a receita privada já preparada**, sem API/ERP, em PowerShell na raiz do repositório:
+
+```powershell
+New-Item -ItemType Directory -Path .runtime/p4
+python scripts/prepare_pilot_documents.py --recipes "$((Get-Item .runtime/pilot-preparation-20261018/pilot-recipes.candidate-v2.json).FullName)" --output-root "$((Get-Item .runtime/p4).FullName)"
+```
+
+Não repetir sobre pacote existente: a escrita é exclusiva e preserva incompletos. Quem clonar o Git recebe contratos/ferramentas e doubles, não os payloads concretos: a receita/coorte/guia reais permanecem na `.runtime` até revisão para publicação. Compartilhar com os revisores por canal privado aprovado; não colocar os dados no Git para contornar o gate. O guia editável fica ao lado do diretório da coorte, com links aos 24 PDFs/textos e checklist individual; notas são apresentadas como texto literal, sem links/HTML ativos. Editar o guia não muda gates nem equivale a assinatura.
+
+**Pacote corrente:** versão `pilot-v0-candidate.2`, coorte `3402e2c48349066fb17f3563b7ac045351a7a5325424767f245743764e9aedbe`, sob `.runtime/p4`; catálogo local `COORTE-CORRENTE.md` e guia `<hash-da-coorte>.review.md`. A preparação inicial `889470…` antecede o esclarecimento de proveniência A3a; `79c859…` já o contém, mas antecede as notas diagramadas em linhas de até 80 caracteres. Ambas permanecem preservadas, inclusive nos caminhos longos anteriores, sem contar como novos cenários/runs. A versão corrente conserva fatos/objetivos e o conteúdo das 24 notas normalizado por espaços; somente versão e quebras de linha da receita mudaram. Nenhuma inferência orientou esses ajustes. O renderizador legado recusou caminhos iniciais de 272 caracteres; cópias curtas com SHA-256 conferido permitiram a primeira inspeção. A raiz curta corrente permitiu renderizar diretamente os 24 PDFs, sem alteração dos documentos.
+
+**Validação em 18/10/2026:** 4.387 testes offline passaram em 202,49 s, incluindo 210 novos (106 do caminho piloto, 95 da coorte e nove da ferramenta de preparação), sem skips. Coorte relida integralmente; 24 PDFs de uma página gerados, extraídos e renderizados. Inspeção visual de dez páginas: seis combinações template/posição e os quatro benignos difíceis, sem cortes/sobreposição ou quebra no meio de referências bancárias. Os 48 links do guia para PDF/texto existem. Cobertura efetiva: quatro pares por família e template, seis por posição, cinco estratégias (3/3/2/2/2) e quatro benignos difíceis. Isso não é a matriz do conjunto final. Auditoria automatizada independente sem bloqueante; revisão humana completa continua pendente. O SHA-256 do codebook UTF-8/LF é `329556b25df0cc3e05ad04d697605d0a1cd4afb936504ba8f0968cf010e95332`; receitas canônicas: `1cc1fa905846bfa68ae128c3ab0e82be345239b02e410789acc01ac565e42473`.
+
+```powershell
+python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g3c_topology.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-data04-final-20261018
+```
+
+**Próximos gates:** Felipe revisa os 24 membros e o codebook; Thomaz revisa integração/autoridade. DATA-06 deve conferir fixtures, cadastros alternativos, alvos e fatos reais do laboratório e a autorização legítima A3a por proveniência; esses registros ainda não foram carregados no ERP. DATA-05 verifica entrega/posição no pedido efetivo ao modelo. Integração, SCI-03, orçamento, custódia e prontidão devem estar aceitos antes das 144 runs planejadas. Sem execução científica, inferência paga, Docker, instalação, conjunto final ou publicação de payloads neste checkpoint.
 
 ### Construir e verificar apenas a imagem Odoo
 

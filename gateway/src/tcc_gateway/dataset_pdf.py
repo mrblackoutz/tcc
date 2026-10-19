@@ -1,4 +1,4 @@
-"""DEC-062 deterministic development-only PDFs; no labels or execution rights.
+"""DEC-062/064 deterministic, explicitly split PDFs; no execution rights.
 
 The three layouts are candidates, not fiscal documents or reviewed scientific
 templates. Notes are literal text. Reflow only inserts line feeds: existing
@@ -17,6 +17,7 @@ from .dataset_pair import DatasetPair, DatasetPairError, parse_dataset_pair
 
 
 GENERATOR_VERSION = "ap-ipi-development-pdf/v1"
+PILOT_GENERATOR_VERSION = "ap-ipi-pilot-pdf/v1"
 MAXIMUM_PDF_BYTES = 1_048_576
 MAXIMUM_PAGES = 4
 MAXIMUM_TEXT_CHARACTERS = 20_000
@@ -35,6 +36,8 @@ def _fail() -> None:
 
 @dataclass(frozen=True, slots=True)
 class RenderedDevelopmentPdf:
+    """Legacy structural name reused by the explicit development/pilot APIs."""
+
     pdf_bytes: bytes = field(repr=False)
     expected_text: str = field(repr=False)
     page_count: int
@@ -180,7 +183,7 @@ def _page_lines(lines: list[str], index: int, count: int) -> list[str]:
             f"PÁGINA {index}/{count} - DOCUMENTO EXPERIMENTAL SEM VALOR FISCAL"]
 
 
-def _pdf(pages: list[list[str]]) -> tuple[bytes, str]:
+def _pdf(pages: list[list[str]], generator_version: str) -> tuple[bytes, str]:
     count = len(pages)
     # Fixed object numbering; no document IDs, timestamps or local names.
     font_id = 3 + 2 * count
@@ -214,7 +217,7 @@ def _pdf(pages: list[list[str]]) -> tuple[bytes, str]:
     objects.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>")
     objects.append((
         "<< /Title (TCC SYNTHETIC COMMERCIAL DOCUMENT) "
-        f"/Creator (TCC LAB) /Producer ({GENERATOR_VERSION}) >>"
+        f"/Creator (TCC LAB) /Producer ({generator_version}) >>"
     ).encode("ascii"))
     output = bytearray(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")
     offsets = [0]
@@ -235,22 +238,38 @@ def _pdf(pages: list[list[str]]) -> tuple[bytes, str]:
     return bytes(output), "\n".join(all_lines)
 
 
-def render_development_pdf(pair: DatasetPair, note: str) -> RenderedDevelopmentPdf:
-    """Render a revalidated development pair's commercial facts and one note.
-
-    This function neither chooses a member nor uses evaluator labels to form
-    text. The caller verifies actual extraction before accepting or persisting
-    the candidate. It does not mutate source hashes or authenticate the note.
-    """
+def _render_pdf(
+    pair: DatasetPair, note: str, *, split: str, generator_version: str,
+) -> RenderedDevelopmentPdf:
     if type(pair) is not DatasetPair:
         _fail()
     try:
         value = parse_dataset_pair(pair.to_mapping()).to_mapping()
     except (DatasetPairError, AttributeError, TypeError, ValueError):
         _fail()
-    if value["split"] != "development":
+    if value["split"] != split:
         _fail()
     _valid_text(note)
     pages = _pages(value, note)
-    pdf_bytes, expected_text = _pdf(pages)
+    pdf_bytes, expected_text = _pdf(pages, generator_version)
     return RenderedDevelopmentPdf(pdf_bytes, expected_text, len(pages))
+
+
+def render_development_pdf(pair: DatasetPair, note: str) -> RenderedDevelopmentPdf:
+    """Render only development, retaining the original bytes and restrictions.
+
+    This function neither chooses a member nor uses evaluator labels to form
+    text. The caller verifies actual extraction before accepting or persisting
+    the candidate. It does not mutate source hashes or authenticate the note.
+    """
+    return _render_pdf(pair, note, split="development", generator_version=GENERATOR_VERSION)
+
+
+def render_pilot_pdf(pair: DatasetPair, note: str) -> RenderedDevelopmentPdf:
+    """Render only pilot-v0 using a distinct generic generator provenance.
+
+    The legacy return type is only a container: this is not development data
+    re-labelled as pilot. No member identity, evaluator field or approval is
+    printed, and rendering does not authorize a scientific run or publication.
+    """
+    return _render_pdf(pair, note, split="pilot-v0", generator_version=PILOT_GENERATOR_VERSION)
