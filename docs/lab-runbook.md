@@ -668,6 +668,31 @@ python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g
 
 **Próximos gates:** Felipe revisa os 24 membros e o codebook; Thomaz revisa integração/autoridade. DATA-06 deve conferir fixtures, cadastros alternativos, alvos e fatos reais do laboratório e a autorização legítima A3a por proveniência; esses registros ainda não foram carregados no ERP. DATA-05 verifica entrega/posição no pedido efetivo ao modelo. Integração, SCI-03, orçamento, custódia e prontidão devem estar aceitos antes das 144 runs planejadas. Sem execução científica, inferência paga, Docker, instalação, conjunto final ou publicação de payloads neste checkpoint.
 
+<a id="conferencia-fixture-oraculo"></a>
+
+### Conferência da fixture contra a leitura ERP — DATA-06 / DEC-065
+
+O [produtor somente leitura](../gateway/src/tcc_gateway/dataset_fixture.py) recebe `client`, `pair`, `workflow`, `operational`, `fixture_ref` e `policy_version` explicitamente. Workflow, referência lógica e observações operacionais precisam vir de configuração/observação independente, não da proposta nem do label. A identidade cenário/documento seleciona um membro do par apenas para conferir proveniência; não seleciona fatos, autorização ou consultas diferentes. `read_trusted_state` continua sendo o único leitor ERP deste caminho.
+
+O produtor exige PO confirmada, fornecedor/moeda/total/linhas/preços/quantidades exatos, banco legítimo resolvido e condições operacionais prontas. CREATE exige quantidade disponível suficiente e ausência de alvo. POST exige rascunho correto e igualdade de todos os fatos/linhas/data/banco; o saldo a faturar pode já ter sido consumido pelo rascunho. Toda divergência falha com erro finito, sem binding parcial, reparo ou detalhes do transporte. O retorno é somente `OracleFixtureBinding`; `build_oracle_inputs` segue sendo a ponte única para expectativas do avaliador. Nada é enviado ao modelo ou convertido em ação, token, decisão ou comando financeiro.
+
+Usar essa conferência no preparo do estado inicial, antes da inferência e dos efeitos. Não reaplicá-la ao estado final para selecionar runs favoráveis, excluir desvios observados ou substituir a classificação do oráculo. Divergência posterior e restauração continuam seguindo os registros e gates do runner; o preparo não fornece retrospectivamente um estado ausente.
+
+Reproduzir os testes focais e a regressão completa, na raiz:
+
+```powershell
+python -m pytest gateway/tests/test_dataset_fixture.py gateway/tests/test_dataset_fixture_pipeline.py gateway/tests/test_dataset_oracle.py gateway/tests/test_trusted_resolution.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-data06-focused
+python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g3c_topology.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-data06-full-20261018
+```
+
+**Validação em 18/10/2026:** 4.589 testes offline passaram em 188,41 s, incluindo 202 novos (190 do produtor e 12 da integração HTTP/oráculo), sem skips; 442 focais em 5,12 s. Ambos os membros, troca de labels, referências/quantidades/preços/bancos/alvo, indisponibilidade e erros finitos incluídos. A comparação de capturas alcança o avaliador existente nas duas condições; não há nova regra de pontuação. A fixture do teste A2 foi corrigida para conter o banco alternativo no estado inicial, sem flexibilizar a guarda de cadastros imutáveis. Auditoria automatizada independente sem bloqueante. Releitura integral da coorte `3402e2…` confirma codebook/hash e gates humanos/científicos falsos, sem regeneração ou mudança dos dados.
+
+**Limites:** transporte HTTP e capturas desta suíte são doubles de desenvolvimento. Não são uma nova prova ORM/JSON-2 nativa ou a conferência das fixtures concretas dos 12 pares. O leitor da allowlist legítima não comprova a existência dos cadastros alternativos A1/A2. Tipos/hashes não autenticam a origem da configuração ou da leitura; `company_ref`/`fixture_ref` são identidades lógicas, não campos ERP consultados. Leituras não são atômicas; o kernel ainda precisa revalidar sob lock.
+
+**Próximo passo nativo:** reaproveitar o harness `test_runner_native.ps1 -WithObserved` por modo adicional opt-in e evidência separada, sem alterar os casos/envelopes históricos. Um double CREATE e um rascunho POST preparado independentemente poderão comprovar o produtor; isso ainda não comprovará as 12 fixtures ou POST autorizado. Não derivar o par do `model_output` simulado. A coorte `3402e2…`, seu codebook/hash e seus gates permanecem intactos.
+
+**A3a:** o POST registrado exige recibo/evento/anexo de um CREATE auditado com a proveniência do documento. Compartilhar alvo lógico/estado de negócio entre membros não autoriza reaproveitar o recibo vivo de outro PDF. Sua materialização/restauração e a aprovação legítima precisam ser demonstradas por proveniência; nonce/autoridade/contexto auditado isolam as execuções, pois `run_id` não está na ação canônica. O produtor atual não verifica essa origem nem emite aprovação. DATA-06 permanece `ACTIVE`; revisão humana, entrega ao modelo, integração, piloto e freeze continuam pendentes. Sem API de LLM, Docker, instalação ou publicação de dados neste checkpoint.
+
 ### Construir e verificar apenas a imagem Odoo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_odoo_image.ps1
