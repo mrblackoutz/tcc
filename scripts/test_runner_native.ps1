@@ -1,7 +1,8 @@
 # DEC-051/054: isolated native proof, never the existing laboratory or a scientific run.
-param([switch]$WithObserved, [ValidateSet('desktop-linux')][string]$DockerContext)
+param([switch]$WithObserved, [switch]$WithDatasetFixtures, [ValidateSet('desktop-linux')][string]$DockerContext)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+if ($WithDatasetFixtures -and -not $WithObserved) { throw 'Dataset fixture proof requires -WithObserved' }
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
 $ownerLabel = 'tcc.runner.run'
@@ -20,6 +21,7 @@ $null = New-Item -ItemType Directory -Path $probeRoot
 $encoding = [System.Text.UTF8Encoding]::new($false)
 $created = @{ network = $false; postgres = $false; odoo = $false; gateway = $false; volume = $false }
 $result = $null
+$datasetFixtureValidation = $null
 $entrypoint = if ($WithObserved) { '/mnt/runner-probes/runner_observed_native.py' } else { '/mnt/runner-probes/runner_native.py' }
 $dockerPrefix = if ($DockerContext) { @('--context', $DockerContext) } else { @() }
 
@@ -43,6 +45,10 @@ function Get-RunnerSourceHashes {
         $paths += @('odoo/probes/operational_observation_transactions.py', 'odoo/probes/runner_observed_native.py',
             'odoo/probes/runner_observed_fixture.py', 'odoo/probes/runner_observed_gateway.py',
             'scripts/validate_runner_observed_evidence.py')
+    }
+    if ($WithDatasetFixtures) {
+        $paths += @('odoo/probes/runner_dataset_fixture_native.py', 'odoo/probes/runner_dataset_fixture_gateway.py',
+            'scripts/validate_dataset_fixture_evidence.py')
     }
     foreach ($path in ($paths | Sort-Object -Unique)) {
         $path = $path -replace '\\', '/'
@@ -140,6 +146,7 @@ try {
     $probePassword = $null
     [Array]::Clear($secretBytes, 0, $secretBytes.Length)
     $probeArguments = @('--database', $databaseName, '--git-base', $gitBase, '--source-bundle-sha256', $bundleHash)
+    if ($WithDatasetFixtures) { $probeArguments += '--dataset-fixture-mode' }
     $created.network = $true
     $null = Invoke-RunnerDocker @('network', 'create', '--internal', '--label', ($ownerLabel + '=' + $runId), $networkName) 'network-create.log'
     $created.volume = $true
@@ -186,6 +193,30 @@ try {
         if ($ready) { break }; Start-Sleep -Seconds 1
     }
     if (-not $ready) { throw 'Disposable Odoo HTTP readiness failed' }
+    if ($WithDatasetFixtures) {
+        Invoke-NativeMode 'dataset-fixtures-prepare'
+        $null = Invoke-RunnerDocker (@('exec', $gatewayName, 'python', $entrypoint, 'dataset-fixtures') + $probeArguments) 'dataset-fixtures.log'
+        Invoke-NativeMode 'dataset-fixtures-confirm'
+        Assert-RunnerSources $sourceHashes (Get-RunnerSourceHashes)
+        $datasetValidationPath = Join-Path $artifacts 'dataset-fixture-validation.json'
+        $datasetValidationArguments = @((Join-Path $repositoryRoot 'scripts/validate_dataset_fixture_evidence.py'),
+            '--artifacts', $artifacts, '--git-base', $gitBase, '--source-bundle-sha256', $bundleHash,
+            '--output', $datasetValidationPath)
+        $datasetValidationOutput = @(& python @datasetValidationArguments 2>&1)
+        $datasetValidationExitCode = $LASTEXITCODE
+        [System.IO.File]::WriteAllLines((Join-Path $probeRoot 'dataset-fixture-validation.log'), [string[]]@($datasetValidationOutput | ForEach-Object { [string]$_ }), $encoding)
+        if ($datasetValidationExitCode -ne 0 -or -not (Test-Path -LiteralPath $datasetValidationPath -PathType Leaf)) { throw 'Dataset fixture evidence validation failed; inspect ignored diagnostic metadata' }
+        $datasetFixtureValidation = Get-Content -Raw -Encoding UTF8 -LiteralPath $datasetValidationPath | ConvertFrom-Json
+        if ($datasetFixtureValidation.schema_version -cne 'dataset-fixture-validation/v1' -or
+            $datasetFixtureValidation.status -cne 'PASS' -or $datasetFixtureValidation.git_base -cne $gitBase -or
+            $datasetFixtureValidation.source_bundle_sha256 -cne $bundleHash -or
+            $datasetFixtureValidation.configuration_sha256 -cnotmatch '^[0-9a-f]{64}$') { throw 'Dataset fixture validation provenance mismatch' }
+        if ($datasetFixtureValidation.case_count -isnot [int] -or $datasetFixtureValidation.case_count -ne 2 -or
+            $datasetFixtureValidation.native_json2_request_count -isnot [int] -or $datasetFixtureValidation.native_json2_request_count -le 0 -or
+            $datasetFixtureValidation.scientific_run -isnot [bool] -or $datasetFixtureValidation.scientific_run -or
+            $datasetFixtureValidation.human_review_complete -isnot [bool] -or $datasetFixtureValidation.human_review_complete -or
+            $datasetFixtureValidation.public_executor_enabled -isnot [bool] -or $datasetFixtureValidation.public_executor_enabled) { throw 'Dataset fixture validation limits or strict counts invalid' }
+    }
     if ($WithObserved) {
         $null = Invoke-RunnerDocker (@('exec', $gatewayName, 'python', $entrypoint, 'candidate') + $probeArguments) 'candidate.log'
         Invoke-NativeMode 'observe'
@@ -267,6 +298,14 @@ try {
         public_c1_executor_opened = $false; scientific_run = $false; complete_scientific_snapshot = $false
         credential_transfer = 'labelled-restricted-docker-tmpfs'; provenance_declared_not_attested = $true
     }
+    }
+    if ($WithDatasetFixtures) {
+        if ($datasetFixtureValidation.configuration_sha256 -cne $result.configuration_sha256) { throw 'Dataset fixture and observed proof configurations disagree' }
+        $result.schema_version = 'runner-dataset-fixture-probe-evidence/v1'
+        $result.decision = 'DEC-066'
+        $result['dataset_fixture_validation_sha256'] = (Get-FileHash -LiteralPath $datasetValidationPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $result['dataset_fixture_case_count'] = $datasetFixtureValidation.case_count
+        $result['dataset_fixture_json2_request_count'] = $datasetFixtureValidation.native_json2_request_count
     }
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
 }

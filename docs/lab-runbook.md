@@ -689,9 +689,39 @@ python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g
 
 **Limites:** transporte HTTP e capturas desta suíte são doubles de desenvolvimento. Não são uma nova prova ORM/JSON-2 nativa ou a conferência das fixtures concretas dos 12 pares. O leitor da allowlist legítima não comprova a existência dos cadastros alternativos A1/A2. Tipos/hashes não autenticam a origem da configuração ou da leitura; `company_ref`/`fixture_ref` são identidades lógicas, não campos ERP consultados. Leituras não são atômicas; o kernel ainda precisa revalidar sob lock.
 
-**Próximo passo nativo:** reaproveitar o harness `test_runner_native.ps1 -WithObserved` por modo adicional opt-in e evidência separada, sem alterar os casos/envelopes históricos. Um double CREATE e um rascunho POST preparado independentemente poderão comprovar o produtor; isso ainda não comprovará as 12 fixtures ou POST autorizado. Não derivar o par do `model_output` simulado. A coorte `3402e2…`, seu codebook/hash e seus gates permanecem intactos.
+**Complemento nativo:** a [prova opt-in (DEC-066)](#prova-nativa-fixture-oraculo) reutiliza o harness observado com evidência separada. A suíte offline acima continua sendo composta de doubles; não transferir sua contagem para testes Odoo. O complemento não comprova as 12 fixtures ou POST autorizado. A coorte `3402e2…`, seu codebook/hash e seus gates permanecem intactos.
 
 **A3a:** o POST registrado exige recibo/evento/anexo de um CREATE auditado com a proveniência do documento. Compartilhar alvo lógico/estado de negócio entre membros não autoriza reaproveitar o recibo vivo de outro PDF. Sua materialização/restauração e a aprovação legítima precisam ser demonstradas por proveniência; nonce/autoridade/contexto auditado isolam as execuções, pois `run_id` não está na ação canônica. O produtor atual não verifica essa origem nem emite aprovação. DATA-06 permanece `ACTIVE`; revisão humana, entrega ao modelo, integração, piloto e freeze continuam pendentes. Sem API de LLM, Docker, instalação ou publicação de dados neste checkpoint.
+
+<a id="prova-nativa-fixture-oraculo"></a>
+
+### Prova nativa do binding — DATA-06 / DEC-066
+
+Executar na raiz, com Docker local disponível e as imagens fixadas já existentes:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_runner_native.ps1 -WithObserved -WithDatasetFixtures -DockerContext desktop-linux
+```
+
+`-WithDatasetFixtures` exige `-WithObserved`. O [harness](../scripts/test_runner_native.ps1) cria recursos novos rotulados, rede interna sem portas publicadas e snapshot de fontes; não usa serviços/volumes/chaves do laboratório existente nem faz pull/build/instalação. O fluxo histórico observado permanece inalterado sem a flag. Com ela, somente as duas empresas conhecidas do banco descartável novo são configuradas em BRL por ORM depois do plano contábil genérico e antes de qualquer PO/conta/pagamento/recibo. USD é desativado pelo ORM normal para manter uma única moeda ativa. O hook de produtos habilita listas de preços durante a transição; o preparo desabilita somente essa opção conhecida pela operação nativa de Settings, sem wizard global ou escrita nos grupos do executor. Grafo completo e inventário de permissões devem ficar idênticos aos originais, com a guarda de identidade intacta. O contrato BRL não é ampliado nem dados existentes são convertidos. O perfil explícito integra o hash da configuração. Não há alegação de localização fiscal brasileira.
+
+O [preparo nativo](../odoo/probes/runner_dataset_fixture_native.py) reutiliza dois doubles: CREATE e leitura de rascunho POST. Fatos vêm da configuração/comando legítimo de preparo, anterior ao provedor; duplicidade/período vêm do observador nativo. O [gateway de prova](../odoo/probes/runner_dataset_fixture_gateway.py) confere o PDF realmente existente, lê JSON-2 com identidade restrita e chama o produtor/ponte. Um cursor nativo novo confirma a projeção técnica preservada. Só então seguem os nove casos históricos, cuja própria validação continua separada.
+
+Há **dois documentos efetivamente exercitados**, um por double. O segundo membro de cada par técnico contém hashes-semente explicitamente não executados; não é um PDF novo, ataque testado ou quarto cenário. Nenhum token é emitido pelo complemento; leitura de rascunho não é POST autorizado. O preparo e o fluxo histórico têm efeitos sintéticos próprios; somente resolução/confirmação novas são de leitura.
+
+Saídas ficam em `.runtime/runner-native/<id>/artifacts/`: `dataset-fixture-inputs.json`, `dataset-fixture-resolution.json` e `dataset-fixture-confirmation.json`. O [gate fechado](../scripts/validate_dataset_fixture_evidence.py) relê os dois PDFs, reexecuta o produtor sobre todos os registros de leitura, compara IDs/gabaritos/saídas e cruza fornecedor, banco, PO, quantidades/preços e alvo com as projeções antes/depois/confirmação. Linhas do rascunho precisam corresponder ao pedido e ao ledger, sem faltantes/extras/duplicadas; contraparte contábil sem vínculo ao pedido é permitida. Produto é conferido pelo resolver/ledger, pois não integra a projeção técnica histórica. Chamadas extras, artefatos truncados, estado alterado ou flags de aceite são recusados. `dataset-fixture-validation.json` guarda somente hashes/contagens/limites; `observed-validation.json` continua sendo a evidência dos nove casos históricos. `evidence.json`, no diretório do ensaio, usa schema próprio somente na opção nova e só fica `PASS` depois da limpeza e da conferência de fontes.
+
+**Prova nativa em 19/10/2026:** `PASS` no ensaio `0a528a50a3cb4e64ab8998e156cbfcd1`, com dois documentos e **19 leituras JSON-2** no complemento. Projeções antes/depois/confirmação iguais, grafo de grupos/inventário original preservados e identidade de leitura conferida. Os nove casos históricos também passaram, com 68 leituras e três tentativas privadas de execução, sem alteração dos seus schemas. Fontes estáveis, contexto global Docker preservado e cleanup dos recursos próprios verificados. Não há aprovação gerada, provedor externo, piloto ou aceite humano.
+
+Proveniência: `git_base=e172190697a60099b98181e3e06c4ad7eba39a24` identifica a base anterior às alterações; o bundle/hash individual identifica o código efetivamente exercitado, não uma árvore limpa daquele commit. Bundle de fontes: `5207405f2b19ac3c8ce9036085b49aa1612cf39b59ccceae99e57007e2cb69a1`; configuração: `2e7213c46f5ab42e586bb1b666bafe18ef396cf26ed097210a58633e6d5b0520`; validação do complemento: `62457444aa7bf63d0da2c61bafed3b08a597e4d5255dd6bcc9e3fb1e50b9d58d`. Os seis ensaios interrompidos foram preservados com cleanup; a [DEC-066](decision-log.md#dec-066) registra causas e correções, sem contá-los como sucesso.
+
+**Regressão da mesma fonte:** 4.891 testes offline passaram em 251,01 s, incluindo 302 novos, sem skips. Cobrem contratos/limites/diagnóstico, replay completo, divergências de fonte/configuração/PDF, ausência de efeitos e falsificação coordenada das três projeções. Hardlinks e sockets locais foram executados com acesso autorizado, sem relaxar ou retirar testes. Esses testes não são a contagem da prova nativa acima. Releitura integral da coorte/codebook confirmou os hashes e gates anteriores intactos.
+
+```powershell
+python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g3c_topology.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-data06-native-final-20261019
+```
+
+**Limites e próximo trabalho:** hashes/projeções não autenticam administrador/SQL, não são o snapshot científico integral nem revisão humana. O núcleo financeiro, ACL C1 e `execute` permanecem inalterados/fechados. Depois do complemento técnico, ainda será preciso materializar e revisar as fixtures/alternativas dos 12 pares, demonstrar origem/aprovação A3a por proveniência e concluir entrega ao modelo/runner antes do piloto. Sem conjunto final, inferência paga ou execução científica.
 
 ### Construir e verificar apenas a imagem Odoo
 

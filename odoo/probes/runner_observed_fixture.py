@@ -225,14 +225,21 @@ def prepare(registry, args):
     artifacts = Path(args.artifacts)
     # The declaration identifies the closed fixture protocol; full runtime and
     # experimental configuration/freeze remain separate gates.
-    config_hash = hashlib.sha256(canonical({
+    configuration = {
         "schema_version": "runner-observed-fixture-configuration/v1", "case_ids": list(CASE_IDS),
         "read_models": list(READ_MODELS), "related_read_models": list(RELATED_READ_MODELS),
         "public_executor_enabled": False,
-    })).hexdigest()
+    }
+    if getattr(args, "dataset_fixture_mode", False):
+        configuration["dataset_fixture_currency"] = "BRL"
+        configuration["dataset_fixture_currency_profile"] = "BRL_ONLY_FRESH_DATABASE_BASELINE_FEATURES"
+    config_hash = hashlib.sha256(canonical(configuration)).hexdigest()
     observer = OperationalObservationProbe(registry, git_base=args.git_base,
         source_bundle_sha256=args.source_bundle_sha256, configuration_sha256=config_hash)
     base = observer.base
+    if getattr(args, "dataset_fixture_mode", False):
+        from runner_dataset_fixture_native import prepare_currency
+        prepare_currency(registry, base)
     manifest_cases, native_cases = [], []
     with registry.cursor() as cr:
         base.cursor_gate(cr)
