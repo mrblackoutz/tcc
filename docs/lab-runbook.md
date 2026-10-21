@@ -494,6 +494,24 @@ A matriz técnica cobre CREATE benigno, valor divergente, beneficiário divergen
 
 **Limites:** não declarar RUN-02/03/04 concluídos. Permanecem pendentes `RunRecord`, supervisão operacional, contratos DATA-02, reconciliação da imagem experimental do gateway, revisão humana, piloto, freeze e avaliação científica. Propostas e entrega/intenção adversarial são fatos simulados da fixture, não ataques processados por um LLM real; provedor e supervisão também são simulados. `execute` continua fechado. O snapshot técnico não conclui backup externo/imutável das futuras runs ou competência C0 aceita no piloto.
 
+<a id="reset-unitario-a3a"></a>
+
+**Aplicação às fixtures candidatas — [reset unitário A3a (DEC-073)](decision-log.md#dec-073):** a [especialização piloto](../scripts/pilot_materialization_reset.py) reutiliza `StateHarness.provision_runtime`, `snapshot_baseline`, `restore`, imagens, quiescência e cleanup. O comando histórico da DEC-055 continua sendo o padrão e sua matriz não foi ampliada. Usar os quatro pacotes locais já conferidos na [preparação corrente](#correcao-pedido-produto) e na [seleção dos dois membros](#origens-a3a-piloto), por caminhos absolutos:
+
+```powershell
+python scripts/pilot_materialization_reset.py --docker-context desktop-linux --seed-file <seed> --alternatives-file <catalogo> --origin-files <origem-membro-0> <origem-membro-1>
+```
+
+O baseline comercial tem as 12 bases, cinco bancos alternativos, dois rascunhos de desenvolvimento do preparo de suporte e sentinelas sintéticas de anexo file-backed/arquivo órfão; não contém origens A3a da coorte. Cada um dos oito membros recebe um clone do mesmo dump/filestore, passa pela comparação completa ao baseline, cria somente seu rascunho auditado e tem o efeito capturado. Outro clone é restaurado e conferido antes do próximo membro: oito materializações e dezesseis restaurações, não dois lotes de quatro. O materializador mantém o modo antigo de quatro e usa resultado separado `pilot-a3a-origin-single-native/v1` para uma fixture, com três negativas e seleção incluída na configuração.
+
+Os dezessete nomes físicos próprios continuam no formato fechado exigido pelos probes, sem relaxar regex ou tocar no laboratório. O [adaptador nativo](../odoo/probes/pilot_reset_native.py) confere o vínculo origem→clone: preserva o manifesto original e aceita mudar somente `database` numa cópia, com hashes de ambos, inputs, seleção e snapshot. IDs, recibos, proveniência e fatos de negócio não são reescritos. O binding de captura continua ancorado à origem comum; `assert_restored` compara binding, projeção integral e IDs, não apenas um hash ordinal. Dump/filestore exigem quiescência; o coletor lê em cursor novo READ ONLY. Nada é removido por SQL/ORM como reset.
+
+**Prova nativa em 21/10/2026:** `678a8a83ae0740b6975666147b6d78fe`, `PASS` com cleanup conferido. Oito materializações unitárias cobriram os oito PDFs/cenários, quatro de cada seleção de membro, com 24 negativas de vínculo. As dezesseis capturas de clones restaurados coincidiram com o mesmo baseline, incluindo o mapa de IDs; as oito capturas após CREATE diferiram e registraram um rascunho, recibo, evento e anexo adicionais por caso. Fontes, inputs e snapshot permaneceram estáveis. A regressão completa passou com 5.377 testes em 290,23 s, incluindo 157 novos, sem skips; testes cobrem também interrupção por divergência e preservação do modo histórico. Auditoria automatizada não concede revisão humana.
+
+**Proveniência:** base Git `73696feb62d533bd4209d03a83e5aec389246080` mais alterações identificadas no bundle de 130 fontes `8e39814a8611d1f35ec1de60f5c7c549063572c793dd0bb35c1e4f06f52a7477`; a base sozinha não contém esta integração. SHA-256 da evidência: `d4c29c7ac15eae540954471feaa5940100f12e73fada3b9b30ba9eb4756d1e91`; do manifesto do snapshot: `b41f3ab1ab84fe1004ba0f0e4d86b64f1c91cfae01b531044772eb78e0fea336`. As 130 fontes atuais e suas cópias foram conferidas. Coorte `.3`/`13942467…`, codebook, seed `2ae261bf…`, catálogo `72c9c602…` e pacotes de origem `1a601157…`/`2333f796…` permanecem iguais aos preparos anteriores; imagens e commit Odoo fixados, sem pull ou rebuild.
+
+Capturas completas antes/depois/reset e arquivos originais ficam na `.runtime/state-oracle/678a8a83ae0740b6975666147b6d78fe/`, ignorados; não imprimir seu conteúdo. O efeito tem conferência nativa de origem/PDF/linhas/saldo e de preservação da projeção técnica; não se afirma autorização exaustiva de todos os deltas da captura completa posterior. Este incremento não compara C0/C1, emite aprovação, realiza POST adicional, executa LLM, supervisor ou piloto; DATA-06/RUN continuam ativos e revisão independente pendente. Próximo: ligar aprovação legítima exata ao alvo preparado por documento e integrar esse estado ao ciclo C0/C1 existente, sem reconstruir o reset.
+
 ### Executar o aceite completo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test.ps1

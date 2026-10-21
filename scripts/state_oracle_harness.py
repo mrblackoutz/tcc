@@ -478,7 +478,8 @@ class StateHarness:
         self.archive_step("restore", database, data)
         return database, data
 
-    def provision(self):
+    def provision_runtime(self):
+        """DEC-073 reuse only installation/ownership; no fixture is implied."""
         self.validate_images()
         self.snapshot_sources()
         self.validate_capture_imports()
@@ -516,8 +517,10 @@ class StateHarness:
                      "/opt/odoo/odoo-bin", "-c", "/etc/odoo/runner.conf", "-d", database,
                      "-i", "ap_security_executor", "--without-demo=True", "--stop-after-init", "--no-http"], timeout=600)
         self.remove_container(name)
-        self.phase("prepare", database, data)
-        self.phase("capture", database, data, capture_label="baseline")
+        return database, data
+
+    def snapshot_baseline(self, database, data):
+        """Snapshot a caller-prepared, quiescent own database and filestore."""
         self.quiescent(database)
         baseline = self.artifacts / "baseline"
         baseline.mkdir()
@@ -528,6 +531,12 @@ class StateHarness:
         self.snapshot_manifest = verify_manifest(self.dump_path, self.tar_path, self.manifest_path)
         self.baseline_manifest_hash = sha256(self.manifest_path)
         print("STATE_ORACLE_BASELINE_CAPTURED", flush=True)
+
+    def provision(self):
+        database, data = self.provision_runtime()
+        self.phase("prepare", database, data)
+        self.phase("capture", database, data, capture_label="baseline")
+        self.snapshot_baseline(database, data)
 
     def run_cases(self):
         rows, generation = [], 1

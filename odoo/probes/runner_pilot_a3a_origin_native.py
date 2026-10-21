@@ -86,7 +86,9 @@ def _target(env, resolved, audit, result, row, source, document):
 
 
 def _preserved(before, after, contexts):
-    """Only four new drafts and their administrative/audit effects are admitted."""
+    """Only the selected one/four drafts and their declared effects are admitted."""
+    effect_count = len(contexts)
+    require(effect_count in (1, 4), "a3a_origin_closed_context_count")
     append = {"account.move", "account.move.line", "ap.security.draft.receipt", "ap.security.audit.event",
               "ap.security.po.guard", "ap.security.vendor.guard", "ap.security.workflow.registration", "attachments"}
     mutable = {"purchase.order": {"invoice_status", "write_date"},
@@ -118,18 +120,35 @@ def _preserved(before, after, contexts):
             and all(row["executor_mode"] == "CREATE_DRAFT" for row in additions["ap.security.draft.receipt"])
             and all(row["status"] == "CREATED" for row in additions["ap.security.audit.event"]), "a3a_origin_no_post")
     require(all(row["move_id"][0] in targets for row in additions["account.move.line"])
-            and len(additions["attachments"]) == 4
+            and len(additions["attachments"]) == effect_count
             and {row["target"] for row in additions["attachments"]} == targets
             and {row["po_id"][0] for row in additions["ap.security.po.guard"]} == allowed["purchase.order"]
             and {row["vendor_id"][0] for row in additions["ap.security.vendor.guard"]} ==
                 {item["workflow"].vendor_id for item in contexts}, "a3a_origin_effect_scope_exact")
     for name, count in before["auxiliary_counts"].items():
         observed = after["auxiliary_counts"][name]
-        require(observed >= count if name == "mail.message" else observed == count + (4 if name == "ir.attachment" else 0),
+        require(observed >= count if name == "mail.message" else observed == count + (effect_count if name == "ir.attachment" else 0),
                 "a3a_origin_no_payment_reconciliation_external_message")
 
 
-def run(args):
+def _selected(fixtures, fixture_ref):
+    if fixture_ref is None:
+        return fixtures
+    require(type(fixture_ref) is str, "a3a_origin_exact_selected_fixture")
+    selected = [row for row in fixtures if row["fixture_ref"] == fixture_ref]
+    require(len(selected) == 1, "a3a_origin_exact_selected_fixture")
+    return selected
+
+
+def _configuration(package_sha256, seed_sha256, fixture_ref):
+    value = {"origin_input_sha256": package_sha256, "seed_sha256": seed_sha256,
+             "schema_version": "pilot-a3a-origin-preparation/v1"}
+    if fixture_ref is not None:
+        value["selected_fixture_ref"] = fixture_ref
+    return value
+
+
+def run(args, *, fixture_ref=None):
     require(args.mode == "pilot-a3a-origins" and args.dataset_fixture_mode
             and all(re.fullmatch(r"[0-9a-f]{64}", value or "") for value in
                     (args.pilot_seed_sha256, args.pilot_a3a_origin_sha256)), "a3a_origin_explicit_opt_in")
@@ -139,6 +158,7 @@ def run(args):
     value, inputs = seed.to_mapping(), package.to_mapping()
     require(inputs["seed_sha256"] == seed.sha256 and all(inputs[name] == value[name] for name in
             ("cohort_sha256", "codebook_sha256")), "a3a_origin_same_candidate_seed_and_cohort")
+    selected = _selected(inputs["fixtures"], fixture_ref)
     seeded = read_json(artifacts / "pilot-business-seed-result.json")
     require(seeded["schema_version"] == "pilot-business-seed-native/v1" and seeded["status"] == "PASS"
             and seeded["seed_sha256"] == seed.sha256 and seeded["git_base"] == args.git_base
@@ -152,8 +172,8 @@ def run(args):
     from odoo.addons.ap_security_executor import registered_execution, registered_post, workflow_registry
     from odoo.addons.ap_security_executor.identity import assert_executor_identity
     from odoo.addons.ap_security_executor.workflow_contracts import WorkflowProvenance
-    config_hash = "sha256:" + hashlib.sha256(canonical({"origin_input_sha256": package.sha256,
-        "seed_sha256": seed.sha256, "schema_version": "pilot-a3a-origin-preparation/v1"})).hexdigest()
+    config_hash = "sha256:" + hashlib.sha256(canonical(
+        _configuration(package.sha256, seed.sha256, fixture_ref))).hexdigest()
     provenance = WorkflowProvenance(args.git_base, "sha256:" + args.source_bundle_sha256, config_hash)
     audit = base.TrustedAuditContext(run_id="TCC-PILOT-A3A-ORIGIN-PROOF", attempt_id=secrets.token_hex(16),
         code_commit=args.git_base, code_sha256=provenance.code_sha256, configuration_sha256=config_hash)
@@ -171,7 +191,7 @@ def run(args):
         verify_seed(env, value["fixtures"], seeded["bindings"])
         inventory = assert_executor_identity(env, env["res.users"].browse(base.user_id), company=env.company)
         before = observer.projection(env, scope)
-        for source in inputs["fixtures"]:
+        for source in selected:
             row, binding = rows[source["fixture_ref"]], bindings[source["fixture_ref"]]
             require(row["pair_sha256"] == source["pair_sha256"]
                     and source["invoice_date_min"] <= row["invoice_date"] <= source["invoice_date_max"],
@@ -245,10 +265,13 @@ def run(args):
     _input(artifacts / "pilot-business-seed.json", PilotBusinessSeed, MAX_SEED_BYTES, seed.sha256)
     _input(artifacts / "pilot-a3a-origin.json", PilotA3aOriginInput, MAX_ORIGIN_BYTES, package.sha256)
     write_json(artifacts / "pilot-a3a-origin-result.json", {
-        "schema_version": "pilot-a3a-origin-native/v1", "status": "PASS", "git_base": args.git_base,
+        "schema_version": ("pilot-a3a-origin-native/v1" if fixture_ref is None
+                           else "pilot-a3a-origin-single-native/v1"),
+        **({} if fixture_ref is None else {"fixture_ref": fixture_ref}),
+        "status": "PASS", "git_base": args.git_base,
         "source_bundle_sha256": args.source_bundle_sha256, "origin_input_sha256": package.sha256,
         **{name: inputs[name] for name in ("seed_sha256", "cohort_sha256", "codebook_sha256")},
-        "fixture_count": len(origins), "negative_binding_checks": 12,
+        "fixture_count": len(origins), "negative_binding_checks": 3 * len(origins),
         "origins_sha256": hashlib.sha256(canonical(origins)).hexdigest(),
         "company_projection_sha256": hashlib.sha256(canonical(after)).hexdigest(),
         "fresh_cursor_origins_verified": True, "previous_records_preserved": True,

@@ -25,18 +25,18 @@ def preserved():
     return namespace["_preserved"]
 
 
-def example():
+def example(count=4):
     before = {name: [] for name in ("account.move", "account.move.line", "ap.security.draft.receipt",
         "ap.security.audit.event", "ap.security.po.guard", "ap.security.vendor.guard", "ap.security.workflow.registration",
         "attachments", "purchase.order", "purchase.order.line", "res.partner", "res.partner.bank", "ap.security.approval.nonce")}
     before["account.move"] = [{"id": 1, "state": "draft"}]
     before["auxiliary_counts"] = {"mail.message": 10, "ir.attachment": 0, "account.payment": 0, "mail.mail": 0, "mail.notification": 0}
-    for index in range(4):
+    for index in range(count):
         before["purchase.order"].append({"id": 201 + index, "invoice_status": "to invoice", "amount_total": 10})
         before["purchase.order.line"].append({"id": 401 + index, "qty_invoiced": 0, "qty_to_invoice": 1, "price_unit": 10})
     after = deepcopy(before)
     contexts = []
-    for index in range(4):
+    for index in range(count):
         target, receipt, event = 11 + index, 21 + index, 31 + index
         contexts.append({"workflow": NS(purchase_order_id=201 + index, purchase_line_ids=(401 + index,), vendor_id=301 + index),
             "result": {"receipt": {"move_id": target, "receipt_id": receipt}, "audit_event": {"event_id": event}},
@@ -53,7 +53,7 @@ def example():
             after[name].append(row)
         after["purchase.order"][index]["invoice_status"] = "invoiced"
         after["purchase.order.line"][index].update(qty_invoiced=1, qty_to_invoice=0)
-    after["auxiliary_counts"].update({"mail.message": 14, "ir.attachment": 4})
+    after["auxiliary_counts"].update({"mail.message": 10 + count, "ir.attachment": count})
     return before, after, contexts
 
 
@@ -61,6 +61,70 @@ def test_four_new_drafts_and_audit_allowed_but_not_existing_effects():
     before, after, contexts = example()
     preserved()(before, after, contexts)
     assert before == example()[0]
+
+
+def test_single_new_draft_requires_single_pdf_and_exact_effect_scope():
+    before, after, contexts = example(1)
+    preserved()(before, after, contexts)
+    after["auxiliary_counts"]["ir.attachment"] = 4
+    with pytest.raises(ValueError):
+        preserved()(before, after, contexts)
+
+
+@pytest.mark.parametrize("count", [0, 2, 3, 5])
+def test_only_default_four_or_selected_one_context_allowed(count):
+    before, after, contexts = example(count)
+    with pytest.raises(ValueError):
+        preserved()(before, after, contexts)
+
+
+def selection_functions():
+    def require(value, _check):
+        if not value:
+            raise ValueError("finite probe failure")
+    tree = ast.parse(NATIVE.read_text(encoding="utf-8"))
+    nodes = [node for node in tree.body if isinstance(node, ast.FunctionDef)
+             and node.name in {"_selected", "_configuration"}]
+    namespace = {"require": require}
+    exec(compile(ast.Module(body=nodes, type_ignores=[]), str(NATIVE), "exec"), namespace)
+    return namespace
+
+
+def test_single_selection_is_explicit_and_does_not_mutate_input():
+    functions = selection_functions()
+    rows = [{"fixture_ref": "FIX-" + str(index)} for index in range(4)]
+    original = deepcopy(rows)
+    assert functions["_selected"](rows, None) is rows
+    assert functions["_selected"](rows, "FIX-2") == [rows[2]]
+    assert rows == original
+
+
+@pytest.mark.parametrize("value", [True, 0, "", "FIX-9", " FIX-0", ["FIX-0"]])
+def test_unknown_or_non_string_selection_rejected(value):
+    with pytest.raises(ValueError):
+        selection_functions()["_selected"]([{"fixture_ref": "FIX-0"}], value)
+
+
+def test_duplicate_selection_rejected():
+    with pytest.raises(ValueError):
+        selection_functions()["_selected"]([{"fixture_ref": "FIX-0"}] * 2, "FIX-0")
+
+
+def test_configuration_default_unchanged_single_selection_bound():
+    function = selection_functions()["_configuration"]
+    old = {"origin_input_sha256": "a" * 64, "seed_sha256": "b" * 64,
+           "schema_version": "pilot-a3a-origin-preparation/v1"}
+    assert function("a" * 64, "b" * 64, None) == old
+    assert function("a" * 64, "b" * 64, "FIX-0") == dict(old, selected_fixture_ref="FIX-0")
+
+
+def test_single_envelope_and_count_are_separate_from_default_four():
+    tree = ast.parse(NATIVE.read_text(encoding="utf-8"))
+    function = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "run")
+    text = ast.unparse(function)
+    assert "fixture_ref=None" in text
+    assert "pilot-a3a-origin-single-native/v1" in text and "pilot-a3a-origin-native/v1" in text
+    assert "3 * len(origins)" in text and "for source in selected" in text
 
 
 @pytest.mark.parametrize("mutation", ["old-posted", "new-posted", "new-target", "old-deleted", "extra-receipt",
