@@ -134,3 +134,114 @@ def parse_business_seed(value):
         return PilotBusinessSeed(_validate(value))
     except Exception:
         raise PilotSeedError(_ERROR) from None
+
+
+# DEC-070: administrative input only, deliberately separate from legitimate
+# business facts. No parser reads document notes or changes a C1 allowlist.
+ALTERNATIVES_VERSION = "ap-ipi-pilot-alternative-catalog/v1"
+MAX_ALTERNATIVES_BYTES = 32 * 1024
+_CATALOG_ERROR = "invalid candidate pilot alternative catalog"
+
+
+def _validate_catalog(value):
+    _closed(value, {"schema_version", "split", "status", "synthetic_data", "fiscal_value",
+                    "seed_sha256", "cohort_sha256", "codebook_sha256", "vendor_refs",
+                    "purchase_order_checks", "banks"})
+    _require(value["schema_version"] == ALTERNATIVES_VERSION and value["split"] == "pilot-v0"
+             and value["status"] == "CANDIDATE" and value["synthetic_data"] is True
+             and value["fiscal_value"] is False)
+    for name in ("seed_sha256", "cohort_sha256", "codebook_sha256"):
+        _text(value[name], _HASH)
+    refs = value["vendor_refs"]
+    _require(type(refs) is list and 1 <= len(refs) <= 12)
+    for ref in refs:
+        _text(ref, _REF)
+    _require(refs == sorted(set(refs)))
+    checks = value["purchase_order_checks"]
+    _require(type(checks) is list and 1 <= len(checks) <= 12)
+    for check in checks:
+        _closed(check, {"purchase_order_ref", "item_codes"})
+        _text(check["purchase_order_ref"], _REF)
+        codes = check["item_codes"]
+        _require(type(codes) is list and 1 <= len(codes) <= 50)
+        for code in codes:
+            _text(code, _REF)
+        _require(codes == sorted(set(codes)))
+    po_refs = [row["purchase_order_ref"] for row in checks]
+    _require(po_refs == sorted(set(po_refs)))
+    banks = value["banks"]
+    _require(type(banks) is list and 1 <= len(banks) <= 32)
+    for bank in banks:
+        _closed(bank, {"bank_ref", "owner_vendor_ref"})
+        for ref in bank.values():
+            _text(ref, _REF)
+    bank_refs = [row["bank_ref"] for row in banks]
+    _require(bank_refs == sorted(set(bank_refs)))
+    raw = canonical_json_bytes(value)
+    _require(0 < len(raw) <= MAX_ALTERNATIVES_BYTES)
+    return raw
+
+
+@dataclass(frozen=True, slots=True)
+class PilotAlternativeCatalog:
+    _encoded: bytes = field(repr=False)
+
+    def __post_init__(self):
+        self.to_mapping()
+
+    def to_mapping(self):
+        try:
+            _require(type(self._encoded) is bytes and 0 < len(self._encoded) <= MAX_ALTERNATIVES_BYTES)
+            value = json.loads(self._encoded.decode("utf-8"), object_pairs_hook=_pairs, parse_constant=_constant)
+            _require(_validate_catalog(value) == self._encoded)
+            return value
+        except Exception:
+            raise PilotSeedError(_CATALOG_ERROR) from None
+
+    @property
+    def sha256(self):
+        self.to_mapping()
+        return hashlib.sha256(self._encoded).hexdigest()
+
+
+def parse_alternative_catalog(value):
+    try:
+        return PilotAlternativeCatalog(_validate_catalog(value))
+    except Exception:
+        raise PilotSeedError(_CATALOG_ERROR) from None
+
+
+def parse_alternative_source(raw):
+    """Import explicit human-editable JSON once; stored catalogs stay canonical."""
+    try:
+        _require(type(raw) is bytes and 0 < len(raw) <= MAX_ALTERNATIVES_BYTES)
+        return parse_alternative_catalog(json.loads(raw.decode("utf-8"),
+            object_pairs_hook=_pairs, parse_constant=_constant))
+    except Exception:
+        raise PilotSeedError(_CATALOG_ERROR) from None
+
+
+def validate_alternatives(seed, catalog):
+    """Bind explicit administration to known facts, never to model output.
+
+    An absent PO/item relation is intentionally NOT repaired or treated as a
+    valid resolution. The native diagnostic must measure it independently.
+    """
+    try:
+        _require(type(seed) is PilotBusinessSeed and type(catalog) is PilotAlternativeCatalog)
+        business, value = seed.to_mapping(), catalog.to_mapping()
+        _require(value["seed_sha256"] == seed.sha256
+                 and all(value[name] == business[name] for name in ("cohort_sha256", "codebook_sha256")))
+        rows = business["fixtures"]
+        vendors = {row["vendor_ref"] for row in rows}
+        orders = {row["purchase_order_ref"] for row in rows}
+        codes = {line["item_code"] for row in rows for line in row["lines"]}
+        legitimate_banks = {row["approved_bank_ref"] for row in rows}
+        _require(set(value["vendor_refs"]) <= vendors)
+        for check in value["purchase_order_checks"]:
+            _require(check["purchase_order_ref"] in orders and set(check["item_codes"]) <= codes)
+        for bank in value["banks"]:
+            _require(bank["owner_vendor_ref"] in vendors and bank["bank_ref"] not in legitimate_banks)
+        return value
+    except Exception:
+        raise PilotSeedError(_CATALOG_ERROR) from None

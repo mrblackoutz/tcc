@@ -1,11 +1,12 @@
 # DEC-051/054: isolated native proof, never the existing laboratory or a scientific run.
-param([switch]$WithObserved, [switch]$WithDatasetFixtures, [ValidateSet('desktop-linux')][string]$DockerContext, [string]$PilotSeedFile, [string]$PilotA3aOriginFile, [switch]$WithApprovedPost)
+param([switch]$WithObserved, [switch]$WithDatasetFixtures, [ValidateSet('desktop-linux')][string]$DockerContext, [string]$PilotSeedFile, [string]$PilotA3aOriginFile, [switch]$WithApprovedPost, [string]$PilotAlternativesFile)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ($WithDatasetFixtures -and -not $WithObserved) { throw 'Dataset fixture proof requires -WithObserved' }
 if ($PilotSeedFile -and -not ($WithObserved -and $WithDatasetFixtures)) { throw 'Pilot business seed requires -WithObserved -WithDatasetFixtures' }
 if ($PilotA3aOriginFile -and -not $PilotSeedFile) { throw 'A3a origin proof requires -PilotSeedFile' }
 if ($WithApprovedPost -and -not $WithObserved) { throw 'Approved POST handoff requires -WithObserved' }
+if ($PilotAlternativesFile -and -not $PilotSeedFile) { throw 'Pilot alternatives require -PilotSeedFile' }
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
 $ownerLabel = 'tcc.runner.run'
@@ -56,6 +57,7 @@ function Get-RunnerSourceHashes {
     if ($PilotSeedFile) { $paths += @('odoo/probes/runner_pilot_seed_native.py', 'scripts/prepare_pilot_business_seed.py') }
     if ($PilotA3aOriginFile) { $paths += @('odoo/probes/runner_pilot_a3a_origin_native.py', 'scripts/prepare_pilot_a3a_origin.py') }
     if ($WithApprovedPost) { $paths += @('odoo/probes/runner_approved_post_native.py', 'odoo/probes/registered_post_transactions.py') }
+    if ($PilotAlternativesFile) { $paths += 'odoo/probes/runner_pilot_alternatives_native.py' }
     foreach ($path in ($paths | Sort-Object -Unique)) {
         $path = $path -replace '\\', '/'
         if ($path.Contains('..') -or [System.IO.Path]::GetExtension($path) -notin @('.py', '.xml', '.json', '.ps1')) { throw 'Unexpected native proof source' }
@@ -94,6 +96,22 @@ try {
         $seedCheck = ($seedOutput -join '') | ConvertFrom-Json
         if ($seedCheck.status -cne 'PASS' -or $seedCheck.seed_sha256 -cnotmatch '^[0-9a-f]{64}$' -or
             $seedCheck.fixture_count -isnot [int] -or $seedCheck.fixture_count -ne 12) { throw 'Invalid pilot seed summary' }
+    }
+    $alternativesCheck = $null
+    if ($PilotAlternativesFile) {
+        $catalogOutput = @(& python (Join-Path $repositoryRoot 'scripts/prepare_pilot_business_seed.py') --check-alternatives $PilotAlternativesFile --seed-file $PilotSeedFile 2>&1)
+        if ($LASTEXITCODE -ne 0) { throw 'Invalid private pilot alternative catalog' }
+        $alternativesCheck = ($catalogOutput -join '') | ConvertFrom-Json
+        if ($alternativesCheck.status -cne 'PASS' -or $alternativesCheck.catalog_sha256 -cnotmatch '^[0-9a-f]{64}$' -or
+            $alternativesCheck.seed_sha256 -cne $seedCheck.seed_sha256 -or
+            $alternativesCheck.cohort_sha256 -cne $seedCheck.cohort_sha256 -or
+            $alternativesCheck.codebook_sha256 -cne $seedCheck.codebook_sha256) { throw 'Pilot alternative catalog provenance mismatch' }
+        foreach ($name in @('bank_count', 'vendor_count', 'order_count')) {
+            if ($alternativesCheck.$name -isnot [int] -or $alternativesCheck.$name -lt 1) { throw 'Pilot alternative catalog count invalid' }
+        }
+        foreach ($name in @('human_review_complete', 'scientific_execution_allowed')) {
+            if ($alternativesCheck.$name -isnot [bool] -or $alternativesCheck.$name) { throw 'Pilot alternative catalog limits invalid' }
+        }
     }
     $originCheck = $null
     if ($PilotA3aOriginFile) {
@@ -160,6 +178,11 @@ try {
         Copy-Item -LiteralPath $PilotSeedFile -Destination $seedSnapshot
         if ((Get-FileHash -LiteralPath $seedSnapshot -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seedCheck.seed_sha256) { throw 'Pilot seed changed during snapshot' }
     }
+    if ($PilotAlternativesFile) {
+        $catalogSnapshot = Join-Path $artifacts 'pilot-alternatives.json'
+        Copy-Item -LiteralPath $PilotAlternativesFile -Destination $catalogSnapshot
+        if ((Get-FileHash -LiteralPath $catalogSnapshot -Algorithm SHA256).Hash.ToLowerInvariant() -cne $alternativesCheck.catalog_sha256) { throw 'Pilot alternatives changed during snapshot' }
+    }
     if ($PilotA3aOriginFile) {
         $originSnapshot = Join-Path $artifacts 'pilot-a3a-origin.json'
         Copy-Item -LiteralPath $PilotA3aOriginFile -Destination $originSnapshot
@@ -185,6 +208,7 @@ try {
     if ($PilotSeedFile) { $probeArguments += @('--pilot-seed-sha256', $seedCheck.seed_sha256) }
     if ($PilotA3aOriginFile) { $probeArguments += @('--pilot-a3a-origin-sha256', $originCheck.origin_input_sha256) }
     if ($WithApprovedPost) { $probeArguments += '--approved-post-mode' }
+    if ($PilotAlternativesFile) { $probeArguments += @('--pilot-alternatives-sha256', $alternativesCheck.catalog_sha256) }
     $created.network = $true
     $null = Invoke-RunnerDocker @('network', 'create', '--internal', '--label', ($ownerLabel + '=' + $runId), $networkName) 'network-create.log'
     $created.volume = $true
@@ -374,6 +398,39 @@ try {
         $result['pilot_seed_a3a_target_prepared'] = $false
         $result['pilot_seed_alternatives_prepared'] = $false
         $result['pilot_seed_result_sha256'] = (Get-FileHash -LiteralPath $seedResultPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    }
+    if ($PilotAlternativesFile) {
+        Invoke-NativeMode 'pilot-alternatives'
+        Assert-RunnerSources $sourceHashes (Get-RunnerSourceHashes)
+        $catalogResultPath = Join-Path $artifacts 'pilot-alternatives-result.json'
+        $catalogResult = Get-Content -Raw -Encoding UTF8 -LiteralPath $catalogResultPath | ConvertFrom-Json
+        if ($catalogResult.schema_version -cne 'pilot-alternatives-native/v1' -or $catalogResult.status -cne 'PASS' -or
+            $catalogResult.git_base -cne $gitBase -or $catalogResult.source_bundle_sha256 -cne $bundleHash -or
+            $catalogResult.catalog_sha256 -cne $alternativesCheck.catalog_sha256 -or
+            $catalogResult.seed_sha256 -cne $seedCheck.seed_sha256 -or
+            $catalogResult.cohort_sha256 -cne $seedCheck.cohort_sha256 -or
+            $catalogResult.codebook_sha256 -cne $seedCheck.codebook_sha256) { throw 'Pilot alternatives native provenance mismatch' }
+        foreach ($name in @('bank_count', 'vendor_count', 'order_count')) {
+            if ($catalogResult.$name -isnot [int] -or $catalogResult.$name -ne $alternativesCheck.$name) { throw 'Pilot alternatives native count invalid' }
+        }
+        if ($catalogResult.purchase_order_line_gap_count -isnot [int] -or $catalogResult.purchase_order_line_gap_count -lt 0 -or
+            $catalogResult.purchase_order_line_gap_count -ne @($catalogResult.purchase_order_line_gaps).Count -or
+            $catalogResult.purchase_order_line_gaps_sha256 -cnotmatch '^[0-9a-f]{64}$' -or
+            $catalogResult.technical_resolution_complete -isnot [bool] -or
+            $catalogResult.technical_resolution_complete -ne ($catalogResult.purchase_order_line_gap_count -eq 0)) { throw 'Pilot alternatives relation diagnosis invalid' }
+        foreach ($name in @('financial_projection_preserved', 'existing_masters_preserved', 'executor_identity_unchanged', 'fresh_cursor_facts_verified', 'legitimate_business_facts_preserved')) {
+            if ($catalogResult.$name -isnot [bool] -or -not $catalogResult.$name) { throw 'Pilot alternatives native check invalid' }
+        }
+        foreach ($name in @('scientific_run', 'human_review_complete', 'public_executor_enabled', 'approval_generated', 'financial_action_dispatched')) {
+            if ($catalogResult.$name -isnot [bool] -or $catalogResult.$name) { throw 'Pilot alternatives native limit invalid' }
+        }
+        $result.schema_version = 'runner-pilot-alternatives-evidence/v1'
+        $result.decision = 'DEC-070'
+        $result['pilot_alternatives_catalog_sha256'] = $alternativesCheck.catalog_sha256
+        $result['pilot_alternatives_bank_count'] = $catalogResult.bank_count
+        $result['pilot_alternatives_order_line_gap_count'] = $catalogResult.purchase_order_line_gap_count
+        $result['pilot_alternatives_technical_resolution_complete'] = $catalogResult.technical_resolution_complete
+        $result['pilot_alternatives_result_sha256'] = (Get-FileHash -LiteralPath $catalogResultPath -Algorithm SHA256).Hash.ToLowerInvariant()
     }
     if ($PilotA3aOriginFile) {
         Invoke-NativeMode 'pilot-a3a-origins'

@@ -824,6 +824,26 @@ python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g
 
 **Limites:** provedor simulado e caso de desenvolvimento declarado, não competência LLM ou resistência medida. A fixture foi emitida do CREATE legítimo registrado antes de comparar o candidato; nunca do output corrente para autorizar sua mutação. Não conclui aprovação/materialização dos oito membros A3a, reset/custódia/supervisão reais, aceite humano ou piloto. RUN-02/DATA-06 continuam ativos. O piloto ainda exige fixtures completas, ciclo único e revisão conforme o [backlog](task-backlog.md). Competência C0 será medida durante o piloto; o freeze final vem depois dele.
 
+<a id="cadastros-alternativos-piloto"></a>
+
+### Cadastros alternativos e relação pedido/item — DATA-06 / DEC-070
+
+O [catálogo administrativo separado (DEC-070)](decision-log.md#dec-070) não é extraído automaticamente dos documentos e não altera o seed legítimo. Declara fornecedores existentes, pedidos/itens a conferir e bancos sintéticos com proprietário explícito. A [CLI existente](../scripts/prepare_pilot_business_seed.py) importa JSON editável apenas com `--alternatives-source <fonte-local> --seed-file <seed-local> --output-root <diretório-local>`, todos absolutos na `.runtime`. Rejeita duplicatas/campos extras, colisão com bancos legítimos e divergência de proveniência; grava uma única vez `<hash>.json`. `--check-alternatives <catálogo> --seed-file <seed>` apenas confere e imprime hashes/contagens, sem referências ou notas. Não regenerar arquivos imutáveis no mesmo caminho.
+
+Reproduzir com seed e catálogo revisados localmente, sem publicar seus valores:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_runner_native.ps1 -WithObserved -WithDatasetFixtures -DockerContext desktop-linux -PilotSeedFile <caminho-absoluto-seed> -PilotAlternativesFile <caminho-absoluto-catalogo>
+```
+
+O [complemento nativo](../odoo/probes/runner_pilot_alternatives_native.py) roda depois da carga das bases e antes das origens A3a, quando solicitadas juntas. Cria somente bancos ausentes na empresa sintética descartável, com confiança administrativa normal e proprietário explícito; não inclui esses bancos nas referências aprovadas do workflow. Confere fatos legítimos/financeiros, registros anteriores, identidade e bancos exatos em cursor novo após commit. Fornecedor/pedido ausente ou ambíguo interrompe o preparo. Pedido existente sem o item exigido gera diagnóstico separado, **não reparo**: `purchase_order_line_gap_count > 0` mantém `technical_resolution_complete=false`. `PASS` atesta a carga e o diagnóstico, não que todas as fixtures estejam prontas. O resultado concreto fica na `.runtime`, nunca em Git.
+
+**Prova nativa em 21/10/2026:** ensaio `d97e1d8084264d7caf415125905057bb`, `PASS` para cinco bancos, um fornecedor/pedido já existentes e diagnóstico de uma relação pedido/item ausente. As 12 bases legítimas, projeção financeira, cadastros anteriores e identidade permaneceram intactos em cursor novo após commit. Nove casos históricos/68 leituras JSON-2 e dois doubles de fixture também passaram; não são execuções extras do piloto. Conferidos 122 arquivos correntes/snapshots, fonte estável e cleanup dos recursos próprios.
+
+Proveniência: base Git `88350583510301901bd5e1e8eeab1f0507da1eaa` com alterações no bundle `fa7fd8fcac22c83edc3de0a40caaebabeb20aa1bf123b19083719d8bffbffa39`; a base sozinha não contém o incremento. Catálogo local SHA-256 `6099b151e7d514fdb4b7fffb37eed01b8069de518f4e999afd8535681042f7bd`, ligado ao seed/coorte/codebook anteriores, sem regenerá-los. Resultado nativo SHA-256 `50915fa26b2c93bce5dfc33a5a497b37f2cbc0e1ee522489c84b976fb51cf2fc`.
+
+**Regressão:** 5.198 testes offline passaram em 247,55 s, incluindo 93 novos, sem skips. Markdown corrente/codebook, sintaxe PowerShell, hashes e segurança conferidos. O primeiro focal exigiu acesso autorizado ao diretório temporário externo e correção de uma substring ambígua no teste, sem retirar negativas. O importador de fonte editável foi separado da leitura estritamente canônica do catálogo. A lacuna A1 precisa de decisão explícita de preparo/revisão antes do piloto; não houve reparo ou promoção de prontidão. Este complemento não despacha proposta C0/C1, token/POST ou API externa, nem concede revisão humana ou aceite científico. DATA-06 permanece `ACTIVE`.
+
 ### Construir e verificar apenas a imagem Odoo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_odoo_image.ps1

@@ -112,3 +112,102 @@ def test_codebook_drift_refuses_output(cli, local, monkeypatch, capsys):
 def test_check_cannot_mix_generation_arguments(cli, local, extra, capsys):
     assert cli["main"](["--check", str(local / "absent.json"), *extra]) == 1
     assert "FAIL" in capsys.readouterr().out
+
+
+def test_alternative_catalog_check_bound_readonly_and_sanitized(cli, local, capsys):
+    from test_pilot_seed import sample_seed
+    from test_pilot_alternatives import sample_catalog
+    from tcc_gateway.pilot_seed_contract import parse_business_seed, parse_alternative_catalog
+    seed = parse_business_seed(sample_seed())
+    catalog = parse_alternative_catalog(sample_catalog(seed))
+    seed_path, path = local / "seed.json", local / "catalog.json"
+    seed_path.write_bytes(seed._encoded)
+    path.write_bytes(catalog._encoded)
+    assert cli["main"](["--check-alternatives", str(path), "--seed-file", str(seed_path)]) == 0
+    output = capsys.readouterr().out
+    result = json.loads(output)
+    assert result["catalog_sha256"] == catalog.sha256 and result["seed_sha256"] == seed.sha256
+    assert result["bank_count"] == result["vendor_count"] == result["order_count"] == 1
+    assert result["human_review_complete"] is result["scientific_execution_allowed"] is False
+    assert all(text not in output for text in ("BANK-", "VENDOR-", "PO-01", str(local)))
+    assert path.read_bytes() == catalog._encoded and seed_path.read_bytes() == seed._encoded
+
+
+@pytest.mark.parametrize("kind", ["missing-seed", "wrong-seed", "malformed", "noncanonical", "output", "cohort", "mixed"])
+def test_catalog_cli_requires_separate_bound_canonical_private_input(cli, local, capsys, kind):
+    from test_pilot_seed import sample_seed
+    from test_pilot_alternatives import sample_catalog
+    from tcc_gateway.pilot_seed_contract import parse_business_seed, parse_alternative_catalog
+    seed = parse_business_seed(sample_seed())
+    value = sample_catalog(seed)
+    if kind == "wrong-seed":
+        value["seed_sha256"] = "e" * 64
+    catalog = parse_alternative_catalog(value)
+    seed_path, path = local / "seed.json", local / "PRIVATE-MARKER.json"
+    seed_path.write_bytes(seed._encoded)
+    raw = b'{"PRIVATE-MARKER":NaN}' if kind == "malformed" else catalog._encoded
+    if kind == "noncanonical":
+        raw += b"\n"
+    path.write_bytes(raw)
+    args = ["--check-alternatives", str(path)]
+    if kind != "missing-seed":
+        args.extend(["--seed-file", str(seed_path)])
+    if kind == "output":
+        args.extend(["--output-root", str(local)])
+    elif kind == "cohort":
+        args.extend(["--cohort-sha256", "a" * 64])
+    elif kind == "mixed":
+        args = ["--check", str(seed_path), "--seed-file", str(seed_path)]
+    assert cli["main"](args) == 1
+    assert capsys.readouterr().out == '{"status":"FAIL","code":"PILOT_BUSINESS_SEED_INVALID"}\n'
+    assert path.read_bytes() == raw
+
+
+def test_prepare_explicit_catalog_is_exclusive_and_does_not_read_notes(cli, local, capsys):
+    from test_pilot_seed import sample_seed
+    from test_pilot_alternatives import sample_catalog
+    from tcc_gateway.pilot_seed_contract import parse_business_seed
+    seed = parse_business_seed(sample_seed())
+    seed_path, source = local / "seed.json", local / "source.json"
+    seed_path.write_bytes(seed._encoded)
+    source.write_text(json.dumps(sample_catalog(seed), indent=2), encoding="utf-8")
+    before = source.read_bytes()
+    args = ["--alternatives-source", str(source), "--seed-file", str(seed_path), "--output-root", str(local)]
+    assert cli["main"](args) == 0
+    result = json.loads(capsys.readouterr().out)
+    prepared = local / (result["catalog_sha256"] + ".json")
+    assert prepared.is_file() and result["scientific_execution_allowed"] is False
+    raw = prepared.read_bytes()
+    assert cli["main"](args) == 1
+    assert capsys.readouterr().out == '{"status":"FAIL","code":"PILOT_BUSINESS_SEED_INVALID"}\n'
+    assert prepared.read_bytes() == raw and source.read_bytes() == before
+
+
+@pytest.mark.parametrize("kind", ["no-output", "missing-source", "outside-catalog", "outside-source", "oversized"])
+def test_catalog_paths_and_generation_limits_are_fail_closed(cli, local, capsys, kind):
+    from test_pilot_seed import sample_seed
+    from test_pilot_alternatives import sample_catalog
+    from tcc_gateway.pilot_seed_contract import parse_business_seed, parse_alternative_catalog, MAX_ALTERNATIVES_BYTES
+    seed = parse_business_seed(sample_seed())
+    catalog = parse_alternative_catalog(sample_catalog(seed))
+    seed_path, source = local / "seed.json", local / "PRIVATE-MARKER.json"
+    seed_path.write_bytes(seed._encoded)
+    if kind != "missing-source":
+        source.write_bytes(catalog._encoded if kind != "oversized" else b" " * (MAX_ALTERNATIVES_BYTES + 1))
+    if kind.startswith("outside-"):
+        with TemporaryDirectory(prefix="tcc-catalog-negative-") as directory:
+            external = Path(directory) / source.name
+            external.write_bytes(catalog._encoded)
+            operation = "--check-alternatives" if kind == "outside-catalog" else "--alternatives-source"
+            args = [operation, str(external), "--seed-file", str(seed_path)]
+            if operation == "--alternatives-source":
+                args += ["--output-root", str(local)]
+            assert cli["main"](args) == 1
+            assert capsys.readouterr().out == '{"status":"FAIL","code":"PILOT_BUSINESS_SEED_INVALID"}\n'
+            assert external.read_bytes() == catalog._encoded
+        return
+    args = ["--alternatives-source", str(source), "--seed-file", str(seed_path)]
+    if kind != "no-output":
+        args += ["--output-root", str(local)]
+    assert cli["main"](args) == 1
+    assert capsys.readouterr().out == '{"status":"FAIL","code":"PILOT_BUSINESS_SEED_INVALID"}\n'
