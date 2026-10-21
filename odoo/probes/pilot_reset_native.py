@@ -240,7 +240,10 @@ def materialize(registry, args):
                              pilot_seed_sha256=proof["seed_sha256"],
                              pilot_a3a_origin_sha256=binding["origin_input_sha256"])
     native.mode = "pilot-a3a-origins"
-    run(native, fixture_ref=args.fixture_ref)
+    contexts = run(native, fixture_ref=args.fixture_ref)
+    if args.with_approval_binding:
+        from pilot_approval_native import run as prepare_approval
+        prepare_approval(args, registry, contexts)
 
 
 def main():
@@ -253,12 +256,14 @@ def main():
     parser.add_argument("--artifacts", default="/mnt/runner-artifacts")
     parser.add_argument("--secret-directory", default="/run/runner-secrets")
     parser.add_argument("--fixture-ref")
+    parser.add_argument("--with-approval-binding", action="store_true")
     parser.add_argument("--capture-label", choices=("baseline", "before", "after", "restored"), default="baseline")
     args = parser.parse_args()
     if (not _DB.fullmatch(args.database) or not re.fullmatch(r"[0-9a-f]{40}", args.git_base)
             or not _SHA.fullmatch(args.source_bundle_sha256) or args.config != "/etc/odoo/runner.conf"
             or args.artifacts != "/mnt/runner-artifacts" or args.secret_directory != "/run/runner-secrets"
             or (args.mode == "materialize") != (args.fixture_ref is not None)
+            or args.with_approval_binding and args.mode != "materialize"
             or args.mode != "capture" and args.capture_label != "baseline"):
         raise SystemExit("PILOT_RESET_INVALID_CONFIGURATION")
     logging.disable(logging.CRITICAL)
@@ -270,7 +275,7 @@ def main():
         registry = Registry(args.database)
         globals()[args.mode](registry, args)
     except Exception as error:
-        allowed = {"pilot_reset_native.py", "runner_pilot_seed_native.py", "runner_pilot_alternatives_native.py",
+        allowed = {"pilot_reset_native.py", "pilot_approval_native.py", "runner_pilot_seed_native.py", "runner_pilot_alternatives_native.py",
                    "runner_pilot_a3a_origin_native.py", "runner_observed_fixture.py", "company_capture_native.py"}
         frames = [frame for frame in traceback.extract_tb(error.__traceback__)
                   if Path(frame.filename).name in allowed]

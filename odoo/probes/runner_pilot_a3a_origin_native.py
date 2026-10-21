@@ -280,3 +280,4 @@ def run(args, *, fixture_ref=None):
         "approval_generated": False, "post_executed": False, "counterpart_targets_prepared": False,
         "alternatives_prepared": False,
     })
+    return tuple(contexts)

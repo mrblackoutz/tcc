@@ -1,7 +1,8 @@
 """DEC-073 pilot preparation specialization of the existing snapshot harness.
 
-Eight administrative CREATE origins, sixteen real restorations. No provider,
-approval or scientific execution. Concrete inputs/evidence remain ignored.
+Eight administrative CREATE origins, sixteen real restorations. DEC-074 adds
+opt-in in-memory approval binding; no POST, provider or scientific execution.
+Concrete inputs/evidence remain ignored.
 """
 
 import argparse
@@ -82,8 +83,38 @@ def read_capture(path, binding):
     return parse_company_capture(value, binding)
 
 
+def validate_approval_result(result, *, fixture_ref, scenario_id, document_sha256,
+                             origin_input_sha256, seed_sha256, cohort_sha256,
+                             codebook_sha256, git_base, source_bundle_sha256):
+    """Closed, hash-only native evidence; never promote a RunRecord boolean."""
+    expected = dict(fixture_ref=fixture_ref, scenario_id=scenario_id, document_sha256=document_sha256,
+        origin_input_sha256=origin_input_sha256, seed_sha256=seed_sha256, cohort_sha256=cohort_sha256,
+        codebook_sha256=codebook_sha256, git_base=git_base, source_bundle_sha256=source_bundle_sha256)
+    enabled = {"approval_generated", "approval_verified", "read_only_confirmed", "executor_identity_unchanged"}
+    disabled = {"nonce_reserved", "post_executed", "external_provider_called", "scientific_run",
+                "human_review_complete", "public_executor_enabled"}
+    hashes = {"action_sha256", "approval_sha256", "nonce_sha256"}
+    keys = set(expected) | enabled | disabled | hashes | {
+        "schema_version", "status", "approval_count", "negative_check_count", "profile"}
+    require(type(result) is dict and set(result) == keys
+            and all(result[name] == value for name, value in expected.items())
+            and result["schema_version"] == "pilot-a3a-approval-native/v1" and result["status"] == "PASS"
+            and result["profile"] == "c111-development-utc-minus60-plus600/v1"
+            and type(result["approval_count"]) is int and result["approval_count"] == 1
+            and type(result["negative_check_count"]) is int and result["negative_check_count"] == 20
+            and all(result[name] is True for name in enabled)
+            and all(result[name] is False for name in disabled)
+            and all(type(result[name]) is str and re.fullmatch(r"sha256:[0-9a-f]{64}", result[name])
+                    for name in hashes), "INVALID_PILOT_APPROVAL_RESULT")
+    return deepcopy(result)
+
+
 class PilotResetHarness(StateHarness):
-    def __init__(self, *, seed_file, alternatives_file, origin_files, **kwargs):
+    with_approval_binding = False
+
+    def __init__(self, *, seed_file, alternatives_file, origin_files, with_approval_binding=False, **kwargs):
+        require(type(with_approval_binding) is bool, "INVALID_APPROVAL_BINDING_MODE")
+        self.with_approval_binding = with_approval_binding
         seed = _read_private(seed_file, PilotBusinessSeed, MAX_SEED_BYTES)
         catalog = _read_private(alternatives_file, PilotAlternativeCatalog, MAX_ALTERNATIVES_BYTES)
         require(type(origin_files) in (list, tuple) and len(origin_files) == 2, "INVALID_PILOT_INPUTS")
@@ -121,6 +152,8 @@ class PilotResetHarness(StateHarness):
                    "--capture-label", capture_label]
         if fixture_ref is not None:
             command += ["--fixture-ref", fixture_ref]
+        if mode == "materialize" and self.with_approval_binding:
+            command.append("--with-approval-binding")
         self.containers.add(name)
         self.docker([*arguments, "--entrypoint", "python", self.odoo_image, *command], timeout=240)
         self.remove_container(name)
@@ -203,6 +236,14 @@ class PilotResetHarness(StateHarness):
                     require(result[flag] is True, "INVALID_UNIT_ORIGIN_RESULT")
                 for flag in ("scientific_run", "human_review_complete", "public_executor_enabled", "approval_generated", "post_executed"):
                     require(result[flag] is False, "INVALID_UNIT_ORIGIN_RESULT")
+                approval = None
+                if self.with_approval_binding:
+                    approval = validate_approval_result(read_record(artifacts / "pilot-a3a-approval-result.json"),
+                        fixture_ref=source["fixture_ref"], scenario_id=source["document"]["scenario_id"],
+                        document_sha256=source["document"]["document_sha256"], origin_input_sha256=package.sha256,
+                        seed_sha256=self.seed.sha256, cohort_sha256=self.proof_inputs["cohort_sha256"],
+                        codebook_sha256=self.proof_inputs["codebook_sha256"], git_base=self.git_base,
+                        source_bundle_sha256=self.bundle_hash)
                 self.native("capture", database, data, artifacts, capture_label="after")
                 after = read_capture(artifacts / "after.capture.json", self.binding)
                 before_rows, after_rows = before.to_mapping()["records"], after.to_mapping()["records"]
@@ -222,8 +263,13 @@ class PilotResetHarness(StateHarness):
                     "before_sha256": before.reset_sha256, "after_sha256": after.reset_sha256,
                     "restored_sha256": restored.reset_sha256, "negative_binding_checks": 3,
                     "origin_result_sha256": sha256(artifacts / "pilot-a3a-origin-result.json")})
+                if approval is not None:
+                    cases[-1]["approval"] = approval
                 print("PILOT_MATERIALIZATION_RESET_CASE_PASS_" + str(len(cases)), flush=True)
         require(len(cases) == 8 and len({row["document_sha256"] for row in cases}) == 8, "INCOMPLETE_PILOT_MATRIX")
+        if self.with_approval_binding:
+            for name in ("action_sha256", "approval_sha256", "nonce_sha256"):
+                require(len({case["approval"][name] for case in cases}) == 8, "PILOT_APPROVAL_IDENTITY_REUSED")
         self.result = {"schema_version": "pilot-materialization-reset-evidence/v1", "decision": "DEC-073",
             "status": "TESTS_PASSED_CLEANUP_PENDING", "git_base": self.git_base,
             "source_bundle_sha256": self.bundle_hash, "source_sha256": self.source_map, **self.pins,
@@ -234,6 +280,12 @@ class PilotResetHarness(StateHarness):
             "external_provider_called": False, "existing_lab_touched": False, "public_executor_enabled": False,
             "approval_generated": False, "post_executed": False, "c0_c1_comparison_performed": False,
             "reset_mechanism": "postgres-custom-dump-and-full-filestore-new-clones"}
+        if self.with_approval_binding:
+            self.result.update(schema_version="pilot-materialization-approval-reset-evidence/v1", decision="DEC-074",
+                approval_generated=True, approval_binding_count=8,
+                approval_negative_check_count=sum(case["approval"]["negative_check_count"] for case in cases),
+                nonce_reserved=False, approval_custody_between_phases=False,
+                operational_approval_profile_ratified=False, run_record_approval_attribution_performed=False)
         self.write_evidence()
 
 
@@ -243,11 +295,14 @@ def main(argv=None):
     parser.add_argument("--alternatives-file", type=Path, required=True)
     parser.add_argument("--origin-files", type=Path, nargs=2, required=True)
     parser.add_argument("--docker-context", choices=("desktop-linux",))
+    parser.add_argument("--with-approval-binding", action="store_true",
+                        help="DEC-074 in-memory technical binding only; no POST or durable custody")
     args = parser.parse_args(argv)
     instance = None
     try:
         instance = PilotResetHarness(seed_file=args.seed_file, alternatives_file=args.alternatives_file,
-                                    origin_files=args.origin_files, docker_context=args.docker_context)
+                                    origin_files=args.origin_files, docker_context=args.docker_context,
+                                    with_approval_binding=args.with_approval_binding)
         instance.run()
     except (ValueError, OSError, subprocess.SubprocessError, KeyError, TypeError):
         if instance is not None:
