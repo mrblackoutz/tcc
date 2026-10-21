@@ -8,6 +8,7 @@ Artifact hashes detect mix-ups, not a hostile administrator or SQL owner.
 
 import asyncio
 from copy import deepcopy
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 import json
 import math
@@ -29,11 +30,11 @@ from tcc_gateway.operational_observation import (
 )
 from tcc_gateway.pdf_ingestion import extract_pdf_text
 from tcc_gateway.pilot_llm_runner import LLMStageResult, run_llm_stage
-from tcc_gateway.policy_contracts import DependencyStatus
+from tcc_gateway.policy_contracts import ApprovalFixture, DependencyStatus, ReasonCode
 from tcc_gateway.policy_engine import POLICY_VERSION
 from tcc_gateway.runner_contract_v2 import (
     build_client_request_v2, prepare_c1_observed_draft_command_v2,
-    proposal_from_llm_stage_v2,
+    prepare_c1_observed_post_command_v2, proposal_from_llm_stage_v2,
 )
 from tcc_gateway.state import canonical_json_bytes, canonical_json_sha256
 from tcc_gateway.trusted_resolution import TrustedStateResolutionError, TrustedWorkflow, canonicalize_proposal
@@ -469,11 +470,75 @@ def policy(args):
     write_artifact(artifacts / "observed-policy.json", value)
 
 
+def approved_post_policy(args):
+    """DEC-069 real observed handoff; persist no token, send no financial RPC."""
+    require(args.approved_post_mode)
+    artifacts = Path(args.artifacts)
+    manifest = parse_manifest(read_artifact(artifacts / "observed-manifest.json"), args)
+    candidates = parse_candidates(read_artifact(artifacts / "observed-candidates.json"), manifest)
+    index = CASES.index("observed_post_without_approval")
+    case, saved = manifest["cases"][index], candidates[index]
+    before = canonical_json_sha256(saved)
+    observation_value = read_artifact(artifacts / "approved-post-observation.json")
+    require(observation_value["schema_version"] == "approved-post-observation/v1"
+            and observation_value["status"] == "PASS" and observation_value["read_only_confirmed"] is True
+            and observation_value["action_sha256"] == saved["action_sha256"])
+    _same_provenance(observation_value, manifest)
+    transport_value = read_artifact(Path(args.secret_directory) / "approved-post-fixture.json")
+    _closed(transport_value, {"schema_version", *PROVENANCE_KEYS, "approval"})
+    require(transport_value["schema_version"] == "approved-post-transport/v1")
+    _same_provenance(transport_value, manifest)
+    fixture = ApprovalFixture.from_mapping(transport_value["approval"])
+    require(canonical_json_sha256(fixture.to_mapping()) == observation_value["approval_sha256"])
+    binding = ObservationBinding.from_mapping(case["binding"])
+    observation = parse_registered_observation(observation_value["observation"], binding)
+    document = extract_pdf_text(artifacts / (case["name"] + ".pdf"))
+    stage = parse_candidate(saved, case, document)
+    preflight = observation.to_mapping()["preflight"]
+    dependencies = DependencyStatus(preflight["state"], "AVAILABLE", preflight["audit"])
+    token = (Path(args.secret_directory) / "reader.key").read_text(encoding="utf-8").strip()
+    require(bool(token))
+    config = OdooConfig(base_url="http://odoo:8069", database=args.database, api_token=token)
+    with OdooJson2Client(config, transport=ReadDiagnosticTransport()) as native:
+        caller = ReadonlyCaller(native)
+        observed = read_observed_trusted_state(caller, parse_workflow(case["workflow"]), observation, binding,
+            dependencies=dependencies, policy_version=case["policy_version"])
+        now = datetime.now(timezone.utc)
+        options = dict(observed=observed, policy_version=case["policy_version"],
+            evaluated_at=now.isoformat(timespec="microseconds").replace("+00:00", "Z"),
+            expires_at=(now + timedelta(seconds=300)).isoformat(timespec="microseconds").replace("+00:00", "Z"))
+        prepared = prepare_c1_observed_post_command_v2(saved["request"], stage, approval_fixture=fixture, **options)
+        require(prepared.decision.decision == "REVIEW" and prepared.command is not None
+                and prepared.approval_rejection is None and len(caller.calls) > 0)
+        for supplied, reason in ((None, ReasonCode.APPROVAL_INVALID),
+            (replace(fixture, canonical_action_hash="sha256:" + "0" * 64), ReasonCode.APPROVAL_HASH_MISMATCH),
+            (replace(fixture, scenario_id="TCC-OTHER-APPROVAL-SCENARIO"), ReasonCode.APPROVAL_SCENARIO_MISMATCH)):
+            rejected = prepare_c1_observed_post_command_v2(saved["request"], stage, approval_fixture=supplied, **options)
+            require(rejected.command is None and rejected.decision.decision == "REVIEW"
+                    and rejected.approval_rejection == reason)
+    token = None
+    require(canonical_json_sha256(saved) == before)
+    command = prepared.command.to_mapping()
+    without_token = {name: value for name, value in command.items() if name != "approval"}
+    write_artifact(artifacts / "approved-post-policy.json", {
+        "schema_version": "approved-post-policy/v1", "status": "PASS",
+        **{name: manifest[name] for name in PROVENANCE_KEYS},
+        "command_without_approval": without_token, "command_sha256": canonical_json_sha256(command),
+        "approval_sha256": canonical_json_sha256(fixture.to_mapping()),
+        "request_sha256": saved["request_sha256"], "action_sha256": saved["action_sha256"],
+        "native_json2_request_count": len(caller.calls), "negative_binding_checks": 3,
+        "original_candidate_preserved": True, "readonly_gateway": True,
+        "provider_mocked": True, "external_provider_called": False, "scientific_run": False,
+    })
+
+
 def run(args):
     """Closed gateway half of the native entry point; never a financial phase."""
     mode = getattr(args, "mode", None)
-    require(type(mode) is str and mode in {"candidate", "policy"})
+    require(type(mode) is str and mode in {"candidate", "policy", "approved-post-policy"})
     if mode == "candidate":
         candidate(args)
+    elif mode == "approved-post-policy":
+        approved_post_policy(args)
     else:
         policy(args)

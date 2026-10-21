@@ -1,14 +1,15 @@
 """Ponte pré-freeze do estágio LLM para C0, política C1 e proposta do oráculo.
 
 Não é um runner experimental completo. C0 pode despachar uma operação; C1
-prepara política e, quando ALLOW, comando CREATE para consumidores privados. Nenhum resultado
+prepara política e, quando ALLOW, comando CREATE para consumidores privados; o handoff
+POST observado exige REVIEW e fixture pré-emitida, ainda sujeita ao verificador privado. Nenhum resultado
 desta ponte comprova efeito, aprovação, reset ou captura de estado de §14.5.
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Literal
 
 from .action_proposal_v2 import ActionProposalV2, revalidate_action_proposal_v2
@@ -27,7 +28,7 @@ from .operational_observation import (
 from .pdf_ingestion import ExtractedPdf
 from .pilot_llm_runner import LLMStageResult
 from .policy_contracts import (
-    CapabilityCommand, DenyClass, PolicyContractError, PolicyDecision, PolicyInput, ReasonCode,
+    ApprovalFixture, CapabilityCommand, DenyClass, PolicyContractError, PolicyDecision, PolicyInput, ReasonCode,
 )
 from .policy_engine import evaluate_policy
 from .state import canonical_json_sha256
@@ -226,6 +227,60 @@ def prepare_c1_observed_draft_command_v2(
         )
         command.validate_binding(policy_input)
     return C1DraftPreparation(policy_input, decision, command)
+
+
+@dataclass(frozen=True, slots=True)
+class C1PostPreparation:
+    """POST handoff only: the private executor MUST verify MAC/state/nonce.
+
+    A matching token is not proof of a valid approval. Missing/mismatched
+    fixtures never produce a command and do not rewrite the policy's REVIEW.
+    """
+
+    policy_input: PolicyInput
+    decision: PolicyDecision
+    command: CapabilityCommand | None = field(repr=False)
+    approval_rejection: ReasonCode | None
+
+
+def prepare_c1_observed_post_command_v2(
+    request_value: Mapping[str, Any], stage: LLMStageResult,
+    *, observed: ObservedTrustedState, policy_version: str, evaluated_at: str, expires_at: str,
+    approval_fixture: ApprovalFixture | None,
+) -> C1PostPreparation:
+    """DEC-069: attach an independently preissued fixture, never sign a proposal.
+
+    The existing observed consumer validates the v2 stage, exact candidate
+    observation and real policy first. No argument, phase, target, token or
+    decision is repaired here. Crypto/clock/identity/nonce/TOCTOU validation
+    remains mandatory in the private registered POST executor.
+    """
+    prepared = prepare_c1_observed_draft_command_v2(
+        request_value, stage, observed=observed, policy_version=policy_version,
+        evaluated_at=evaluated_at, expires_at=expires_at,
+    )
+    action, decision = prepared.policy_input.action, prepared.decision
+    if action.action != "POST_VENDOR_BILL" or action.executor_mode != "POST_APPROVED":
+        raise RunnerContractError("observed POST consumer requires a POST proposal")
+    if decision.decision == "DENY":
+        return C1PostPreparation(prepared.policy_input, decision, None, None)
+    if decision.decision != "REVIEW" or prepared.command is not None:
+        raise RunnerContractError("POST requires an unmodified REVIEW decision")
+    if approval_fixture is None:
+        return C1PostPreparation(prepared.policy_input, decision, None, ReasonCode.APPROVAL_INVALID)
+    try:
+        if type(approval_fixture) is not ApprovalFixture:
+            raise PolicyContractError("typed preissued approval required")
+        fixture = ApprovalFixture.from_mapping(approval_fixture.to_mapping())
+    except (AttributeError, TypeError, ValueError, OverflowError, RecursionError):
+        raise RunnerContractError("invalid preissued approval fixture") from None
+    if fixture.scenario_id != action.scenario_id:
+        return C1PostPreparation(prepared.policy_input, decision, None, ReasonCode.APPROVAL_SCENARIO_MISMATCH)
+    if fixture.canonical_action_hash != action.action_hash:
+        return C1PostPreparation(prepared.policy_input, decision, None, ReasonCode.APPROVAL_HASH_MISMATCH)
+    command = CapabilityCommand(action, decision, idempotency_key_for_resolved(observed.resolved), fixture)
+    command.validate_binding(prepared.policy_input)
+    return C1PostPreparation(prepared.policy_input, decision, command, None)
 
 
 @dataclass(frozen=True, slots=True)

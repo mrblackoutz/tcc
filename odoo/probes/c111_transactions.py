@@ -288,7 +288,7 @@ class Probe:
         scope.key = self.ApprovalKey(company_id=self.company_id, key_id="tcc-c111-runtime-v1", material=secrets.token_bytes(32))
         scope.authority = self.ApprovalAuthority(
             company_id=self.company_id, executor_user_id=self.user_id, fixture_id="TCC-C111-APR",
-            scenario_id="TCC-SCN-001", approver_ref="TCC-C111-SYNTHETIC-APPROVER",
+            scenario_id=scope.workflow.scenario_id, approver_ref="TCC-C111-SYNTHETIC-APPROVER",
             nonce=nonce or secrets.token_urlsafe(24), issued_at=issued, expires_at=expires, key_id=scope.key.key_id)
         action = dict(copy.deepcopy(scope.command["action"]), action="POST_VENDOR_BILL",
                       executor_mode="POST_APPROVED", target_move_id=scope.result["receipt"]["move_id"])

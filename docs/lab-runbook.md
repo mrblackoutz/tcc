@@ -798,6 +798,32 @@ As doze negativas são três por par: outro PDF na inscrição original, outro c
 python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g3c_topology.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-a3a-origin-final-20261020
 ```
 
+<a id="handoff-post-observado"></a>
+
+### Handoff observado de POST com fixture pré-emitida — RUN-02 / DEC-069
+
+O [consumidor POST v2](../gateway/src/tcc_gateway/runner_contract_v2.py), sob [ligação da aprovação ao despacho (DEC-069)](decision-log.md#dec-069), recebe proposta do estágio v2, observação registrada e fixture emitida previamente por configuração legítima. Reusa a leitura/política observada existente. Só REVIEW de POST com cenário/hash exatos produz comando; ausência/troca de fixture ou política DENY não produz comando. Não muda REVIEW para ALLOW, não assina output, corrige parâmetros ou fabrica POST a partir do dataset. A assinatura ainda **não** está verificada no gateway: MAC, relógio, identidade, nonce, origem e estado são obrigatoriamente conferidos no add-on privado.
+
+O complemento usa o mesmo caso POST de desenvolvimento dos nove casos históricos, depois de validá-los. Não exige a coorte local nem gera outro dataset. Reproduzir com imagens já fixadas/disponíveis:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_runner_native.ps1 -WithObserved -WithDatasetFixtures -WithApprovedPost -DockerContext desktop-linux
+```
+
+`-WithApprovedPost` exige `-WithObserved`. Sem a nova opção não há emissão de token/POST adicional. O [probe nativo](../odoo/probes/runner_approved_post_native.py) usa o helper de aprovação existente com cenário do workflow, não o cenário fixo antigo. Chave/autoridade ficam em arquivo `0600` no `/tmp` exclusivo do Odoo; apenas o token de transporte vai ao tmpfs compartilhado como `0640`, montado somente leitura no gateway. Não há chave no gateway/cliente LLM ou token nos artefatos persistidos. O nativo produz nova observação registrada; o gateway a valida, lê fatos por JSON-2 com identidade somente leitura e prepara o comando. O artefato mantém comando **sem** token e hashes; o nativo reanexa apenas a fixture original e exige igualdade do hash integral antes de verificar/executar. O tmpfs desaparece com a limpeza dos recursos próprios.
+
+**Prova nativa em 21/10/2026:** `PASS` no ensaio `01a73844b93648878dc2e835b0d3ac70`, com 12 leituras JSON-2 adicionais, três negativas de vínculo no gateway, um MAC inválido negado/auditado no Odoo, um POST legítimo confirmado em cursor novo e um replay com mesmo recibo/nonce/PDF, sem segundo efeito financeiro. O replay incrementa exatamente as duas guardas do fornecedor/PO em uma unidade, como exige o kernel; não é efeito financeiro nem permissão para alterar outras guardas. Recibo, evento e PDF originais, nonce consumido e identidade foram conferidos. Nove casos históricos e dois doubles anteriores também passaram, em fases separadas. Fontes estáveis e cleanup confirmados; sem API externa, laboratório persistente ou `execute` público.
+
+Proveniência: base Git `b90c732d524c8c8c7fdbda16019e54191d4e2747`, com alterações identificadas pelo bundle de 121 fontes `25abc29edc529960a65fcb5b615d4bde0995ab0c0e93707065715713a3262aff`. A base sozinha não continha o incremento. SHA-256 do resultado nativo `2ef8322e16a1616c71ef51c3ca103da2fc371bf516f860f70f4cc4cafa04e460`; fontes correntes conferem os snapshots. A primeira tentativa `112278d0…` parou no limite do transporte privado: foi trocado o inventário integral pelo seu hash e conferido o mount tmpfs do serviço, sem ampliar limites ou retirar o teste. Tentativa preservada, não contabilizada como sucesso.
+
+**Regressão da fonte final:** 5.105 testes offline passaram em 238,86 s, incluindo 29 novos, sem skips. Cobrem vínculo exato/ausente/divergente, política DENY, estágio/observação, paridade com verificador criptográfico independente, transporte sem token persistido e preservação de efeitos/guardas no replay. São distintos da prova Odoo acima. Reproduzir:
+
+```powershell
+python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g3c_topology.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-approved-post-final-20261021
+```
+
+**Limites:** provedor simulado e caso de desenvolvimento declarado, não competência LLM ou resistência medida. A fixture foi emitida do CREATE legítimo registrado antes de comparar o candidato; nunca do output corrente para autorizar sua mutação. Não conclui aprovação/materialização dos oito membros A3a, reset/custódia/supervisão reais, aceite humano ou piloto. RUN-02/DATA-06 continuam ativos. O piloto ainda exige fixtures completas, ciclo único e revisão conforme o [backlog](task-backlog.md). Competência C0 será medida durante o piloto; o freeze final vem depois dele.
+
 ### Construir e verificar apenas a imagem Odoo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_odoo_image.ps1

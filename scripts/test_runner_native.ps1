@@ -1,10 +1,11 @@
 # DEC-051/054: isolated native proof, never the existing laboratory or a scientific run.
-param([switch]$WithObserved, [switch]$WithDatasetFixtures, [ValidateSet('desktop-linux')][string]$DockerContext, [string]$PilotSeedFile, [string]$PilotA3aOriginFile)
+param([switch]$WithObserved, [switch]$WithDatasetFixtures, [ValidateSet('desktop-linux')][string]$DockerContext, [string]$PilotSeedFile, [string]$PilotA3aOriginFile, [switch]$WithApprovedPost)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ($WithDatasetFixtures -and -not $WithObserved) { throw 'Dataset fixture proof requires -WithObserved' }
 if ($PilotSeedFile -and -not ($WithObserved -and $WithDatasetFixtures)) { throw 'Pilot business seed requires -WithObserved -WithDatasetFixtures' }
 if ($PilotA3aOriginFile -and -not $PilotSeedFile) { throw 'A3a origin proof requires -PilotSeedFile' }
+if ($WithApprovedPost -and -not $WithObserved) { throw 'Approved POST handoff requires -WithObserved' }
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
 $ownerLabel = 'tcc.runner.run'
@@ -54,6 +55,7 @@ function Get-RunnerSourceHashes {
     }
     if ($PilotSeedFile) { $paths += @('odoo/probes/runner_pilot_seed_native.py', 'scripts/prepare_pilot_business_seed.py') }
     if ($PilotA3aOriginFile) { $paths += @('odoo/probes/runner_pilot_a3a_origin_native.py', 'scripts/prepare_pilot_a3a_origin.py') }
+    if ($WithApprovedPost) { $paths += @('odoo/probes/runner_approved_post_native.py', 'odoo/probes/registered_post_transactions.py') }
     foreach ($path in ($paths | Sort-Object -Unique)) {
         $path = $path -replace '\\', '/'
         if ($path.Contains('..') -or [System.IO.Path]::GetExtension($path) -notin @('.py', '.xml', '.json', '.ps1')) { throw 'Unexpected native proof source' }
@@ -182,6 +184,7 @@ try {
     if ($WithDatasetFixtures) { $probeArguments += '--dataset-fixture-mode' }
     if ($PilotSeedFile) { $probeArguments += @('--pilot-seed-sha256', $seedCheck.seed_sha256) }
     if ($PilotA3aOriginFile) { $probeArguments += @('--pilot-a3a-origin-sha256', $originCheck.origin_input_sha256) }
+    if ($WithApprovedPost) { $probeArguments += '--approved-post-mode' }
     $created.network = $true
     $null = Invoke-RunnerDocker @('network', 'create', '--internal', '--label', ($ownerLabel + '=' + $runId), $networkName) 'network-create.log'
     $created.volume = $true
@@ -222,7 +225,8 @@ try {
     $null = Invoke-RunnerDocker $gatewayBase 'gateway-start.log'
     $null = Invoke-RunnerDocker ($odooBase + @('--mount', ('type=volume,source=' + $secretVolume + ',target=/run/runner-secrets'), $odooImage, 'python', $entrypoint, 'prepare') + $probeArguments) 'prepare.log'
     Remove-RunnerContainer $odooName
-    $null = Invoke-RunnerDocker ($odooBase + @('--detach', '--network-alias', 'odoo', $odooImage, 'python', '/opt/odoo/odoo-bin', '-c', '/etc/odoo/runner.conf', '-d', $databaseName, '--http-interface', '0.0.0.0', '--max-cron-threads=0')) 'odoo-server-start.log'
+    $serverSecretMount = if ($WithApprovedPost) { @('--mount', ('type=volume,source=' + $secretVolume + ',target=/run/runner-secrets')) } else { @() }
+    $null = Invoke-RunnerDocker ($odooBase + $serverSecretMount + @('--detach', '--network-alias', 'odoo', $odooImage, 'python', '/opt/odoo/odoo-bin', '-c', '/etc/odoo/runner.conf', '-d', $databaseName, '--http-interface', '0.0.0.0', '--max-cron-threads=0')) 'odoo-server-start.log'
     $ready = $false
     $healthCode = "import urllib.request; assert urllib.request.urlopen('http://odoo:8069/web/login',timeout=2).status==200"
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
@@ -399,6 +403,43 @@ try {
         $result['pilot_a3a_origin_result_sha256'] = (Get-FileHash -LiteralPath $originResultPath -Algorithm SHA256).Hash.ToLowerInvariant()
         $result['pilot_a3a_approval_generated'] = $false
         $result['pilot_a3a_counterpart_targets_prepared'] = $false
+    }
+    if ($WithApprovedPost) {
+        Invoke-NativeMode 'approved-post-prepare'
+        $null = Invoke-RunnerDocker (@('exec', $gatewayName, 'python', $entrypoint, 'approved-post-policy') + $probeArguments) 'approved-post-policy.log'
+        Invoke-NativeMode 'approved-post-execute'
+        Assert-RunnerSources $sourceHashes (Get-RunnerSourceHashes)
+        $postResultPath = Join-Path $artifacts 'approved-post-result.json'
+        $postResult = Get-Content -Raw -Encoding UTF8 -LiteralPath $postResultPath | ConvertFrom-Json
+        $postPolicy = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $artifacts 'approved-post-policy.json') | ConvertFrom-Json
+        if ($postResult.schema_version -cne 'approved-post-native/v1' -or $postResult.status -cne 'PASS' -or
+            $postResult.git_base -cne $gitBase -or $postResult.source_bundle_sha256 -cne $bundleHash -or
+            $postPolicy.schema_version -cne 'approved-post-policy/v1' -or $postPolicy.status -cne 'PASS' -or
+            $postPolicy.git_base -cne $gitBase -or $postPolicy.source_bundle_sha256 -cne $bundleHash -or
+            $postResult.configuration_sha256 -cne $postPolicy.configuration_sha256 -or
+            $postResult.command_sha256 -cne $postPolicy.command_sha256 -or
+            $postResult.approval_sha256 -cne $postPolicy.approval_sha256) { throw 'Approved POST provenance mismatch' }
+        foreach ($name in @('posted_count', 'replay_count', 'invalid_mac_rejections')) {
+            if ($postResult.$name -isnot [int] -or $postResult.$name -ne 1) { throw 'Approved POST native count invalid' }
+        }
+        foreach ($name in @('fresh_cursor_receipt_nonce_pdf_verified', 'executor_identity_unchanged', 'provider_mocked')) {
+            if ($postResult.$name -isnot [bool] -or -not $postResult.$name) { throw 'Approved POST native check invalid' }
+        }
+        foreach ($name in @('scientific_run', 'human_review_complete', 'public_executor_enabled', 'external_provider_called')) {
+            if ($postResult.$name -isnot [bool] -or $postResult.$name) { throw 'Approved POST native limit invalid' }
+        }
+        if ($postPolicy.negative_binding_checks -isnot [int] -or $postPolicy.negative_binding_checks -ne 3 -or
+            $postPolicy.native_json2_request_count -isnot [int] -or $postPolicy.native_json2_request_count -le 0 -or
+            $postPolicy.PSObject.Properties.Name -contains 'approval' -or
+            $postPolicy.command_without_approval.PSObject.Properties.Name -contains 'approval') { throw 'Approved POST gateway checks invalid' }
+        $result.schema_version = 'runner-approved-post-evidence/v1'
+        $result.decision = 'DEC-069'
+        $result['approved_post_count'] = 1
+        $result['approved_post_replay_count'] = 1
+        $result['approved_post_native_invalid_mac_rejections'] = 1
+        $result['approved_post_gateway_negative_binding_checks'] = 3
+        $result['approved_post_json2_request_count'] = $postPolicy.native_json2_request_count
+        $result['approved_post_result_sha256'] = (Get-FileHash -LiteralPath $postResultPath -Algorithm SHA256).Hash.ToLowerInvariant()
     }
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
 }

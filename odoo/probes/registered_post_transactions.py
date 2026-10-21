@@ -13,7 +13,6 @@ import argparse
 import copy
 from dataclasses import asdict, replace
 import hashlib
-import hmac
 import logging
 from pathlib import Path
 import re
@@ -124,20 +123,8 @@ class RegisteredPostProbe:
             self.base.success(scope.result, "CREATED")
             cr.commit()
         self.base.assert_persisted(scope)
-        # The existing library makes a genuine, in-memory approval. Rebind its
-        # default scenario to this registration and re-sign that exact body.
+        # The existing helper signs the registered workflow's actual scenario.
         self.base.prepare_post(scope)
-        scope.authority = replace(scope.authority, scenario_id=scenario)
-        unsigned = {name: value for name, value in scope.post_command["approval"].items()
-                    if name != "signature"}
-        unsigned["scenario_id"] = scenario
-        signature = "hmac-sha256/v1:" + hmac.new(
-            scope.key.material,
-            self.base.approval_domain + canonical({
-                "company_id": scope.workflow.company_id, "approval": unsigned,
-            }), hashlib.sha256,
-        ).hexdigest()
-        scope.post_command["approval"] = dict(unsigned, signature=signature)
         require(scope.post_command["action"]["scenario_id"] == scenario and
                 scope.authority.scenario_id == scenario,
                 "approval_and_command_bound_to_unique_scenario")
