@@ -91,3 +91,53 @@ def test_generation_codebook_verified_and_exclusive_no_overwrite(cli, local, mon
 def test_check_cannot_mix_generation_options(cli, local, capsys):
     assert cli["main"](["--check", str(local / "x.json"), "--cohort-sha256", "a" * 64]) == 1
     assert capsys.readouterr().out == FAIL
+
+
+@pytest.mark.parametrize("member_index", ["-1", "0", "1", "2"])
+def test_check_rejects_any_explicit_member_selection_without_reinterpreting_package(
+        cli, local, capsys, package, member_index):
+    path = local / (package.sha256 + ".json")
+    path.write_bytes(package._encoded)
+    assert cli["main"](["--check", str(path), "--member-index", member_index]) == 1
+    assert capsys.readouterr().out == FAIL
+    assert path.read_bytes() == package._encoded
+
+
+@pytest.mark.parametrize("member_index", [0, 1])
+def test_generation_member_selection_keeps_finite_summary_and_exclusive_output(
+        cli, local, monkeypatch, capsys, member_index):
+    codebook = hashlib.sha256((ROOT / "dataset/codebook.md").read_text(encoding="utf-8-sig").encode()).hexdigest()
+    cohort = structural_cohort(codebook)
+    monkeypatch.setitem(cli["main"].__globals__, "read_pilot_cohort", lambda *_: cohort)
+    expected = prepare_origin_input(cohort, member_index=member_index)
+    args = ["--cohort-root", str(local), "--cohort-sha256", "a" * 64,
+            "--output-root", str(local), "--member-index", str(member_index)]
+    assert cli["main"](args) == 0
+    summary = json.loads(capsys.readouterr().out)
+    assert set(summary) == {"status", "origin_input_sha256", "seed_sha256", "cohort_sha256",
+                           "codebook_sha256", "fixture_count", "counterpart_count", "human_review_complete",
+                           "scientific_execution_allowed", "approval_generated"}
+    assert summary["origin_input_sha256"] == expected.sha256
+    assert summary["fixture_count"] == summary["counterpart_count"] == 4
+    assert summary["approval_generated"] is summary["human_review_complete"] is summary["scientific_execution_allowed"] is False
+    path = local / (expected.sha256 + ".json")
+    assert path.read_bytes() == expected._encoded
+    assert cli["main"](args) == 1
+    assert capsys.readouterr().out == FAIL
+    assert path.read_bytes() == expected._encoded
+    assert sorted(item.name for item in local.iterdir()) == [path.name]
+
+
+@pytest.mark.parametrize("member_index", ["-1", "2"])
+def test_generation_rejects_out_of_range_selection_with_finite_failure(
+        cli, local, monkeypatch, capsys, member_index):
+    inspected = []
+    def reject_cohort(*values):
+        inspected.append(values)
+        raise AssertionError("invalid selection must not read a cohort")
+    monkeypatch.setitem(cli["main"].__globals__, "read_pilot_cohort", reject_cohort)
+    assert cli["main"](["--cohort-root", str(local), "--cohort-sha256", "a" * 64,
+                        "--output-root", str(local), "--member-index", member_index]) == 1
+    assert capsys.readouterr().out == FAIL
+    assert inspected == []
+    assert not list(local.iterdir())

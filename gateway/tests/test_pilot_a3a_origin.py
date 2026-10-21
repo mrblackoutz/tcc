@@ -163,6 +163,62 @@ def test_compiler_preserves_cohort_and_exact_document_provenance_without_post_ou
     assert before["human_review_complete"] is False and before["scientific_execution_allowed"] is False
 
 
+def test_default_and_explicit_first_member_preserve_the_same_package_bytes():
+    cohort = structural_cohort()
+    default = compiler.prepare_origin_input(cohort)
+    explicit = compiler.prepare_origin_input(cohort, member_index=0)
+    assert default._encoded == explicit._encoded
+    assert default.sha256 == explicit.sha256
+
+
+def test_second_member_swaps_only_document_slots_and_covers_eight_exact_origins():
+    cohort = structural_cohort()
+    before = (cohort.to_manifest(), cohort.recipes.to_mapping(), tuple(
+        (item.pair.to_mapping(), tuple(doc.pdf_bytes for doc in item.documents))
+        for item in cohort.pairs))
+    first = compiler.prepare_origin_input(cohort, member_index=0)
+    second = compiler.prepare_origin_input(cohort, member_index=1)
+    expected = first.to_mapping()
+    for row in expected["fixtures"]:
+        row["document"], row["other_document"] = row["other_document"], row["document"]
+    assert second.to_mapping() == expected
+    assert second._encoded == canonical_json_bytes(expected)
+    assert second.sha256 != first.sha256
+    assert second.to_mapping()["seed_sha256"] == prepare_business_seed(cohort).sha256
+    assert before == (cohort.to_manifest(), cohort.recipes.to_mapping(), tuple(
+        (item.pair.to_mapping(), tuple(doc.pdf_bytes for doc in item.documents))
+        for item in cohort.pairs))
+    pairs = {item.pair.to_mapping()["fixture_ref"]: item for item in cohort.pairs}
+    selected = []
+    for member_index, package in enumerate((first, second)):
+        compiler.verify_extraction(package)
+        for row in package.to_mapping()["fixtures"]:
+            source = pairs[row["fixture_ref"]]
+            source_pair = source.pair.to_mapping()
+            kind = ("benign", "adversarial")[member_index]
+            assert row["document"]["scenario_id"] == source_pair["members"][kind]["scenario_id"]
+            assert contract.document_bytes(row["document"]) == source.documents[member_index].pdf_bytes
+            selected.append(row["document"])
+    for name in ("scenario_id", "document_sha256", "extracted_text_sha256"):
+        assert len({item[name] for item in selected}) == 8
+
+
+@pytest.mark.parametrize("member_index", [True, False, 0.0, 1.0, None, "0", "1", -1, 2, [], {}],
+                         ids=["true", "false", "float-zero", "float-one", "none", "text-zero",
+                              "text-one", "negative", "too-large", "list", "dict"])
+def test_member_selection_requires_exact_integer_zero_or_one(member_index, monkeypatch):
+    inspected = []
+    def reject_cohort(value):
+        inspected.append(value)
+        raise AssertionError("invalid selection must not inspect a cohort")
+    monkeypatch.setattr(compiler, "_checked", reject_cohort)
+    with pytest.raises(PilotSeedError) as error:
+        compiler.prepare_origin_input(object(), member_index=member_index)
+    assert str(error.value) == "invalid candidate A3a origin preparation"
+    assert error.value.__cause__ is None
+    assert inspected == []
+
+
 def test_extraction_hash_is_checked_against_pdf_not_accepted_as_assertion():
     package = compiler.prepare_origin_input(structural_cohort())
     value = package.to_mapping()

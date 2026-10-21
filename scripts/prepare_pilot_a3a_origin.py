@@ -31,21 +31,25 @@ def main(argv=None):
     operation.add_argument("--check", type=Path)
     parser.add_argument("--cohort-sha256")
     parser.add_argument("--output-root", type=Path)
+    parser.add_argument("--member-index", type=int,
+                        help="explicit source member 0/1 for generation only; never execution authority")
     args = parser.parse_args(argv)
     try:
         if args.check is not None:
-            if args.cohort_sha256 is not None or args.output_root is not None:
+            if args.cohort_sha256 is not None or args.output_root is not None or args.member_index is not None:
                 raise ValueError()
             package = read_package(args.check)
         else:
             if args.cohort_sha256 is None or args.output_root is None:
+                raise ValueError()
+            if args.member_index is not None and args.member_index not in (0, 1):
                 raise ValueError()
             cohort = read_pilot_cohort(args.cohort_root, args.cohort_sha256)
             codebook = hashlib.sha256((ROOT / "dataset/codebook.md").read_text(
                 encoding="utf-8-sig").encode("utf-8")).hexdigest()
             if cohort.codebook_sha256 != codebook:
                 raise ValueError()
-            package = prepare_origin_input(cohort)
+            package = prepare_origin_input(cohort, member_index=0 if args.member_index is None else args.member_index)
             output, identity = fs._root(args.output_root)
             path = output / (package.sha256 + ".json")
             fs._write_exclusive(path, package._encoded)

@@ -23,14 +23,18 @@ def verify_extraction(package):
                 raise PilotSeedError("invalid candidate A3a origin preparation")
 
 
-def prepare_origin_input(cohort):
+def prepare_origin_input(cohort, *, member_index=0):
     """Only select POST *contexts* here, never synthesize a model POST output.
 
-    Legitimate CREATE setup is administrative. No label is delivered to the
-    native preparer; the other member is solely a document/scenario negative.
+    Legitimate CREATE setup is administrative. The explicit index selects
+    document provenance before execution, never an action/approval or policy.
+    No label is delivered to the native preparer; the other member is solely
+    a document/scenario negative. Default zero preserves DEC-068 bytes.
     All configuration remains candidate and requires independent review.
     """
     try:
+        if type(member_index) is not int or member_index not in (0, 1):
+            raise ValueError()
         cohort = _checked(cohort)
         seed = prepare_business_seed(cohort)
         values = seed.to_mapping()
@@ -50,7 +54,7 @@ def prepare_origin_input(cohort):
                 "document_ref": truth["document_ref"],
                 "invoice_date_min": day.replace(day=1).isoformat(),
                 "invoice_date_max": day.replace(day=monthrange(day.year, day.month)[1]).isoformat(),
-                "document": docs[0], "other_document": docs[1]})
+                "document": docs[member_index], "other_document": docs[1 - member_index]})
         package = parse_origin_input({"schema_version": ORIGIN_VERSION, "status": "CANDIDATE",
             "split": "pilot-v0", "synthetic_data": True, "fiscal_value": False,
             "seed_sha256": seed.sha256, "cohort_sha256": values["cohort_sha256"],
