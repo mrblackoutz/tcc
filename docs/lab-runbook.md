@@ -762,7 +762,41 @@ Proveniência: base Git `827bf486e9ae98d7e503e53125e669440f226120`, com alteraç
 python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g3c_topology.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-pilot-business-commit-20261020
 ```
 
-**Ainda falta:** cadastros alternativos A1/A2 e, para A3a, CREATE auditado/rascunho e aprovação por proveniência de cada cenário/documento. As bases comerciais sozinhas não são 12 fixtures completas. Não há ação POST fabricada, token gerado, `execute` aberto, Delivery Rate ao modelo, revisão humana ou piloto executado. A coorte/codebook/PDFs e seus gates não são alterados por essa ferramenta.
+**Limite desta carga:** as bases comerciais sozinhas não são 12 fixtures completas. O complemento A3a está descrito a seguir; cadastros alternativos A1/A2, aprovação e isolamento/reset por membro continuam pendentes. Não há token gerado, `execute` aberto, Delivery Rate ao modelo, revisão humana ou piloto executado. A coorte/codebook/PDFs e seus gates não são alterados por essa ferramenta.
+
+<a id="origens-a3a-piloto"></a>
+
+### Origem auditada de quatro rascunhos A3a — DATA-06 / DEC-068
+
+O [preparador A3a](../scripts/prepare_pilot_a3a_origin.py), conforme [origem por documento (DEC-068)](decision-log.md#dec-068), verifica a coorte inteira e separa os quatro contextos benignos que requerem rascunho. A seleção usa metadados do dataset somente para preparo administrativo; não gera proposta de modelo, POST ou aprovação. O pacote fechado contém referências de configuração, hashes e PDFs em base64, sem labels/notas como comando. O outro documento de cada par entra exclusivamente nas negativas de proveniência. Datas cobrem o mês da data comercial; a configuração continua candidata, não congelada ou revisada.
+
+Gerar uma vez em diretório privado **novo**; se já existir, usar apenas `--check`. Os arquivos concretos não estão no Git e exigem a coorte local íntegra, ainda pendente de revisão para publicação:
+
+```powershell
+New-Item -ItemType Directory -Path .runtime/pilot-a3a-origin-20261020
+python scripts/prepare_pilot_a3a_origin.py --cohort-root "$((Get-Item .runtime/p4).FullName)" --cohort-sha256 3402e2c48349066fb17f3563b7ac045351a7a5325424767f245743764e9aedbe --output-root "$((Get-Item .runtime/pilot-a3a-origin-20261020).FullName)"
+```
+
+Pacote corrente: `5bc6509848b211c999b8719e4efb9d9a01c8d42bec7a2dbfbea01e2f4c0c753d.json`, vinculado ao seed `f786226a…` e à mesma coorte/codebook da seção anterior. O limite técnico é 2 MiB por pacote e 128 KiB por PDF; excesso causa rejeição, nunca truncamento. A releitura reconfere hash e extração dos oito PDFs, sem rede ou ERP. Escrita exclusiva impede reparo/overwrite:
+
+```powershell
+python scripts/prepare_pilot_a3a_origin.py --check "$((Get-Item .runtime/pilot-a3a-origin-20261020/5bc6509848b211c999b8719e4efb9d9a01c8d42bec7a2dbfbea01e2f4c0c753d.json).FullName)"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_runner_native.ps1 -WithObserved -WithDatasetFixtures -DockerContext desktop-linux -PilotSeedFile "$((Get-Item .runtime/pilot-business-20261020/f786226ae7a970abb4f0d9bedf3d4d3bc2136a878c12d82cda3ef6200982c5d4.json).FullName)" -PilotA3aOriginFile "$((Get-Item .runtime/pilot-a3a-origin-20261020/5bc6509848b211c999b8719e4efb9d9a01c8d42bec7a2dbfbea01e2f4c0c753d.json).FullName)"
+```
+
+A opção `-PilotA3aOriginFile` exige `-PilotSeedFile` e, por consequência, os dois modos anteriores. Antes de criar recursos, o harness verifica integridade/proveniência comum; snapshotta o pacote e só executa o [probe privado](../odoo/probes/runner_pilot_a3a_origin_native.py) **após** as provas históricas e a carga das 12 bases. O probe usa os mesmos kernels de registro/CREATE/auditoria, sem gravar rascunho diretamente por ORM. Registra oito contextos documentais, cria somente quatro rascunhos benignos e confere origem, PDF privado em banco, cabeçalho/linhas, saldo da PO e identidade. Após commit, usa cursor normal novo e a função de leitura de origem do POST existente. Não chama executor POST ou assinador.
+
+As doze negativas são três por par: outro PDF na inscrição original, outro cenário na inscrição original e inscrição da contraparte tentando reutilizar recibo CREATE de outro documento. Esta última deve falhar por `ORIGIN_NOT_FOUND`, não ser confundida com invalidez do cadastro. A confirmação é somente leitura; registros anteriores devem continuar intactos, admitindo apenas os quatro drafts e seus efeitos declarados de registro/auditoria/PO/chatter interno. Pagamentos, reconciliações, nonces de aprovação e e-mail/notificações não podem surgir.
+
+`pilot-a3a-origin-result.json` permanece privado; o envelope externo `runner-pilot-a3a-origin-evidence/v1` acrescenta hashes e contagens, sem alterar os schemas históricos. `PASS` exige fontes estáveis e cleanup, não somente sucesso de CREATE. **São quatro alvos benignos, não oito alvos preparados:** as contrapartes ainda precisam de isolamento/restauração por cenário/documento. Não são POST aprovado, fixture completa, execução C0/C1, piloto, freeze ou revisão humana. `execute` público permanece fechado. Próximos gates: cadastros alternativos A1/A2, aprovação legítima exata, materialização/reset e conferência de todos os membros; depois revisão, Delivery Rate e integração/supervisão real.
+
+**Prova nativa em 20/10/2026:** `PASS` em `403aa845a2c7480f8eb0bd43f8acfed4`: quatro origens auditadas/fatos em cursor novo e doze negativas. Também passaram as fases anteriores: nove casos/68 leituras JSON-2, dois doubles/19 leituras e carga das 12 bases, sem somar fases como fixtures completas. Registros anteriores/identidade preservados e cleanup verificado. Base Git `9171d2f86ff59ac07ec4b3d4b233233efd55ac84`, com alterações identificadas pelo bundle de 123 fontes `caf821996c215e83ee4a61352d9b694c4c0baff15f59d1d0d17851e136fc07ae`; a base sozinha ainda não continha o incremento. Resultado nativo SHA-256 `8d7b1bfdf583ce3b9921b5936fe528d1a100da4c3a364fde641d7928ffddf4f6`. Arquivos correntes e snapshots conferidos. O primeiro sucesso `8c6c8f36…` foi preservado; a repetição confirmou a fonte após tornar explícita a conferência de saldo faturado/disponível da PO, sem novos cenários científicos. Nenhuma API LLM ou laboratório persistente foi acessado.
+
+**Regressão da fonte final:** 5.076 testes offline passaram em 256,29 s, incluindo 90 novos, sem skips. Cobrem contrato fechado/limites, bytes e extração, ausência de labels/autoridade, importação stdlib, gravação exclusiva, rejeição de caminhos externos, preservação de efeitos e saldos da PO. A primeira negativa externa esbarrou na permissão do sandbox; foi executada novamente com autorização, sem enfraquecer o teste. Prova nativa e testes offline são verificações distintas, não resultados científicos. Reprodução:
+
+```powershell
+python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g3c_topology.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-a3a-origin-final-20261020
+```
 
 ### Construir e verificar apenas a imagem Odoo
 

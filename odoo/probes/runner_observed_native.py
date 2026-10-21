@@ -13,7 +13,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", choices=("prepare", "candidate", "observe", "policy", "execute", "confirm",
                                          "dataset-fixtures-prepare", "dataset-fixtures", "dataset-fixtures-confirm",
-                                         "pilot-business-seed"))
+                                         "pilot-business-seed", "pilot-a3a-origins"))
     parser.add_argument("--database", required=True)
     parser.add_argument("--config", default="/etc/odoo/runner.conf")
     parser.add_argument("--artifacts", default="/mnt/runner-artifacts")
@@ -22,6 +22,7 @@ def main():
     parser.add_argument("--source-bundle-sha256", required=True)
     parser.add_argument("--dataset-fixture-mode", action="store_true")
     parser.add_argument("--pilot-seed-sha256")
+    parser.add_argument("--pilot-a3a-origin-sha256")
     args = parser.parse_args()
     if (re.fullmatch(r"tcc_runner_[0-9a-f]{12}", args.database) is None
             or re.fullmatch(r"[0-9a-f]{40}", args.git_base) is None
@@ -33,6 +34,10 @@ def main():
     if (args.pilot_seed_sha256 is not None and re.fullmatch(r"[0-9a-f]{64}", args.pilot_seed_sha256) is None
             or args.mode == "pilot-business-seed" and (not args.dataset_fixture_mode or args.pilot_seed_sha256 is None)):
         raise SystemExit("RUNNER_OBSERVED_INVALID_CONFIGURATION")
+    if (args.pilot_a3a_origin_sha256 is not None and (not args.dataset_fixture_mode or args.pilot_seed_sha256 is None
+            or re.fullmatch(r"[0-9a-f]{64}", args.pilot_a3a_origin_sha256) is None)
+            or args.mode == "pilot-a3a-origins" and args.pilot_a3a_origin_sha256 is None):
+        raise SystemExit("RUNNER_OBSERVED_INVALID_CONFIGURATION")
     logging.disable(logging.CRITICAL)
     try:
         if args.mode in {"candidate", "policy"}:
@@ -43,6 +48,8 @@ def main():
             from runner_dataset_fixture_native import run
         elif args.mode == "pilot-business-seed":
             from runner_pilot_seed_native import run
+        elif args.mode == "pilot-a3a-origins":
+            from runner_pilot_a3a_origin_native import run
         else:
             from runner_observed_fixture import run
         run(args)
@@ -51,11 +58,11 @@ def main():
                          "PermissionError", "ImportError", "ModuleNotFoundError", "AccessError",
                          "ValidationError", "RegisteredExecutionError", "WorkflowRegistryError",
                          "OperationalObservationError", "AssertionError", "DatasetFixtureError", "ObservedRunnerError",
-                         "DatasetFixtureProbeError", "PilotSeedError"}
+                         "DatasetFixtureProbeError", "PilotSeedError", "RegisteredPostError"}
         allowed_files = {"runner_observed_native.py", "runner_observed_fixture.py",
                          "runner_observed_gateway.py", "c111_transactions.py",
                          "operational_observation_transactions.py", "runner_dataset_fixture_native.py",
-                         "runner_dataset_fixture_gateway.py", "runner_pilot_seed_native.py"}
+                         "runner_dataset_fixture_gateway.py", "runner_pilot_seed_native.py", "runner_pilot_a3a_origin_native.py"}
         frames = [frame for frame in traceback.extract_tb(error.__traceback__)
                   if Path(frame.filename).name in allowed_files]
         diagnostic = {"schema_version": "runner-observed-failure/v1", "status": "FAIL", "mode": args.mode,

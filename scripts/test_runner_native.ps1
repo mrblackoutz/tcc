@@ -1,9 +1,10 @@
 # DEC-051/054: isolated native proof, never the existing laboratory or a scientific run.
-param([switch]$WithObserved, [switch]$WithDatasetFixtures, [ValidateSet('desktop-linux')][string]$DockerContext, [string]$PilotSeedFile)
+param([switch]$WithObserved, [switch]$WithDatasetFixtures, [ValidateSet('desktop-linux')][string]$DockerContext, [string]$PilotSeedFile, [string]$PilotA3aOriginFile)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ($WithDatasetFixtures -and -not $WithObserved) { throw 'Dataset fixture proof requires -WithObserved' }
 if ($PilotSeedFile -and -not ($WithObserved -and $WithDatasetFixtures)) { throw 'Pilot business seed requires -WithObserved -WithDatasetFixtures' }
+if ($PilotA3aOriginFile -and -not $PilotSeedFile) { throw 'A3a origin proof requires -PilotSeedFile' }
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
 $ownerLabel = 'tcc.runner.run'
@@ -52,6 +53,7 @@ function Get-RunnerSourceHashes {
             'scripts/validate_dataset_fixture_evidence.py')
     }
     if ($PilotSeedFile) { $paths += @('odoo/probes/runner_pilot_seed_native.py', 'scripts/prepare_pilot_business_seed.py') }
+    if ($PilotA3aOriginFile) { $paths += @('odoo/probes/runner_pilot_a3a_origin_native.py', 'scripts/prepare_pilot_a3a_origin.py') }
     foreach ($path in ($paths | Sort-Object -Unique)) {
         $path = $path -replace '\\', '/'
         if ($path.Contains('..') -or [System.IO.Path]::GetExtension($path) -notin @('.py', '.xml', '.json', '.ps1')) { throw 'Unexpected native proof source' }
@@ -90,6 +92,17 @@ try {
         $seedCheck = ($seedOutput -join '') | ConvertFrom-Json
         if ($seedCheck.status -cne 'PASS' -or $seedCheck.seed_sha256 -cnotmatch '^[0-9a-f]{64}$' -or
             $seedCheck.fixture_count -isnot [int] -or $seedCheck.fixture_count -ne 12) { throw 'Invalid pilot seed summary' }
+    }
+    $originCheck = $null
+    if ($PilotA3aOriginFile) {
+        $originOutput = @(& python (Join-Path $repositoryRoot 'scripts/prepare_pilot_a3a_origin.py') --check $PilotA3aOriginFile 2>&1)
+        if ($LASTEXITCODE -ne 0) { throw 'Invalid private A3a origin input' }
+        $originCheck = ($originOutput -join '') | ConvertFrom-Json
+        if ($originCheck.status -cne 'PASS' -or $originCheck.origin_input_sha256 -cnotmatch '^[0-9a-f]{64}$' -or
+            $originCheck.seed_sha256 -cne $seedCheck.seed_sha256 -or $originCheck.cohort_sha256 -cne $seedCheck.cohort_sha256 -or
+            $originCheck.codebook_sha256 -cne $seedCheck.codebook_sha256 -or
+            $originCheck.fixture_count -isnot [int] -or $originCheck.fixture_count -ne 4 -or
+            $originCheck.counterpart_count -isnot [int] -or $originCheck.counterpart_count -ne 4) { throw 'A3a origin input provenance mismatch' }
     }
     if ($DockerContext) {
         $endpoint = ((Invoke-RunnerDocker @('context', 'inspect', $DockerContext, '--format', '{{.Endpoints.docker.Host}}') 'docker-context.log') -join '').Trim()
@@ -145,6 +158,11 @@ try {
         Copy-Item -LiteralPath $PilotSeedFile -Destination $seedSnapshot
         if ((Get-FileHash -LiteralPath $seedSnapshot -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seedCheck.seed_sha256) { throw 'Pilot seed changed during snapshot' }
     }
+    if ($PilotA3aOriginFile) {
+        $originSnapshot = Join-Path $artifacts 'pilot-a3a-origin.json'
+        Copy-Item -LiteralPath $PilotA3aOriginFile -Destination $originSnapshot
+        if ((Get-FileHash -LiteralPath $originSnapshot -Algorithm SHA256).Hash.ToLowerInvariant() -cne $originCheck.origin_input_sha256) { throw 'A3a origin input changed during snapshot' }
+    }
     $postgresEnvironment = Join-Path $probeRoot 'postgres.env'
     $configuration = Join-Path $probeRoot 'odoo.conf'
     $secretBytes = New-Object byte[] 32
@@ -163,6 +181,7 @@ try {
     $probeArguments = @('--database', $databaseName, '--git-base', $gitBase, '--source-bundle-sha256', $bundleHash)
     if ($WithDatasetFixtures) { $probeArguments += '--dataset-fixture-mode' }
     if ($PilotSeedFile) { $probeArguments += @('--pilot-seed-sha256', $seedCheck.seed_sha256) }
+    if ($PilotA3aOriginFile) { $probeArguments += @('--pilot-a3a-origin-sha256', $originCheck.origin_input_sha256) }
     $created.network = $true
     $null = Invoke-RunnerDocker @('network', 'create', '--internal', '--label', ($ownerLabel + '=' + $runId), $networkName) 'network-create.log'
     $created.volume = $true
@@ -351,6 +370,35 @@ try {
         $result['pilot_seed_a3a_target_prepared'] = $false
         $result['pilot_seed_alternatives_prepared'] = $false
         $result['pilot_seed_result_sha256'] = (Get-FileHash -LiteralPath $seedResultPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    }
+    if ($PilotA3aOriginFile) {
+        Invoke-NativeMode 'pilot-a3a-origins'
+        Assert-RunnerSources $sourceHashes (Get-RunnerSourceHashes)
+        $originResultPath = Join-Path $artifacts 'pilot-a3a-origin-result.json'
+        $originResult = Get-Content -Raw -Encoding UTF8 -LiteralPath $originResultPath | ConvertFrom-Json
+        if ($originResult.schema_version -cne 'pilot-a3a-origin-native/v1' -or $originResult.status -cne 'PASS' -or
+            $originResult.git_base -cne $gitBase -or $originResult.source_bundle_sha256 -cne $bundleHash -or
+            $originResult.origin_input_sha256 -cne $originCheck.origin_input_sha256 -or
+            $originResult.seed_sha256 -cne $seedCheck.seed_sha256 -or $originResult.cohort_sha256 -cne $seedCheck.cohort_sha256 -or
+            $originResult.codebook_sha256 -cne $seedCheck.codebook_sha256 -or
+            $originResult.fixture_count -isnot [int] -or $originResult.fixture_count -ne 4 -or
+            $originResult.negative_binding_checks -isnot [int] -or $originResult.negative_binding_checks -ne 12 -or
+            $originResult.origins_sha256 -cnotmatch '^[0-9a-f]{64}$' -or
+            $originResult.company_projection_sha256 -cnotmatch '^[0-9a-f]{64}$') { throw 'A3a origin native evidence mismatch' }
+        foreach ($name in @('fresh_cursor_origins_verified', 'previous_records_preserved', 'executor_identity_unchanged', 'private_pdf_verified')) {
+            if ($originResult.$name -isnot [bool] -or -not $originResult.$name) { throw 'A3a origin native checks invalid' }
+        }
+        foreach ($name in @('scientific_run', 'human_review_complete', 'public_executor_enabled', 'approval_generated', 'post_executed', 'counterpart_targets_prepared', 'alternatives_prepared')) {
+            if ($originResult.$name -isnot [bool] -or $originResult.$name) { throw 'A3a origin native limits invalid' }
+        }
+        $result.schema_version = 'runner-pilot-a3a-origin-evidence/v1'
+        $result.decision = 'DEC-068'
+        $result['pilot_a3a_origin_input_sha256'] = $originCheck.origin_input_sha256
+        $result['pilot_a3a_origin_count'] = $originResult.fixture_count
+        $result['pilot_a3a_negative_binding_checks'] = $originResult.negative_binding_checks
+        $result['pilot_a3a_origin_result_sha256'] = (Get-FileHash -LiteralPath $originResultPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $result['pilot_a3a_approval_generated'] = $false
+        $result['pilot_a3a_counterpart_targets_prepared'] = $false
     }
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
 }
