@@ -653,12 +653,12 @@ Para reproduzir **a receita privada já preparada**, sem API/ERP, em PowerShell 
 
 ```powershell
 New-Item -ItemType Directory -Path .runtime/p4
-python scripts/prepare_pilot_documents.py --recipes "$((Get-Item .runtime/pilot-preparation-20261018/pilot-recipes.candidate-v2.json).FullName)" --output-root "$((Get-Item .runtime/p4).FullName)"
+python scripts/prepare_pilot_documents.py --recipes "$((Get-Item .runtime/pilot-correction-20261021/pilot-recipes.candidate-v3.json).FullName)" --output-root "$((Get-Item .runtime/p4).FullName)"
 ```
 
 Não repetir sobre pacote existente: a escrita é exclusiva e preserva incompletos. Quem clonar o Git recebe contratos/ferramentas e doubles, não os payloads concretos: a receita/coorte/guia reais permanecem na `.runtime` até revisão para publicação. Compartilhar com os revisores por canal privado aprovado; não colocar os dados no Git para contornar o gate. O guia editável fica ao lado do diretório da coorte, com links aos 24 PDFs/textos e checklist individual; notas são apresentadas como texto literal, sem links/HTML ativos. Editar o guia não muda gates nem equivale a assinatura.
 
-**Pacote corrente:** versão `pilot-v0-candidate.2`, coorte `3402e2c48349066fb17f3563b7ac045351a7a5325424767f245743764e9aedbe`, sob `.runtime/p4`; catálogo local `COORTE-CORRENTE.md` e guia `<hash-da-coorte>.review.md`. A preparação inicial `889470…` antecede o esclarecimento de proveniência A3a; `79c859…` já o contém, mas antecede as notas diagramadas em linhas de até 80 caracteres. Ambas permanecem preservadas, inclusive nos caminhos longos anteriores, sem contar como novos cenários/runs. A versão corrente conserva fatos/objetivos e o conteúdo das 24 notas normalizado por espaços; somente versão e quebras de linha da receita mudaram. Nenhuma inferência orientou esses ajustes. O renderizador legado recusou caminhos iniciais de 272 caracteres; cópias curtas com SHA-256 conferido permitiram a primeira inspeção. A raiz curta corrente permitiu renderizar diretamente os 24 PDFs, sem alteração dos documentos.
+**Pacote corrente:** versão `pilot-v0-candidate.3`, coorte `1394246741d22eb721dcae54632f309f9765dba5502f1d75cf81d17ee503085d`, sob `.runtime/p4`; catálogo local `COORTE-CORRENTE.md` e guia `<hash-da-coorte>.review.md`. A [correção pedido/produto (DEC-071)](#correcao-pedido-produto) altera um fato comercial compartilhado pelos dois membros A1: dois PDFs mudam, 22 ficam idênticos e todas as notas permanecem iguais. As candidatas `889470…`, `79c859…` e `.2`/`3402e2…` são preservadas, não cenários adicionais. A candidata `.2` introduziu somente versão/diagramação das notas; caminhos curtos resolveram a limitação de renderização anterior. Revisão humana da `.3` segue pendente; nenhum resultado LLM orientou a correção.
 
 **Validação em 18/10/2026:** 4.387 testes offline passaram em 202,49 s, incluindo 210 novos (106 do caminho piloto, 95 da coorte e nove da ferramenta de preparação), sem skips. Coorte relida integralmente; 24 PDFs de uma página gerados, extraídos e renderizados. Inspeção visual de dez páginas: seis combinações template/posição e os quatro benignos difíceis, sem cortes/sobreposição ou quebra no meio de referências bancárias. Os 48 links do guia para PDF/texto existem. Cobertura efetiva: quatro pares por família e template, seis por posição, cinco estratégias (3/3/2/2/2) e quatro benignos difíceis. Isso não é a matriz do conjunto final. Auditoria automatizada independente sem bloqueante; revisão humana completa continua pendente. O SHA-256 do codebook UTF-8/LF é `329556b25df0cc3e05ad04d697605d0a1cd4afb936504ba8f0968cf010e95332`; receitas canônicas: `1cc1fa905846bfa68ae128c3ab0e82be345239b02e410789acc01ac565e42473`.
 
@@ -729,14 +729,14 @@ python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g
 
 Uma base comercial reúne fornecedor, banco legítimo, produto e pedido de compra (PO) confirmado, ainda sem faturamento. O [compilador](../gateway/src/tcc_gateway/pilot_seed.py) lê a coorte candidata integralmente verificada e projeta somente esses fatos em uma receita de carga (seed) administrativa. Notas, payloads, labels, ação/disposição esperada, aprovação e IDs financeiros não entram no pacote. Ele não é enviado ao modelo nem autoriza o executor. Hashes conferem integridade, não autoria ou revisão humana.
 
-Preparar uma única vez em raiz privada nova; os diretórios/arquivos anteriores não são apagados ou sobrescritos:
+Preparar uma única vez em raiz privada nova; os diretórios/arquivos anteriores não são apagados ou sobrescritos. Os comandos e hashes abaixo reproduzem a prova histórica da candidata `.2`; para os pacotes correntes `.3`, usar a [correção pedido/produto](#correcao-pedido-produto), sem misturar versões:
 
 ```powershell
 New-Item -ItemType Directory -Path .runtime/pilot-business-20261020
 python scripts/prepare_pilot_business_seed.py --cohort-root "$((Get-Item .runtime/p4).FullName)" --cohort-sha256 3402e2c48349066fb17f3563b7ac045351a7a5325424767f245743764e9aedbe --output-root "$((Get-Item .runtime/pilot-business-20261020).FullName)"
 ```
 
-O pacote corrente é `f786226ae7a970abb4f0d9bedf3d4d3bc2136a878c12d82cda3ef6200982c5d4.json`. Fica somente na `.runtime`, como a coorte/receitas; clonagem recebe ferramentas e doubles de desenvolvimento, não dados ainda sem revisão para publicação. Releitura isolada, sem escrever ou chamar ERP:
+O pacote validado em 20/10/2026 é `f786226ae7a970abb4f0d9bedf3d4d3bc2136a878c12d82cda3ef6200982c5d4.json`. Fica somente na `.runtime`, como a coorte/receitas; clonagem recebe ferramentas e doubles de desenvolvimento, não dados ainda sem revisão para publicação. Releitura histórica isolada, sem escrever ou chamar ERP:
 
 ```powershell
 python scripts/prepare_pilot_business_seed.py --check "$((Get-Item .runtime/pilot-business-20261020/f786226ae7a970abb4f0d9bedf3d4d3bc2136a878c12d82cda3ef6200982c5d4.json).FullName)"
@@ -777,7 +777,7 @@ New-Item -ItemType Directory -Path .runtime/pilot-a3a-origin-20261020
 python scripts/prepare_pilot_a3a_origin.py --cohort-root "$((Get-Item .runtime/p4).FullName)" --cohort-sha256 3402e2c48349066fb17f3563b7ac045351a7a5325424767f245743764e9aedbe --output-root "$((Get-Item .runtime/pilot-a3a-origin-20261020).FullName)"
 ```
 
-Pacote corrente: `5bc6509848b211c999b8719e4efb9d9a01c8d42bec7a2dbfbea01e2f4c0c753d.json`, vinculado ao seed `f786226a…` e à mesma coorte/codebook da seção anterior. O limite técnico é 2 MiB por pacote e 128 KiB por PDF; excesso causa rejeição, nunca truncamento. A releitura reconfere hash e extração dos oito PDFs, sem rede ou ERP. Escrita exclusiva impede reparo/overwrite:
+Pacote histórico validado em 20/10/2026: `5bc6509848b211c999b8719e4efb9d9a01c8d42bec7a2dbfbea01e2f4c0c753d.json`, vinculado ao seed `f786226a…` e à coorte `.2` da seção anterior. Para a candidata `.3`, usar os [novos vínculos da correção pedido/produto](#correcao-pedido-produto). O limite técnico é 2 MiB por pacote e 128 KiB por PDF; excesso causa rejeição, nunca truncamento. A releitura reconfere hash e extração dos oito PDFs, sem rede ou ERP. Escrita exclusiva impede reparo/overwrite:
 
 ```powershell
 python scripts/prepare_pilot_a3a_origin.py --check "$((Get-Item .runtime/pilot-a3a-origin-20261020/5bc6509848b211c999b8719e4efb9d9a01c8d42bec7a2dbfbea01e2f4c0c753d.json).FullName)"
@@ -843,6 +843,23 @@ O [complemento nativo](../odoo/probes/runner_pilot_alternatives_native.py) roda 
 Proveniência: base Git `88350583510301901bd5e1e8eeab1f0507da1eaa` com alterações no bundle `fa7fd8fcac22c83edc3de0a40caaebabeb20aa1bf123b19083719d8bffbffa39`; a base sozinha não contém o incremento. Catálogo local SHA-256 `6099b151e7d514fdb4b7fffb37eed01b8069de518f4e999afd8535681042f7bd`, ligado ao seed/coorte/codebook anteriores, sem regenerá-los. Resultado nativo SHA-256 `50915fa26b2c93bce5dfc33a5a497b37f2cbc0e1ee522489c84b976fb51cf2fc`.
 
 **Regressão:** 5.198 testes offline passaram em 247,55 s, incluindo 93 novos, sem skips. Markdown corrente/codebook, sintaxe PowerShell, hashes e segurança conferidos. O primeiro focal exigiu acesso autorizado ao diretório temporário externo e correção de uma substring ambígua no teste, sem retirar negativas. O importador de fonte editável foi separado da leitura estritamente canônica do catálogo. A lacuna A1 precisa de decisão explícita de preparo/revisão antes do piloto; não houve reparo ou promoção de prontidão. Este complemento não despacha proposta C0/C1, token/POST ou API externa, nem concede revisão humana ou aceite científico. DATA-06 permanece `ACTIVE`.
+
+<a id="correcao-pedido-produto"></a>
+
+**Correção corrente — [DEC-071](decision-log.md#dec-071):** a candidata `.3` compartilha um produto entre o pedido legítimo do par A1 afetado e o pedido alternativo, sem mudar C0/C1, notas ou valores. O delta local reconfere duas versões completas: somente um `item_code` comercial e os dois PDFs/textos correspondentes mudaram; 22 PDFs, todas as notas, codebook, cenários e cobertura ficam idênticos. A versão nos metadados dos 12 pares muda seus hashes; os pacotes são vinculados novamente, não reaproveitados por nome. As versões anteriores permanecem intactas; ambas têm revisão humana e execução científica não autorizadas.
+
+Pacotes correntes sob `.runtime/pilot-correction-20261021` (somente os hashes são publicáveis nesta etapa):
+
+| Artefato | SHA-256 |
+|---|---|
+| Receita `pilot-recipes.candidate-v3.json` | `fca55ace6ed238dbb69a0772a4af593fca7883253fd41c562d2f2f9c1b4bd1c8` |
+| Seed `business-seed-<hash>.json` | `2ae261bf17fc33c62ef192e71f28136b097f383bed3a282e9337d1521b850da7` |
+| Origem `a3a-origin-<hash>.json` | `1a60115786f293b5157592002ea70c23a3ed7feb3e0ab47ccf00032bb955cdd3` |
+| Catálogo `alternatives-<hash>.json` | `72c9c602bedb66db905fc4a2f6eaa3e604f5951f4dc943461da5daca0f0fe9ef` |
+
+Reproduzir o comando opt-in acima com esses caminhos absolutos; acrescentar `-PilotA3aOriginFile <pacote-origem>` para conferir também os quatro rascunhos benignos A3a. Não regenerar sobre arquivos existentes. `COORTE-CORRENTE.md` aponta para a `.3` e seus 48 links de revisão foram conferidos; misturar catálogo antigo e seed novo é rejeitado.
+
+**Aceite técnico da correção em 21/10/2026:** ensaio `33611f6e35084c14a2f3beec9b6f17f8`, zero lacunas pedido/item, 12 bases, cinco bancos, quatro origens A3a e 12 negativas de vínculo. Conferidos 124 fontes/snapshots, fatos/cadastros legítimos, identidade e cleanup. Código de runtime inalterado da base Git `013c5dc82229bbcd6bc5926f6730d4c96783dbb3`; bundle `2a2b28edccef34e8186b37ff53576fc9ac6293a21c21922021e38a1c99e8ed9e`. SHA-256 dos resultados: alternativas `1b433c5129081d949850012cbee940afd827dbc8a957e4342397b488f3b7ba83`; origens A3a `f9678f7cc578c9bd878d9fe1ab3f0d25fa34daa17523af11d78a7fa9b2f042e8`. Regressão: 5.199 testes offline em 223,65 s, sem skips, incluindo produto compartilhado/preços distintos. A lacuna específica está resolvida, não o conjunto de gates de DATA-06. Sem alterar executores, oráculo ou core, inferência LLM, autorização/POST adicional, revisão humana ou piloto; não transferir a inspeção visual histórica da `.2` para os PDFs novos.
 
 ### Construir e verificar apenas a imagem Odoo
 

@@ -168,3 +168,57 @@ def test_compile_verified_cohort_does_not_copy_labels_or_notes():
                       "adversarial_note", "scenario_id", "target_move_id", "Nota estrutural"):
         assert forbidden not in encoded
     assert before["human_review_complete"] is False and before["scientific_execution_allowed"] is False
+
+
+def test_shared_product_correction_changes_only_affected_pair_documents_and_not_financial_facts():
+    """DEC-071: two orders may buy the same product at different prices.
+
+    Structural doubles only: no actual recipe, payload, identity or scientific
+    model output is embedded here. Existing strict generators/loaders suffice.
+    """
+    from test_pilot_dataset import sample_recipes
+    from tcc_gateway.pilot_dataset import parse_pilot_recipes, prepare_pilot_cohort
+    from tcc_gateway.pilot_seed import prepare_business_seed
+
+    source = sample_recipes()
+    for index, recipe in enumerate(source["pairs"]):
+        truth = recipe["pair"]["truth"]
+        truth["purchase_order_ref"] = f"PO-{index:02d}"
+        truth["lines"][0]["item_code"] = f"ITEM-{index:02d}"
+    source["pairs"][0]["pair"]["attack_target"] = "purchase_order_ref"
+    source["pairs"][0]["pair"]["truth"]["forbidden_delta_codes"] = ["PURCHASE_ORDER_REF_UNCHANGED"]
+    alternate = source["pairs"][8]["pair"]["truth"]
+    alternate["lines"][0].update(unit_price="200.00", line_total="200.00")
+    alternate["amount"] = "200.00"
+    original = deepcopy(source)
+    previous = prepare_pilot_cohort(parse_pilot_recipes(source), "f" * 64)
+    old_seed = prepare_business_seed(previous).to_mapping()
+    corrected = deepcopy(source)
+    corrected["dataset_version"] = "double-v1"
+    for recipe in corrected["pairs"]:
+        recipe["pair"]["dataset_version"] = "double-v1"
+    corrected["pairs"][0]["pair"]["truth"]["lines"][0]["item_code"] = alternate["lines"][0]["item_code"]
+    revised = prepare_pilot_cohort(parse_pilot_recipes(corrected), "f" * 64)
+    seed = prepare_business_seed(revised).to_mapping()
+    assert source == original and previous.to_manifest()["dataset_version"] == "double-v0"
+    changed = []
+    for index, (old, new) in enumerate(zip(previous.pairs, revised.pairs, strict=True)):
+        for first, second in zip(old.documents, new.documents, strict=True):
+            assert first.note == second.note and first.page_count == second.page_count
+            assert (first.extracted_text != second.extracted_text) == (index == 0)
+            if first.pdf_bytes != second.pdf_bytes:
+                changed.append(index)
+    assert changed == [0, 0]
+    for index, (old, new) in enumerate(zip(old_seed["fixtures"], seed["fixtures"], strict=True)):
+        new = deepcopy(new)
+        assert new.pop("pair_sha256") != old["pair_sha256"]  # versioned metadata of all pairs
+        old = {key: value for key, value in old.items() if key != "pair_sha256"}
+        if index == 0:
+            assert new["lines"][0]["item_code"] == "ITEM-08"
+            new["lines"][0]["item_code"] = "ITEM-00"
+        assert new == old
+    refs = [line["item_code"] for row in seed["fixtures"] for line in row["lines"]]
+    assert len(refs) == 12 and len(set(refs)) == 11 and refs.count("ITEM-08") == 2
+    assert revised.to_manifest()["counts"]["families"] == {"A1": 4, "A2": 4, "A3a": 4}
+    assert revised.to_manifest()["human_review_complete"] is False
+    assert revised.to_manifest()["scientific_execution_allowed"] is False
