@@ -723,6 +723,47 @@ python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g
 
 **Limites e próximo trabalho:** hashes/projeções não autenticam administrador/SQL, não são o snapshot científico integral nem revisão humana. O núcleo financeiro, ACL C1 e `execute` permanecem inalterados/fechados. Depois do complemento técnico, ainda será preciso materializar e revisar as fixtures/alternativas dos 12 pares, demonstrar origem/aprovação A3a por proveniência e concluir entrega ao modelo/runner antes do piloto. Sem conjunto final, inferência paga ou execução científica.
 
+<a id="bases-comerciais-piloto"></a>
+
+### Bases comerciais dos 12 pares — DATA-06 / DEC-067
+
+Uma base comercial reúne fornecedor, banco legítimo, produto e pedido de compra (PO) confirmado, ainda sem faturamento. O [compilador](../gateway/src/tcc_gateway/pilot_seed.py) lê a coorte candidata integralmente verificada e projeta somente esses fatos em uma receita de carga (seed) administrativa. Notas, payloads, labels, ação/disposição esperada, aprovação e IDs financeiros não entram no pacote. Ele não é enviado ao modelo nem autoriza o executor. Hashes conferem integridade, não autoria ou revisão humana.
+
+Preparar uma única vez em raiz privada nova; os diretórios/arquivos anteriores não são apagados ou sobrescritos:
+
+```powershell
+New-Item -ItemType Directory -Path .runtime/pilot-business-20261020
+python scripts/prepare_pilot_business_seed.py --cohort-root "$((Get-Item .runtime/p4).FullName)" --cohort-sha256 3402e2c48349066fb17f3563b7ac045351a7a5325424767f245743764e9aedbe --output-root "$((Get-Item .runtime/pilot-business-20261020).FullName)"
+```
+
+O pacote corrente é `f786226ae7a970abb4f0d9bedf3d4d3bc2136a878c12d82cda3ef6200982c5d4.json`. Fica somente na `.runtime`, como a coorte/receitas; clonagem recebe ferramentas e doubles de desenvolvimento, não dados ainda sem revisão para publicação. Releitura isolada, sem escrever ou chamar ERP:
+
+```powershell
+python scripts/prepare_pilot_business_seed.py --check "$((Get-Item .runtime/pilot-business-20261020/f786226ae7a970abb4f0d9bedf3d4d3bc2136a878c12d82cda3ef6200982c5d4.json).FullName)"
+```
+
+Prova de carga, com as mesmas imagens locais fixadas e Docker disponível:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test_runner_native.ps1 -WithObserved -WithDatasetFixtures -DockerContext desktop-linux -PilotSeedFile "$((Get-Item .runtime/pilot-business-20261020/f786226ae7a970abb4f0d9bedf3d4d3bc2136a878c12d82cda3ef6200982c5d4.json).FullName)"
+```
+
+`-PilotSeedFile` exige as duas flags anteriores. O harness verifica/snapshotta o seed, mantém os fluxos históricos e executa a carga **depois** dos nove casos, para não alterar suas projeções. O [probe](../odoo/probes/runner_pilot_seed_native.py) só aceita o banco descartável e a empresa sintética BRL conhecidos. Rejeita referências preexistentes, não reconcilia cadastros e usa o preparo bancário administrativo nativo já existente. Confere fatos persistidos em cursor novo: total/linhas ao centavo, quantidades disponíveis, fornecedor/banco/produto e ausência de impostos/descontos. Projeção financeira, cadastros anteriores e inventário de permissões devem permanecer intactos; chatter interno de criação não pode ser tratado como mensagem externa.
+
+`pilot-business-seed-result.json` registra a carga nativa e seus vínculos somente na pasta privada de artefatos. O envelope externo usa `runner-pilot-business-seed-evidence/v1`, com hashes do seed/resultado/coorte e contagem de bases, sem mudar os schemas históricos. Só recebe `PASS` após conferência das fontes e cleanup; a prova é descartável, não uma carga mantida no laboratório persistente. Nenhum pull/build/instalação, API LLM, documento real ou pagamento é necessário.
+
+**Prova nativa em 20/10/2026:** `PASS` no ensaio `a8974ef988284e7eb69a186010e31ae1`, sobre a fonte preparada para commit. Carregadas 12 bases com 12 fornecedores, 12 bancos legítimos e 12 POs distintos; os 12 produtos/linhas e todos os fatos foram conferidos no cursor novo. Projeção financeira, cadastros anteriores e inventário de permissões preservados. As provas anteriores também passaram: nove casos históricos/68 leituras e dois doubles/19 leituras JSON-2, em fases separadas. Fontes estáveis e cleanup conferidos; os registros descartáveis não permanecem no laboratório. O primeiro sucesso `24d8ed68…` foi preservado; a repetição final apenas reconfirmou os hashes após retirar duas linhas vazias finais, sem novos cenários científicos. Duas tentativas interrompidas foram conservadas, sem contar como sucesso; [causas e correções](decision-log.md#dec-067).
+
+Proveniência: base Git `827bf486e9ae98d7e503e53125e669440f226120`, com alterações identificadas pelo bundle de 119 fontes `191af98109037bbbe6ee7c095a13ffca483d0409c3bae19cbe0c71c96aa3abf6`; não afirmar que a base anterior já continha esse código. SHA-256 do resultado nativo: `8afe9eae2720aefb530ef1177667d22a5ff341709816d2460b7857de36968294`. Resultado vincula empresa lógica/física, codebook, coorte e seed; hashes de todas as fontes correntes conferem o snapshot. Coorte/codebook/PDFs originais e gates continuam intactos.
+
+**Regressão da mesma fonte:** 4.986 testes offline passaram em 202,99 s, incluindo 95 novos, sem skips; focal de 135 em 9,31 s. Contrato fechado/decimais/ASCII, ausência de labels/autoridade, importação stdlib isolada, escrita exclusiva/releitura, caminho externo e preservação financeira/comercial incluídos. Testes offline não substituem nem são somados à prova ORM acima. Reproduzir na raiz:
+
+```powershell
+python -m pytest gateway/tests tests scripts/test_g3b_topology.py scripts/test_g3c_topology.py -q -p no:cacheprovider -c gateway/pyproject.toml --basetemp .runtime/pytest-pilot-business-commit-20261020
+```
+
+**Ainda falta:** cadastros alternativos A1/A2 e, para A3a, CREATE auditado/rascunho e aprovação por proveniência de cada cenário/documento. As bases comerciais sozinhas não são 12 fixtures completas. Não há ação POST fabricada, token gerado, `execute` aberto, Delivery Rate ao modelo, revisão humana ou piloto executado. A coorte/codebook/PDFs e seus gates não são alterados por essa ferramenta.
+
 ### Construir e verificar apenas a imagem Odoo
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_odoo_image.ps1

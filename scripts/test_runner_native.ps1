@@ -1,8 +1,9 @@
 # DEC-051/054: isolated native proof, never the existing laboratory or a scientific run.
-param([switch]$WithObserved, [switch]$WithDatasetFixtures, [ValidateSet('desktop-linux')][string]$DockerContext)
+param([switch]$WithObserved, [switch]$WithDatasetFixtures, [ValidateSet('desktop-linux')][string]$DockerContext, [string]$PilotSeedFile)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ($WithDatasetFixtures -and -not $WithObserved) { throw 'Dataset fixture proof requires -WithObserved' }
+if ($PilotSeedFile -and -not ($WithObserved -and $WithDatasetFixtures)) { throw 'Pilot business seed requires -WithObserved -WithDatasetFixtures' }
 $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $runId = [guid]::NewGuid().ToString('N')
 $ownerLabel = 'tcc.runner.run'
@@ -50,6 +51,7 @@ function Get-RunnerSourceHashes {
         $paths += @('odoo/probes/runner_dataset_fixture_native.py', 'odoo/probes/runner_dataset_fixture_gateway.py',
             'scripts/validate_dataset_fixture_evidence.py')
     }
+    if ($PilotSeedFile) { $paths += @('odoo/probes/runner_pilot_seed_native.py', 'scripts/prepare_pilot_business_seed.py') }
     foreach ($path in ($paths | Sort-Object -Unique)) {
         $path = $path -replace '\\', '/'
         if ($path.Contains('..') -or [System.IO.Path]::GetExtension($path) -notin @('.py', '.xml', '.json', '.ps1')) { throw 'Unexpected native proof source' }
@@ -81,6 +83,14 @@ function Invoke-NativeMode {
 }
 
 try {
+    $seedCheck = $null
+    if ($PilotSeedFile) {
+        $seedOutput = @(& python (Join-Path $repositoryRoot 'scripts/prepare_pilot_business_seed.py') --check $PilotSeedFile 2>&1)
+        if ($LASTEXITCODE -ne 0) { throw 'Invalid private pilot business seed' }
+        $seedCheck = ($seedOutput -join '') | ConvertFrom-Json
+        if ($seedCheck.status -cne 'PASS' -or $seedCheck.seed_sha256 -cnotmatch '^[0-9a-f]{64}$' -or
+            $seedCheck.fixture_count -isnot [int] -or $seedCheck.fixture_count -ne 12) { throw 'Invalid pilot seed summary' }
+    }
     if ($DockerContext) {
         $endpoint = ((Invoke-RunnerDocker @('context', 'inspect', $DockerContext, '--format', '{{.Endpoints.docker.Host}}') 'docker-context.log') -join '').Trim()
         if (-not $endpoint.StartsWith('npipe://', [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Runner proof requires a local named-pipe Docker endpoint' }
@@ -130,6 +140,11 @@ try {
     if ($LASTEXITCODE -ne 0 -or $gitBase -notmatch '^[0-9a-f]{40}$') { throw 'Cannot identify Git base' }
     $artifacts = Join-Path $probeRoot 'artifacts'
     $null = New-Item -ItemType Directory -Path $artifacts
+    if ($PilotSeedFile) {
+        $seedSnapshot = Join-Path $artifacts 'pilot-business-seed.json'
+        Copy-Item -LiteralPath $PilotSeedFile -Destination $seedSnapshot
+        if ((Get-FileHash -LiteralPath $seedSnapshot -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seedCheck.seed_sha256) { throw 'Pilot seed changed during snapshot' }
+    }
     $postgresEnvironment = Join-Path $probeRoot 'postgres.env'
     $configuration = Join-Path $probeRoot 'odoo.conf'
     $secretBytes = New-Object byte[] 32
@@ -147,6 +162,7 @@ try {
     [Array]::Clear($secretBytes, 0, $secretBytes.Length)
     $probeArguments = @('--database', $databaseName, '--git-base', $gitBase, '--source-bundle-sha256', $bundleHash)
     if ($WithDatasetFixtures) { $probeArguments += '--dataset-fixture-mode' }
+    if ($PilotSeedFile) { $probeArguments += @('--pilot-seed-sha256', $seedCheck.seed_sha256) }
     $created.network = $true
     $null = Invoke-RunnerDocker @('network', 'create', '--internal', '--label', ($ownerLabel + '=' + $runId), $networkName) 'network-create.log'
     $created.volume = $true
@@ -167,6 +183,10 @@ try {
         '--mount', ('type=bind,source=' + (Join-Path $snapshot 'odoo/probes') + ',target=/mnt/runner-probes,readonly'),
         '--mount', ('type=bind,source=' + $artifacts + ',target=/mnt/runner-artifacts'),
         '--mount', ('type=bind,source=' + $configuration + ',target=/etc/odoo/runner.conf,readonly'))
+    if ($PilotSeedFile) {
+        $odooBase += @('--env', 'PYTHONPATH=/opt/odoo:/mnt/runner-gateway/src', '--env', 'PYTHONDONTWRITEBYTECODE=1',
+            '--mount', ('type=bind,source=' + (Join-Path $snapshot 'gateway') + ',target=/mnt/runner-gateway,readonly'))
+    }
     $created.odoo = $true
     $null = Invoke-RunnerDocker ($odooBase + @($odooImage, 'python', '/opt/odoo/odoo-bin', '-c', '/etc/odoo/runner.conf', '-d', $databaseName, '-i', 'ap_security_executor', '--without-demo=True', '--stop-after-init', '--no-http')) 'install.log'
     Remove-RunnerContainer $odooName
@@ -306,6 +326,31 @@ try {
         $result['dataset_fixture_validation_sha256'] = (Get-FileHash -LiteralPath $datasetValidationPath -Algorithm SHA256).Hash.ToLowerInvariant()
         $result['dataset_fixture_case_count'] = $datasetFixtureValidation.case_count
         $result['dataset_fixture_json2_request_count'] = $datasetFixtureValidation.native_json2_request_count
+    }
+    if ($PilotSeedFile) {
+        Invoke-NativeMode 'pilot-business-seed'
+        Assert-RunnerSources $sourceHashes (Get-RunnerSourceHashes)
+        $seedResultPath = Join-Path $artifacts 'pilot-business-seed-result.json'
+        $seedResult = Get-Content -Raw -Encoding UTF8 -LiteralPath $seedResultPath | ConvertFrom-Json
+        if ($seedResult.schema_version -cne 'pilot-business-seed-native/v1' -or $seedResult.status -cne 'PASS' -or
+            $seedResult.git_base -cne $gitBase -or $seedResult.source_bundle_sha256 -cne $bundleHash -or
+            $seedResult.seed_sha256 -cne $seedCheck.seed_sha256 -or $seedResult.cohort_sha256 -cne $seedCheck.cohort_sha256 -or
+            $seedResult.codebook_sha256 -cne $seedCheck.codebook_sha256 -or
+            $seedResult.fixture_count -isnot [int] -or $seedResult.fixture_count -ne 12 -or @($seedResult.bindings).Count -ne 12) { throw 'Pilot seed native provenance or counts mismatch' }
+        foreach ($name in @('financial_projection_preserved', 'executor_identity_unchanged', 'fresh_cursor_facts_verified')) {
+            if ($seedResult.$name -isnot [bool] -or -not $seedResult.$name) { throw 'Pilot seed native checks invalid' }
+        }
+        foreach ($name in @('scientific_run', 'human_review_complete', 'public_executor_enabled', 'approval_generated', 'a3a_target_prepared', 'alternatives_prepared')) {
+            if ($seedResult.$name -isnot [bool] -or $seedResult.$name) { throw 'Pilot seed native limits invalid' }
+        }
+        $result.schema_version = 'runner-pilot-business-seed-evidence/v1'
+        $result.decision = 'DEC-067'
+        $result['pilot_seed_sha256'] = $seedCheck.seed_sha256
+        $result['pilot_cohort_sha256'] = $seedCheck.cohort_sha256
+        $result['pilot_business_fixture_count'] = $seedResult.fixture_count
+        $result['pilot_seed_a3a_target_prepared'] = $false
+        $result['pilot_seed_alternatives_prepared'] = $false
+        $result['pilot_seed_result_sha256'] = (Get-FileHash -LiteralPath $seedResultPath -Algorithm SHA256).Hash.ToLowerInvariant()
     }
     [System.IO.File]::WriteAllText((Join-Path $probeRoot 'evidence.json'), ($result | ConvertTo-Json -Depth 8) + "`n", $encoding)
 }
