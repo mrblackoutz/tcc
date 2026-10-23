@@ -246,9 +246,14 @@ def materialize(registry, args):
         prepare_approval(args, registry, contexts)
 
 
+def approved_post(registry, args):
+    from pilot_approved_post_native import run
+    run(args, registry)
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("mode", choices=("prepare", "capture", "materialize"))
+    parser.add_argument("mode", choices=("prepare", "capture", "materialize", "approved-post"))
     parser.add_argument("--database", required=True)
     parser.add_argument("--git-base", required=True)
     parser.add_argument("--source-bundle-sha256", required=True)
@@ -257,13 +262,16 @@ def main():
     parser.add_argument("--secret-directory", default="/run/runner-secrets")
     parser.add_argument("--fixture-ref")
     parser.add_argument("--with-approval-binding", action="store_true")
+    parser.add_argument("--with-approved-post", action="store_true")
     parser.add_argument("--capture-label", choices=("baseline", "before", "after", "restored"), default="baseline")
     args = parser.parse_args()
     if (not _DB.fullmatch(args.database) or not re.fullmatch(r"[0-9a-f]{40}", args.git_base)
             or not _SHA.fullmatch(args.source_bundle_sha256) or args.config != "/etc/odoo/runner.conf"
             or args.artifacts != "/mnt/runner-artifacts" or args.secret_directory != "/run/runner-secrets"
-            or (args.mode == "materialize") != (args.fixture_ref is not None)
-            or args.with_approval_binding and args.mode != "materialize"
+            or (args.mode in {"materialize", "approved-post"}) != (args.fixture_ref is not None)
+            or args.with_approval_binding and args.mode not in {"materialize", "approved-post"}
+            or args.with_approved_post and (not args.with_approval_binding or args.mode not in {"materialize", "approved-post"})
+            or args.mode == "approved-post" and not args.with_approved_post
             or args.mode != "capture" and args.capture_label != "baseline"):
         raise SystemExit("PILOT_RESET_INVALID_CONFIGURATION")
     logging.disable(logging.CRITICAL)
@@ -273,9 +281,10 @@ def main():
         odoo.tools.config.parse_config(["-c", args.config, "-d", args.database, "--no-http"], setup_logging=False)
         _require(not odoo.tools.config["test_enable"])
         registry = Registry(args.database)
-        globals()[args.mode](registry, args)
+        {"prepare": prepare, "capture": capture, "materialize": materialize, "approved-post": approved_post}[args.mode](registry, args)
     except Exception as error:
-        allowed = {"pilot_reset_native.py", "pilot_approval_native.py", "runner_pilot_seed_native.py", "runner_pilot_alternatives_native.py",
+        allowed = {"pilot_reset_native.py", "pilot_approval_native.py", "pilot_post_custody.py", "pilot_approved_post_native.py",
+                   "runner_pilot_seed_native.py", "runner_pilot_alternatives_native.py",
                    "runner_pilot_a3a_origin_native.py", "runner_observed_fixture.py", "company_capture_native.py"}
         frames = [frame for frame in traceback.extract_tb(error.__traceback__)
                   if Path(frame.filename).name in allowed]

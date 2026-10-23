@@ -1,8 +1,8 @@
 """DEC-073 pilot preparation specialization of the existing snapshot harness.
 
 Eight administrative CREATE origins, sixteen real restorations. DEC-074 adds
-opt-in in-memory approval binding; no POST, provider or scientific execution.
-Concrete inputs/evidence remain ignored.
+in-memory binding; DEC-075 adds opt-in private POST across native processes.
+No provider or scientific execution. Concrete inputs/evidence remain ignored.
 """
 
 import argparse
@@ -109,12 +109,41 @@ def validate_approval_result(result, *, fixture_ref, scenario_id, document_sha25
     return deepcopy(result)
 
 
+def validate_post_result(result, *, approval, database):
+    """Closed private POST evidence, never a scientific approval attribution."""
+    bindings = {name: approval[name] for name in ("fixture_ref", "scenario_id", "document_sha256",
+        "origin_input_sha256", "seed_sha256", "cohort_sha256", "codebook_sha256", "git_base",
+        "source_bundle_sha256", "action_sha256", "approval_sha256", "nonce_sha256", "profile")}
+    bindings["database"] = database
+    enabled = {"fresh_cursor_receipt_nonce_pdf_verified", "executor_identity_unchanged",
+               "custody_between_phases", "nonce_consumed"}
+    disabled = {"external_provider_called", "scientific_run", "human_review_complete",
+                "public_executor_enabled", "policy_engine_used", "llm_stage_used", "gateway_handoff_performed"}
+    counts = {"posted_count", "replay_count", "invalid_mac_rejections"}
+    hashes = {"command_sha256", "origin_sha256"}
+    require(type(result) is dict and set(result) == set(bindings) | enabled | disabled | counts | hashes | {
+                "schema_version", "status"}
+            and result["schema_version"] == "pilot-a3a-approved-post-native/v1" and result["status"] == "PASS"
+            and all(result[name] == value for name, value in bindings.items())
+            and all(type(result[name]) is int and result[name] == 1 for name in counts)
+            and all(result[name] is True for name in enabled)
+            and all(result[name] is False for name in disabled)
+            and all(type(result[name]) is str and re.fullmatch(r"sha256:[0-9a-f]{64}", result[name])
+                    for name in hashes), "INVALID_PILOT_POST_RESULT")
+    return deepcopy(result)
+
+
 class PilotResetHarness(StateHarness):
     with_approval_binding = False
+    with_approved_post = False
 
-    def __init__(self, *, seed_file, alternatives_file, origin_files, with_approval_binding=False, **kwargs):
+    def __init__(self, *, seed_file, alternatives_file, origin_files, with_approval_binding=False,
+                 with_approved_post=False, **kwargs):
         require(type(with_approval_binding) is bool, "INVALID_APPROVAL_BINDING_MODE")
+        require(type(with_approved_post) is bool and (not with_approved_post or with_approval_binding),
+                "INVALID_APPROVED_POST_MODE")
         self.with_approval_binding = with_approval_binding
+        self.with_approved_post = with_approved_post
         seed = _read_private(seed_file, PilotBusinessSeed, MAX_SEED_BYTES)
         catalog = _read_private(alternatives_file, PilotAlternativeCatalog, MAX_ALTERNATIVES_BYTES)
         require(type(origin_files) in (list, tuple) and len(origin_files) == 2, "INVALID_PILOT_INPUTS")
@@ -138,10 +167,32 @@ class PilotResetHarness(StateHarness):
         result["scripts/pilot_materialization_reset.py"] = sha256(self.repository / "scripts/pilot_materialization_reset.py")
         return dict(sorted(result.items()))
 
+    @property
+    def private_approval_volume(self):
+        return self.prefix + "-approval-private"
+
+    def provision_approval_custody(self):
+        require(self.with_approved_post is True and self.with_approval_binding is True,
+                "INVALID_APPROVED_POST_MODE")
+        self.create_volume(self.private_approval_volume, size=1_048_576)
+        holder = self.prefix + "-approval-private-holder"
+        self.containers.add(holder)
+        # The generic harness cleanup removes the labelled holder last and
+        # verifies absence before issuing PASS. No gateway or data mount here.
+        from state_oracle_harness import OWNER
+        self.docker(["run", "--detach", "--pull", "never", "--name", holder,
+            "--label", OWNER + "=" + self.run_id, "--network", "none", "--read-only",
+            "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true",
+            *self.mount(self.private_approval_volume, "/run/pilot-approval-private", volume=True),
+            "--entrypoint", "python", self.odoo_image, "-c", "import time; time.sleep(14400)"])
+
     def native(self, mode, database, data, artifacts, *, fixture_ref=None, capture_label="baseline"):
         self.assert_database(database)
-        require(mode in {"prepare", "capture", "materialize"} and artifacts.is_relative_to(self.artifacts)
-                and (fixture_ref is None or mode == "materialize"), "INVALID_PILOT_PHASE")
+        require(mode in {"prepare", "capture", "materialize", "approved-post"}
+                and artifacts.is_relative_to(self.artifacts)
+                and (fixture_ref is None or mode in {"materialize", "approved-post"})
+                and (mode != "approved-post" or self.with_approved_post is True and fixture_ref is not None),
+                "INVALID_PILOT_PHASE")
         name = self.prefix + "-pilot-phase"
         arguments = self.odoo_arguments(database, data, name)
         old_mount = self.mount(self.artifacts, "/mnt/runner-artifacts")[1]
@@ -152,14 +203,20 @@ class PilotResetHarness(StateHarness):
                    "--capture-label", capture_label]
         if fixture_ref is not None:
             command += ["--fixture-ref", fixture_ref]
-        if mode == "materialize" and self.with_approval_binding:
+        if mode in {"materialize", "approved-post"} and self.with_approval_binding:
             command.append("--with-approval-binding")
+        if mode in {"materialize", "approved-post"} and self.with_approved_post:
+            require(self.private_approval_volume in self.volumes, "MISSING_APPROVAL_CUSTODY")
+            arguments += self.mount(self.private_approval_volume, "/run/pilot-approval-private", volume=True)
+            command.append("--with-approved-post")
         self.containers.add(name)
         self.docker([*arguments, "--entrypoint", "python", self.odoo_image, *command], timeout=240)
         self.remove_container(name)
 
     def provision(self):
         database, data = self.provision_runtime()
+        if self.with_approved_post:
+            self.provision_approval_custody()
         for name, encoded in (("pilot-business-seed.json", self.seed._encoded),
                               ("pilot-alternatives.json", self.catalog._encoded),
                               ("pilot-a3a-origin.json", self.origins[0]._encoded),
@@ -244,12 +301,25 @@ class PilotResetHarness(StateHarness):
                         seed_sha256=self.seed.sha256, cohort_sha256=self.proof_inputs["cohort_sha256"],
                         codebook_sha256=self.proof_inputs["codebook_sha256"], git_base=self.git_base,
                         source_bundle_sha256=self.bundle_hash)
+                posted = None
+                if self.with_approved_post:
+                    self.native("approved-post", database, data, artifacts, fixture_ref=source["fixture_ref"])
+                    posted = validate_post_result(read_record(artifacts / "pilot-a3a-approved-post-result.json"),
+                                                  approval=approval, database=database)
                 self.native("capture", database, data, artifacts, capture_label="after")
                 after = read_capture(artifacts / "after.capture.json", self.binding)
                 before_rows, after_rows = before.to_mapping()["records"], after.to_mapping()["records"]
                 require(after.reset_sha256 != before.reset_sha256, "MATERIALIZATION_EFFECT_MISSING")
                 for model in ("account.move", "ap.security.draft.receipt", "ap.security.audit.event", "ir.attachment"):
-                    require(len(after_rows[model]) == len(before_rows[model]) + 1, "MATERIALIZATION_EFFECT_SCOPE")
+                    delta = {"ap.security.draft.receipt": 2, "ap.security.audit.event": 4}.get(model, 1) if posted else 1
+                    require(len(after_rows[model]) == len(before_rows[model]) + delta, "MATERIALIZATION_EFFECT_SCOPE")
+                if posted:
+                    require(len(after_rows["ap.security.approval.nonce"]) == len(before_rows["ap.security.approval.nonce"]) + 1
+                            and sum(row["state"] == "consumed" for row in after_rows["ap.security.approval.nonce"])
+                                == sum(row["state"] == "consumed" for row in before_rows["ap.security.approval.nonce"]) + 1
+                            and sum(row["state"] == "posted" for row in after_rows["account.move"])
+                                == sum(row["state"] == "posted" for row in before_rows["account.move"]) + 1,
+                            "APPROVED_POST_EFFECT_SCOPE")
                 restored_database, restored_data = self.restore(generation + 1)
                 reset_artifacts = self.clone_artifacts(restored_database, source["fixture_ref"], member_index)
                 self.native("capture", restored_database, restored_data, reset_artifacts, capture_label="restored")
@@ -265,6 +335,8 @@ class PilotResetHarness(StateHarness):
                     "origin_result_sha256": sha256(artifacts / "pilot-a3a-origin-result.json")})
                 if approval is not None:
                     cases[-1]["approval"] = approval
+                if posted is not None:
+                    cases[-1]["post"] = posted
                 print("PILOT_MATERIALIZATION_RESET_CASE_PASS_" + str(len(cases)), flush=True)
         require(len(cases) == 8 and len({row["document_sha256"] for row in cases}) == 8, "INCOMPLETE_PILOT_MATRIX")
         if self.with_approval_binding:
@@ -286,6 +358,13 @@ class PilotResetHarness(StateHarness):
                 approval_negative_check_count=sum(case["approval"]["negative_check_count"] for case in cases),
                 nonce_reserved=False, approval_custody_between_phases=False,
                 operational_approval_profile_ratified=False, run_record_approval_attribution_performed=False)
+        if self.with_approved_post:
+            self.result.update(schema_version="pilot-materialization-approved-post-reset-evidence/v1", decision="DEC-075",
+                post_executed=True, nonce_reserved=True, approval_custody_between_phases=True,
+                posted_count=sum(case["post"]["posted_count"] for case in cases),
+                replay_count=sum(case["post"]["replay_count"] for case in cases),
+                invalid_mac_rejections=sum(case["post"]["invalid_mac_rejections"] for case in cases),
+                policy_engine_used=False, llm_stage_used=False, gateway_handoff_performed=False)
         self.write_evidence()
 
 
@@ -297,12 +376,14 @@ def main(argv=None):
     parser.add_argument("--docker-context", choices=("desktop-linux",))
     parser.add_argument("--with-approval-binding", action="store_true",
                         help="DEC-074 in-memory technical binding only; no POST or durable custody")
+    parser.add_argument("--with-approved-post", action="store_true",
+                        help="DEC-075 private tmpfs custody and administrative POST/replay; requires approval binding")
     args = parser.parse_args(argv)
     instance = None
     try:
         instance = PilotResetHarness(seed_file=args.seed_file, alternatives_file=args.alternatives_file,
                                     origin_files=args.origin_files, docker_context=args.docker_context,
-                                    with_approval_binding=args.with_approval_binding)
+                                    with_approval_binding=args.with_approval_binding, with_approved_post=args.with_approved_post)
         instance.run()
     except (ValueError, OSError, subprocess.SubprocessError, KeyError, TypeError):
         if instance is not None:

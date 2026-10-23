@@ -214,4 +214,20 @@ def run(args, registry, contexts):
         "external_provider_called": False, "scientific_run": False, "human_review_complete": False,
         "public_executor_enabled": False,
     })
+    if getattr(args, "with_approved_post", False):
+        from dataclasses import asdict
+        from pilot_post_custody import VERSION, write_capsule
+        _require(args.with_approved_post is True)
+        write_capsule(args.database, {
+            "schema_version": VERSION, "clone_binding": deepcopy(link), "git_base": args.git_base,
+            "source_bundle_sha256": args.source_bundle_sha256, "cohort_sha256": proof["cohort_sha256"],
+            "codebook_sha256": proof["codebook_sha256"], "scenario_id": source["document"]["scenario_id"],
+            "document_sha256": source["document"]["document_sha256"], "company_id": base.company_id,
+            "executor_user_id": base.user_id, "registration_id": context["registration"].registration_id,
+            "registration_sha256": context["registration"].registration_sha256,
+            "origin": deepcopy(origin), "create_result": deepcopy(context["result"]),
+            "command": deepcopy(scope.post_command), "authority": asdict(scope.authority),
+            "key_material": scope.key.material.hex(), "before_projection_sha256": _hash(before),
+            "identity_sha256": inventory["inventory_sha256"],
+        })
     scope.key = scope.authority = scope.post_command = None
