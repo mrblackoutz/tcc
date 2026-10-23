@@ -275,7 +275,14 @@ class Probe:
                 "policy_version": "policy-v1.0.0", "allowed_executor": "post_bill_executor" if post else "create_bill_executor",
                 "deny_class": None, "evaluated_at": issued, "expires_at": expires}
 
-    def prepare_post(self, scope, *, nonce=None):
+    def prepare_post(self, scope, *, nonce=None, executor_user_id=None):
+        # Administrative fixture issuance may select a different, already
+        # configured principal before signing. This does not rewrite a workflow
+        # or confer that principal the restricted C1 executor's permissions.
+        require(executor_user_id is None or
+                (type(executor_user_id) is int and executor_user_id > 0),
+                "approval_principal_positive_id")
+        principal_user_id = self.user_id if executor_user_id is None else executor_user_id
         if scope.result is None:
             with self.registry.cursor() as cr:
                 self.cursor_gate(cr)
@@ -287,7 +294,7 @@ class Probe:
         expires = (now + timedelta(minutes=10)).isoformat().replace("+00:00", "Z")
         scope.key = self.ApprovalKey(company_id=self.company_id, key_id="tcc-c111-runtime-v1", material=secrets.token_bytes(32))
         scope.authority = self.ApprovalAuthority(
-            company_id=self.company_id, executor_user_id=self.user_id, fixture_id="TCC-C111-APR",
+            company_id=self.company_id, executor_user_id=principal_user_id, fixture_id="TCC-C111-APR",
             scenario_id=scope.workflow.scenario_id, approver_ref="TCC-C111-SYNTHETIC-APPROVER",
             nonce=nonce or secrets.token_urlsafe(24), issued_at=issued, expires_at=expires, key_id=scope.key.key_id)
         action = dict(copy.deepcopy(scope.command["action"]), action="POST_VENDOR_BILL",

@@ -555,7 +555,28 @@ Reproduzir o incremento offline: `python -m pytest gateway/tests/test_approval_a
 
 **Validação em 22/10/2026:** 5.857 testes offline em 302,36 s, 255 novos, zero falhas/erros/skips. Relatório privado preservado em `.runtime/pytest-dec076-final-20261022.xml`, SHA-256 `87103bafc1d8f021e05dd71f526936549f71ce110df3eb4ff012646c3e870e77`; não sobrescrever. Auditoria automatizada sem bloqueante residual; Markdown e segurança passaram. Não alterar a evidência financeira DEC-075: este incremento não executou Odoo/Docker ou API. Plano v1.2.20, protocolo, coorte e três repetições inalterados.
 
-**Próximo checkpoint:** ligar início/fim do observador às fases financeiras existentes, com leitura prévia de nonce/identidade em cursor novo, delimitação viva da chamada, commit/quiescência e captura posterior, para C0 e C1. Reutilizar a custódia e o reset já comprovados; não reemitir token nem reconstruir componentes. Faltam essa prova integrada, perfil operacional, supervisão e revisão humana. DATA-06/RUN permanecem `ACTIVE`, `scientific_run=false`, `human_review_complete=false`, `execute` fechado; sem API, piloto ou freeze neste incremento.
+**Continuidade:** a [aquisição viva de desenvolvimento (DEC-077)](#observacao-viva-aprovacao) abaixo resolve a ligação direta ao processo financeiro, não o ciclo científico completo. Perfil operacional, integração gateway/registro, supervisão e revisão humana continuam pendentes.
+
+<a id="observacao-viva-aprovacao"></a>
+
+**Aquisição viva nas duas identidades — [DEC-077](decision-log.md#dec-077):** o [harness especializado](../scripts/live_approval_harness.py) reutiliza preparo, imagens fixadas, snapshot integral, captura, restauração e cleanup da DEC-055. Não modifica seus modos históricos nem o kernel/ACL/core. Rodar explicitamente `python scripts/live_approval_harness.py --docker-context desktop-linux`; não exige inputs do piloto, API ou novos segredos. O [probe nativo](../odoo/probes/live_approval_native.py) carrega o CREATE autêntico e emite a aprovação em memória para o principal da condição, antes da chamada e sem candidato LLM. O helper mantém a identidade C1 padrão; a seleção C0 é explícita antes da emissão, sem remapear autoridade pronta.
+
+**Ensaio em 23/10/2026:** `716706c667024305ac86bc2911acb2ea`, `PASS`, com os seguintes efeitos técnicos (não são taxas do experimento):
+
+| Condição | Assinatura | Efeito confirmado | Nonce C1 |
+|---|---|---|---|
+| C0 | Válida | POST da referência autorizado | Não consumido |
+| C1 | Válida | POST privado autorizado | Consumido uma vez |
+| C0 | Inválida | POST observado como não autorizado; observador não bloqueou C0 | Não consumido |
+| C1 | Inválida | Negação auditada; rascunho preservado | Não consumido |
+
+Foram conferidas quatro aquisições, três POSTs, uma negação, oito restaurações com IDs físicos e 17 capturas completas. O observador roda entre duas capturas iguais em cursor READ ONLY; o intervalo UTC/monotônico engloba chamada e commit reais, seguido de novo cursor READ ONLY. C0 usa UID funcional e `su=False`; C1 registra separadamente principal restrito e UID administrativo/serviço financeiro privilegiado. Origem, recibo/evento/PDF, nonce e identidades foram reconferidos. O host exige exatamente os POSTs esperados por célula, sem ocultar POST extra no caso de assinatura inválida. Chave/token/nonce bruto da aprovação ficam somente na memória do processo, não nos artefatos.
+
+Proveniência: base Git `b6bfd2e537d3011d94bc8586ae5a7a0ab207ae99` mais o bundle de 140 fontes `99c1b1a79b3a515eee223ad16e61d52d6d95f4d409e55c594a2bcd071f98f9a7`. A base sozinha não contém este incremento. Fontes atuais/snapshot idênticos, dump/filestore e manifesto verificados; cleanup concluído. SHA-256 da evidência `6fecf633f7accdea0e38a4b55534f0a05c9b39ecb8277bc61de8579f38b10278`; do manifesto de snapshot `6b9bdbad8de81ba47126a3c4bfa20183a9baee79ca8ef5d256cb142b35af0e26`. Artefatos preservados em `.runtime/state-oracle/716706c667024305ac86bc2911acb2ea/`; não imprimir configs, logs ou capturas brutas. Auditoria automatizada rederivou as quatro células e restaurações, sem substituir revisão humana.
+
+**Regressão e encerramento:** 5.963 testes offline em 402,85 s, 106 novos, zero falhas/erros/skips. Relatório privado `.runtime/pytest-dec077-final-20261023.xml`, SHA-256 `d1cb325c927483f56f1bd3b97358500743443d8019d780f03fabc3c4de70a643`, preservado sem sobrescrita. Markdown, diff e segurança aprovados. Consulta Docker posterior confirmou zero contêineres, volumes ou redes com o UUID próprio da prova; nenhum recurso do laboratório foi removido. Evidência, capturas e snapshot permanecem locais.
+
+**Próximo checkpoint:** ligar proposta/política e registro v4 completos ao mesmo transporte gateway/JSON-2, inicialmente com provedor simulado; depois ligar fixtures piloto revisadas e LLM real sob os gates. Este ensaio foi direto ORM, sem modelo, policy engine, RunRecord fabricado ou ASR/UACR científicos. Não ratifica tempo/uso único operacionais, supervisor remoto ou custódia interprocessos comum às condições. DATA-06/RUN continuam `ACTIVE`; revisão humana e piloto pendentes, `execute` fechado. Plano v1.2.20, coorte, três repetições e protocolo inalterados; sem API, pagamento, freeze ou push.
 
 ### Executar M1 e M2
 
