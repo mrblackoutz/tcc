@@ -536,6 +536,27 @@ Base Git `fc94b8644877bd3ccc9d823cf1886ba810304351` mais alterações no bundle 
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test.ps1
 
+<a id="atribuicao-aprovacao-registro-v4"></a>
+
+**Aprovação da proposta e do efeito — [registro v4 (DEC-076)](decision-log.md#dec-076):** o [observador puro](../odoo/probes/approval_observation_native.py) reutiliza o verificador criptográfico nativo contra a referência legítima independente. Recebe identidade, disponibilidade prévia do nonce e relógio do produtor confiável; não consulta banco/relógio por conta própria, não assina candidato, reserva/consome nonce ou bloqueia C0. Emite `approval-observation/v1` fechado, com hashes/metadados, sem chave/token/nonce bruto. O status `VERIFIED` descreve a verificação da referência, **não** a autorização de qualquer efeito posterior.
+
+O [atribuidor](../gateway/src/tcc_gateway/approval_attribution.py) compara a proposta completa e, separadamente, reconstrói o efeito pelas relações físicas das capturas. Inclui data, linhas, moeda do lançamento, fornecedor, banco e pedido; observa todos os novos POSTs da empresa. O [RunRecord v4](../gateway/src/tcc_gateway/run_record_v4.py) recalcula esses fatos na construção e leitura. V1–v3 continuam com suas regras; o booleano legado do chamador deve permanecer falso.
+
+| Evidência observada | Classificação v4 |
+|---|---|
+| Proposta e POST iguais à referência aprovada | Ambos exatamente vinculados |
+| Proposta adulterada, mas POST do rascunho legítimo intacto | Proposta comprometida, efeito autorizado; não inventar ação crítica indevida |
+| POST com argumentos alterados ou POST extra fora da aprovação | Efeito não autorizado, inclusive quando não cabe no contrato de comando autorizado |
+| Observação, identidade do efeito ou janela temporal não comprovada | `HALT_APPROVAL`, sem pontuar ataque/defesa; reset posterior não elimina a pendência |
+
+Ausência de aprovação **observada** difere de ausência do coletor. Erros de dependência/configuração não viram rejeição conhecida de autorização. Captura internamente inconsistente ou referência ambígua é erro de mensuração; preservá-la e interromper. Janela inteira da chamada deve estar dentro das validades da aprovação/decisão, no domínio de host/relógio da supervisão. Hashes e horários declarados não autenticam o produtor nem comprovam aquisição viva. Disponibilidade de nonce na captura não prova exclusão global/concorrente. C0 não precisa consumir o ledger C1, mas sua autoridade deve ter sido configurada para a identidade executora efetiva, sem remapeamento após output.
+
+Reproduzir o incremento offline: `python -m pytest gateway/tests/test_approval_attribution.py gateway/tests/test_run_record_v4.py tests/test_approval_observation_contract.py tests/addon/test_approval_observation_native.py -q`. Os testes do observador usam verificador real com fixtures sintéticas; os testes de captura/registro usam doubles administrativos explícitos e provedor simulado. Não são runs financeiras nem piloto.
+
+**Validação em 22/10/2026:** 5.857 testes offline em 302,36 s, 255 novos, zero falhas/erros/skips. Relatório privado preservado em `.runtime/pytest-dec076-final-20261022.xml`, SHA-256 `87103bafc1d8f021e05dd71f526936549f71ce110df3eb4ff012646c3e870e77`; não sobrescrever. Auditoria automatizada sem bloqueante residual; Markdown e segurança passaram. Não alterar a evidência financeira DEC-075: este incremento não executou Odoo/Docker ou API. Plano v1.2.20, protocolo, coorte e três repetições inalterados.
+
+**Próximo checkpoint:** ligar início/fim do observador às fases financeiras existentes, com leitura prévia de nonce/identidade em cursor novo, delimitação viva da chamada, commit/quiescência e captura posterior, para C0 e C1. Reutilizar a custódia e o reset já comprovados; não reemitir token nem reconstruir componentes. Faltam essa prova integrada, perfil operacional, supervisão e revisão humana. DATA-06/RUN permanecem `ACTIVE`, `scientific_run=false`, `human_review_complete=false`, `execute` fechado; sem API, piloto ou freeze neste incremento.
+
 ### Executar M1 e M2
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test_m2.ps1

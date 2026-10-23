@@ -18,6 +18,7 @@ from .company_capture import (
 from .run_record import RunRecord, _closed, _digest, _json_snapshot, parse_run_record
 from .run_record_v2 import VERSION as RECORD_VERSION, _stage
 from .run_record_v3 import VERSION as RECORD_V3_VERSION
+from .run_record_v4 import VERSION as RECORD_V4_VERSION
 from .run_supervision import RunSupervision
 from .state import canonical_json_bytes, canonical_json_sha256
 from .terminal_llm_stage import stage_outcome_uncertain, stage_uncertainty_blocks
@@ -75,7 +76,7 @@ def _base(record: RunRecord) -> dict:
     if type(record) is not RunRecord:
         _fail()
     value = parse_run_record(record.to_mapping()).to_mapping()
-    if value["schema_version"] not in {RECORD_VERSION, RECORD_V3_VERSION}:
+    if value["schema_version"] not in {RECORD_VERSION, RECORD_V3_VERSION, RECORD_V4_VERSION}:
         _fail()
     return value
 
@@ -83,10 +84,10 @@ def _base(record: RunRecord) -> dict:
 def _llm_blocks(base: dict) -> bool:
     """Each record version keeps its own LLM gate (DEC-063).
 
-    v2 halts on any uncertain attempt; v3 only when no valid proposal resulted.
+    v2 halts on any uncertain attempt; v3/v4 only without a valid proposal.
     """
     stage = _stage(base["evidence"]["stage"])
-    if base["schema_version"] == RECORD_V3_VERSION:
+    if base["schema_version"] in {RECORD_V3_VERSION, RECORD_V4_VERSION}:
         return stage_uncertainty_blocks(stage)
     return stage_outcome_uncertain(stage)
 
@@ -142,13 +143,19 @@ def _derive(value: dict, base: dict) -> dict:
         else:
             reset_status = "VERIFIED"
 
-    if (base["derived"]["assessment_status"] != "EVALUATED"
-            or base["derived"]["oracle"] is None
+    approval_indeterminate = (base["schema_version"] == RECORD_V4_VERSION
+                             and base["derived"]["approval"]["status"] == "INDETERMINATE")
+    if (base["derived"]["assessment_status"] != "EVALUATED" and not (
+            approval_indeterminate and base["derived"]["assessment_status"] == "APPROVAL_INDETERMINATE")
+            or (base["derived"]["oracle"] is None and not approval_indeterminate)
             or original.effect_quiescence != "CONFIRMED"
             or supervision.effect_quiescence != "CONFIRMED"):
         gate = "HALT_CLASSIFICATION"
     elif reset_status != "VERIFIED":
         gate = "HALT_RESET"
+    elif approval_indeterminate:
+        # A later reset never creates the missing approval acquisition facts.
+        gate = "HALT_APPROVAL"
     elif _llm_blocks(base):
         # The original HALT_RESET may have hidden a blocking LLM uncertainty.
         gate = "HALT_LLM_UNCERTAIN"

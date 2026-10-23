@@ -326,6 +326,10 @@ def parse_run_record(value: dict) -> RunRecord:
         # DEC-063: v3 carries its own rules; v1/v2 keep theirs.
         from .run_record_v3 import parse_run_record_v3
         return parse_run_record_v3(value)
+    if type(value) is dict and value.get("schema_version") == "run-record/v4":
+        # DEC-076: separate approval attribution never reinterprets v1-v3.
+        from .run_record_v4 import parse_run_record_v4
+        return parse_run_record_v4(value)
     try:
         value = _json_snapshot(value)
         _closed(value, _TOP_FIELDS)
