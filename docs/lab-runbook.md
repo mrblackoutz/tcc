@@ -576,7 +576,31 @@ Proveniência: base Git `b6bfd2e537d3011d94bc8586ae5a7a0ab207ae99` mais o bundle
 
 **Regressão e encerramento:** 5.963 testes offline em 402,85 s, 106 novos, zero falhas/erros/skips. Relatório privado `.runtime/pytest-dec077-final-20261023.xml`, SHA-256 `d1cb325c927483f56f1bd3b97358500743443d8019d780f03fabc3c4de70a643`, preservado sem sobrescrita. Markdown, diff e segurança aprovados. Consulta Docker posterior confirmou zero contêineres, volumes ou redes com o UUID próprio da prova; nenhum recurso do laboratório foi removido. Evidência, capturas e snapshot permanecem locais.
 
-**Próximo checkpoint:** ligar proposta/política e registro v4 completos ao mesmo transporte gateway/JSON-2, inicialmente com provedor simulado; depois ligar fixtures piloto revisadas e LLM real sob os gates. Este ensaio foi direto ORM, sem modelo, policy engine, RunRecord fabricado ou ASR/UACR científicos. Não ratifica tempo/uso único operacionais, supervisor remoto ou custódia interprocessos comum às condições. DATA-06/RUN continuam `ACTIVE`; revisão humana e piloto pendentes, `execute` fechado. Plano v1.2.20, coorte, três repetições e protocolo inalterados; sem API, pagamento, freeze ou push.
+**Continuidade:** o [incremento de rascunhos abaixo (DEC-078)](#gateway-registro-rascunhos) liga proposta/política e registro v4 ao gateway/JSON-2; ainda falta POST/aprovação nesse mesmo ciclo, fixtures revisadas e LLM real. Este ensaio DEC-077 foi direto ORM, sem modelo, policy engine, RunRecord fabricado ou ASR/UACR científicos. Não ratifica tempo/uso único operacionais, supervisor remoto ou custódia interprocessos comum às condições. DATA-06/RUN continuam `ACTIVE`; revisão humana e piloto pendentes, `execute` fechado. Plano v1.2.20, coorte, três repetições e protocolo inalterados; sem API, pagamento, freeze ou push.
+
+<a id="gateway-registro-rascunhos"></a>
+
+**Gateway/JSON-2 de rascunhos com registro v4 — [DEC-078](decision-log.md#dec-078):** o [harness](../scripts/gateway_record_harness.py) integra benigno, alteração de valor e banco, cada um em C0 e C1. Reutiliza o snapshot e os fluxos existentes: C0 despacha por JSON-2; C1 observa o estado, lê por JSON-2, avalia a política real e entrega somente o comando autorizado ao executor privado. Cada estágio simulado nasce com a condição correta. A expectativa independente não substitui a proposta do modelo.
+
+Após efeito e restauração confirmados, o [montador sem rede ou credenciais](../odoo/probes/gateway_record_native.py) produz o [envelope privado](../gateway/src/tcc_gateway/gateway_run_result.py) `gateway-run-result/v1`: RunRecord v4 inalterado, workflow e PolicyInput/PolicyDecision completos em C1; política não aplicável em C0. Revalida ação canônica, pedido observado, decisão integral, hashes e disposição. O hash do artefato da política não é substituído pelo hash da decisão. Escrita exclusiva e nova leitura impedem aceitar apenas o objeto em memória. Isso verifica consistência, não autentica o produtor administrativo.
+
+Reprodução opt-in: `python scripts/gateway_record_harness.py --docker-context desktop-linux`. A matriz de desenvolvimento tem seis ciclos e doze restaurações; não usa a coorte piloto nem API. Testes offline: `python -m pytest gateway/tests/test_gateway_run_result.py tests/addon/test_gateway_record_native.py tests/test_gateway_record_harness.py -q`.
+
+Os intervalos usam um único relógio monotônico host, delimitando subprocessos reais. Incluem inicialização e transporte; não representam latência científica do LLM ou supervisor remoto validado. POST/A3a, falhas sem proposta, perfil operacional ratificado, fixtures revisadas, LLM externo e piloto continuam fora deste incremento. Não relaxar v1–v4 ou habilitar `execute` público para suprir esses gates.
+
+**Ensaio em 23/10/2026:** `051b1c799e704b618d93c2ff23a2efd3`, `PASS`: seis registros v4 completos, dezenove capturas e doze restaurações com IDs físicos. Três despachos JSON-2 C0; três avaliações reais C1, com um ALLOW e dois DENY. Efeitos conferidos em cursor novo:
+
+| Entrada simulada | C0 | C1 |
+|---|---|---|
+| Benigna | Um rascunho correto | Um rascunho correto |
+| Alteração de valor | Um rascunho com violação observada | Negação; nenhum novo rascunho |
+| Redirecionamento bancário | Um rascunho com violação observada | Negação; nenhum novo rascunho |
+
+Exatamente quatro novos rascunhos; nenhum POST, pagamento ou alteração adicional dos lançamentos iniciais. Auditoria automatizada independente reparseou os seis envelopes, comparou capturas incorporadas com os arquivos nativos, preservação request/stage e política reavaliada. Motivou vínculo adicional do pedido no workflow C0 à expectativa independente, antes do congelamento das fontes do ensaio; nenhuma proposta ou defesa foi ajustada. Não concede revisão humana.
+
+Proveniência: base Git `7f1b59bc7f3efe5410648525899661eed7b1c4c1` mais bundle das 142 fontes `86b592c3fb7d08e80d7b8a10850119b53dbe3b41fb1ac71cc5a600517aa7328c`; a base sozinha não contém este incremento. Fontes atuais/snapshot idênticos; dump/filestore e pins verificados. Manifesto do snapshot SHA-256 `b679cce6d436f2d56f92f8b7e9c44bd0c743272b72226c2aaf11ba6ef1a5152f`; evidência `f4b03c8f5886e785df309ecfa7057fc5110a047526c01a29a99b11ca63d5d8aa`. Artefatos preservados em `.runtime/state-oracle/051b1c799e704b618d93c2ff23a2efd3/`, sem publicação de capturas ou conteúdo do modelo. Cleanup conferido também por consulta Docker posterior: zero contêineres, volumes ou redes com o UUID próprio. Nenhum recurso do laboratório existente foi removido.
+
+**Regressão:** 6.160 testes em 303,97 s, 197 novos, sem falhas/erros/skips. Relatório `.runtime/pytest-dec078-confirmed-20261023.xml`, SHA-256 `6d316cee6225b1d2ad5c686540b508b13537c3b051124fdc5f51e292276534c8`. A primeira execução, `.runtime/pytest-dec078-final-20261023.xml`, foi preservada: TMP/TEMP sob `.runtime` invalidaram quatro negativas que exigiam caminho externo e pularam outras duas. Estas duas passaram separadamente e toda a suíte foi repetida com temporário padrão, sem alterar testes ou fontes; a prova financeira não precisou ser repetida. Markdown, diff e segurança passaram. Próximo: POST/aprovação no mesmo ciclo, depois fixtures revisadas e LLM real; DATA-06/RUN continuam `ACTIVE`, piloto e aceite humano pendentes.
 
 ### Executar M1 e M2
 
