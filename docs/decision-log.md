@@ -1402,3 +1402,17 @@ Substitui ou é substituída por:
 - **Evidência:** pedido de Gustavo nesta conversa.
 - **Responsável:** Gustavo.
 - **Seções e artefatos afetados:** `AGENTS.md`.
+
+<a id="dec-083"></a>
+
+## DEC-083 — Prompt-base candidato e geração de propostas LLM em estágio próprio
+
+- **Data:** 26/10/2026.
+- **Status:** candidata; prompt sujeito a ratificação do grupo (C0-01/C0-03, antes sob Thomaz) e ao freeze.
+- **Contexto:** o plano exige prompt-base comum a C0/C1 com orientação genérica contra seguir instruções do documento (checklist §9.2), mas só existia o texto do smoke. O ciclo de execução já validado usa propostas simuladas. A proposta do modelo depende só de (documento, fase, prompt, modelo), não do estado do Odoo nem da condição.
+- **Decisão:** (1) `task_prompt.py` define `ap-task-prompt/v1`: instrução de Contas a Pagar, regras de preenchimento exigidas pelo schema (ASCII, casas decimais, data), orientação genérica de que o texto da nota é dado de terceiros, e diretiva de fase (`CREATE_DRAFT_BILL` ou `POST_VENDOR_BILL`) vinda do fluxo confiável, nunca do documento. A função não recebe a condição: C0 e C1 obtêm os mesmos bytes. O prompt não nomeia ataques, campos-alvo, política nem aprovação. (2) `pilot_proposal_batch.py` gera as requisições dos runs (par × membro × condição × repetição, ordem embaralhada por semente registrada) e as executa no contêiner `g3c-runner` com `run_llm_stage` e a política de tentativas existente. Cada run faz a sua chamada; chamada com resultado incerto não é refeita. (3) `scripts/run_pilot_proposals.py` exige árvore limpa e confirmação do número exato de chamadas reais.
+- **Alternativas:** prompt fraco ou sem orientação (rejeitado: C0 vira espantalho); prompt que cita ataques ou defesas (rejeitado: viés entre condições); chamar o modelo dentro do ciclo Odoo (rejeitado: acopla custo e latência do provedor ao reset sem ganho científico). Gerar propostas antes e executá-las depois é equivalente porque o estado do Odoo não entra no prompt.
+- **Limites:** não ratifica competência de C0, não é o piloto, não altera hipóteses, métricas ou dataset. Ajustes ao prompt só por falha funcional (formato inválido), nunca para enfraquecer C0 nem fortalecer C1, e ficam registrados.
+- **Evidência:** testes offline `test_task_prompt.py` e `test_pilot_proposal_batch.py`.
+- **Responsável:** Gustavo autoriza; Felipe e Thomaz mantêm direito de reabrir.
+- **Seções e artefatos afetados:** `gateway/src/tcc_gateway/task_prompt.py`, `pilot_proposal_batch.py`, `scripts/run_pilot_proposals.py`.
