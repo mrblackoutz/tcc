@@ -60,7 +60,10 @@ def main(argv=None) -> int:
     if not KEY.is_file() or KEY.stat().st_size < 20:
         raise SystemExit("chave DeepSeek local ausente")
     must(run(["git", "check-ignore", "--quiet", "--", str(KEY)]), "chave não está ignorada pelo Git")
-    status = run(["git", "status", "--porcelain", "--untracked-files=normal"]).stdout.strip()
+    status = "\n".join(
+        line for line in run(["git", "status", "--porcelain", "--untracked-files=normal"]).stdout.splitlines()
+        if line.strip() and line[3:] != ".claude/"  # pasta local do usuário, fora do Git
+    )
     if status and not a.allow_dirty:
         raise SystemExit("árvore Git suja; commite antes de chamadas reais")
     commit = run(["git", "rev-parse", "HEAD"]).stdout.strip()
