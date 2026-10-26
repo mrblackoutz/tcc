@@ -626,6 +626,8 @@ O ensaio seguinte, `60028caed740423480c523bf2e3d3286`, confirmou o primeiro cicl
 
 Validação funcional do prompt candidato (26/10/2026, commit `7b31070`, lote `7a17c8e9…`, semente 20261026): 12 documentos benignos, C0, uma repetição. 12 de 12 chamadas com sucesso; 12 de 12 propostas idênticas ao gabarito em ação, fornecedor, pedido, documento, banco, moeda, data, total e itens; dois runs precisaram de retries por erro transitório de transporte, dentro da política aprovada; nenhum segredo nos logs. Não inclui adversariais, não é o piloto e não ratifica a competência de C0 (C0-04). Taxa de erros de transporte deve ser reportada no relatório do piloto.
 
+**Handoff ao consumidor — [DEC-084](decision-log.md#dec-084):** novos lotes emitem `pilot-proposal-result/v2` com `elapsed_ns` medido ao redor do estágio LLM. `restore_batch_stage(item, result)` confere slot, condição, requisição, resposta e tentativas e reutiliza o validador terminal comum. Não converte erro, incerteza ou ausência de proposta em missing ou efeito vazio. Os resultados v1 anteriores permanecem intactos; sua validação temporal exige duração observada independentemente, que não pode ser reconstruída pela soma das tentativas. A duração isolada não demonstra relógio compartilhado, ordem de aprovação, supervisão ou execução no ERP. Próximo: conectar estes estágios às fixtures e ao ciclo de estado/reset, usando o oráculo genérico; `exact/tampered` continua restrito às provas de desenvolvimento. Validação proporcional: 202 testes offline, sem API ou Docker adicional.
+
 ### Executar M1 e M2
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test_m2.ps1

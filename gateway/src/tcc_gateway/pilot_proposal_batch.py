@@ -15,19 +15,21 @@ import os
 import random
 import re
 import sys
+import time
 from collections.abc import Awaitable, Callable, Mapping
 from pathlib import Path
 from typing import Any
 
 from .llm_adapters import LLMProposalRequest
 from .pdf_ingestion import extract_pdf_bytes
-from .pilot_llm_runner import call_llm_client_once, run_llm_stage
+from .pilot_llm_runner import LLMStageResult, call_llm_client_once, run_llm_stage
 from .runner_contract_v2 import build_client_request_v2
 from .state import canonical_json_bytes, canonical_json_sha256
 from .task_prompt import TASK_PROMPT_VERSION, build_task_messages, task_prompt_sha256
 
 BATCH_VERSION = "pilot-proposal-batch/v1"
-RESULT_VERSION = "pilot-proposal-result/v1"
+LEGACY_RESULT_VERSION = "pilot-proposal-result/v1"
+RESULT_VERSION = "pilot-proposal-result/v2"
 _KEY = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}\Z")
 CONDITIONS = ("C0", "C1")
 ROLES = ("benign", "adversarial")
@@ -102,6 +104,58 @@ def batch_sha256(batch: Mapping[str, Any]) -> str:
     return canonical_json_sha256(batch)
 
 
+def restore_batch_stage(
+    item: Mapping[str, Any], result: Mapping[str, Any], *, elapsed_ns: int | None = None,
+) -> LLMStageResult:
+    """Restore the original terminal stage for the common C0/C1 consumers.
+
+    Duration validates only this stage's history, never a cross-process clock,
+    Odoo effect or scientific disposition. Legacy v1 needs an independently
+    observed duration; attempt sums are not an observation of that interval.
+    Hashes bind the artifacts but do not authenticate their administrator.
+    """
+    from .run_record_v2 import _stage
+    from .terminal_llm_stage import validate_terminal_llm_stage
+
+    try:
+        item = json.loads(canonical_json_bytes(item))
+        result = json.loads(canonical_json_bytes(result))
+        fields = {"schema_version", "run_key", "pair_id", "role", "condition", "repetition",
+                  "phase", "request_sha256", "stage", "response"}
+        version = result["schema_version"]
+        if version == RESULT_VERSION:
+            fields.add("elapsed_ns")
+            measured = result["elapsed_ns"]
+            if elapsed_ns is not None and (type(elapsed_ns) is not int or elapsed_ns != measured):
+                raise ValueError
+            elapsed_ns = measured
+        elif version != LEGACY_RESULT_VERSION:
+            raise ValueError
+        if set(result) != fields or type(elapsed_ns) is not int or elapsed_ns < 0:
+            raise ValueError
+        if (item["condition"] not in CONDITIONS or item["role"] not in ROLES
+                or type(item["repetition"]) is not int or not 1 <= item["repetition"] <= 5
+                or item["phase"] not in {"DRAFT_INTAKE", "POST_REVIEW"}
+                or item["run_key"] != f"{item['pair_id']}.{item['role']}.{item['condition']}.r{item['repetition']}"):
+            raise ValueError
+        for key in ("run_key", "pair_id", "role", "condition", "repetition", "phase"):
+            if type(result[key]) is not type(item[key]) or result[key] != item[key]:
+                raise ValueError
+        if result["request_sha256"] != canonical_json_sha256(item["request"]):
+            raise ValueError
+        summary = result["stage"]
+        if type(summary) is not dict or set(summary) != {"condition", "status", "reason", "attempts", "response_sha256"}:
+            raise ValueError
+        stage = _stage({key: summary[key] for key in ("condition", "status", "reason", "attempts")}
+                       | {"response": result["response"]})
+        if stage.condition != item["condition"] or stage.to_sanitised_mapping() != summary:
+            raise ValueError
+        validate_terminal_llm_stage(item["request"], stage, elapsed_ns=elapsed_ns)
+        return stage
+    except (ValueError, TypeError, KeyError, AttributeError, RecursionError, OverflowError):
+        raise BatchError("invalid persisted LLM stage handoff") from None
+
+
 def _exclusive_write(path: Path, data: bytes) -> None:
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     try:
@@ -136,12 +190,17 @@ async def run_batch(
         if limit is not None and summary["executed"] >= limit:
             break
         _exclusive_write(marker, b"started\n")
+        started_ns = time.monotonic_ns()
         stage = await run_llm_stage(item["request"], condition=item["condition"], call_once=call_once)
+        elapsed_ns = time.monotonic_ns() - started_ns
+        if elapsed_ns < 0:
+            raise BatchError("invalid LLM stage clock interval")
         record = {
             "schema_version": RESULT_VERSION, "run_key": key, "pair_id": item["pair_id"],
             "role": item["role"], "condition": item["condition"],
             "repetition": item["repetition"], "phase": item["phase"],
             "request_sha256": canonical_json_sha256(item["request"]),
+            "elapsed_ns": elapsed_ns,
             "stage": stage.to_sanitised_mapping(),
             "response": None if stage.response is None else dict(stage.response),
         }

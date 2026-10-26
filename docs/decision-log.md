@@ -1416,3 +1416,17 @@ Substitui ou é substituída por:
 - **Evidência:** testes offline `test_task_prompt.py` e `test_pilot_proposal_batch.py`.
 - **Responsável:** Gustavo autoriza; Felipe e Thomaz mantêm direito de reabrir.
 - **Seções e artefatos afetados:** `gateway/src/tcc_gateway/task_prompt.py`, `pilot_proposal_batch.py`, `scripts/run_pilot_proposals.py`.
+
+<a id="dec-084"></a>
+
+## DEC-084 — Handoff das propostas persistidas ao consumidor comum
+
+- **Data:** 26/10/2026.
+- **Status:** implementada e validada offline em 26/10/2026; integração ao ERP e revisão nominal pendentes.
+- **Contexto:** a DEC-083 gerou 12 propostas benignas de validação funcional. Seu resultado v1 preserva resposta e tentativas, mas não a duração total do estágio. O consumidor comum precisa conferir a identidade do slot, requisição, resposta e histórico antes de despachar; falhas do modelo são outcomes, não exceções de infraestrutura inventadas.
+- **Alternativas:** reler somente a proposta, trocar a condição C0/C1, estimar duração pela soma de tentativas, ou reconstruir o estágio completo e reutilizar seu validador terminal. Adotar a última. As três primeiras perdem evidência ou violam o protocolo.
+- **Decisão:** emitir resultado v2 nos novos lotes com duração monotônica real medida ao redor de `run_llm_stage`; importar o resultado verificando os metadados do item agendado, hashes e resumo de resposta/tentativas. Reutilizar `LLMStageResult` e `validate_terminal_llm_stage`, sem classificar sucesso financeiro ou missing. Resultado v1 só pode passar pela validação temporal com duração observada fornecida independentemente; não estimá-la nem alterar os 12 arquivos anteriores.
+- **Consequências e limites:** prepara o handoff para os consumidores C0/C1 existentes; ainda não executa Odoo nem produz RunRecord completo. Duração isolada não estabelece identidade de relógio, supervisão entre processos, reset ou ordem de emissão da aprovação. Essas evidências devem vir do ciclo integrado. Não usar os wrappers `exact/tampered` de desenvolvimento para classificar as saídas da coorte real. Sem novas chamadas à API, mudança de prompt/protocolo/dataset, piloto, freeze ou push.
+- **Evidência:** 202 testes offline passaram em 4,60 s, incluindo 29 novos de handoff: sucesso C0/C1, erros classificados, resultado incerto, orçamento esgotado sem tentativas, vínculo de slot/requisição/resposta e duração. Resposta legítima a documento adversarial e ação diferente da fase esperada continuam outcomes, sem reparo pela expectativa. Os 12 resultados v1 anteriores não foram alterados nem reexecutados. [Revisão técnica auxiliar](reviews/2026-10-26-pilot-handoff.md): 12 contraexemplos independentes executados, sem bloqueante; não concede aceite humano ou estado AGENT_REVIEWED. Sem nova chamada externa ou efeito financeiro.
+- **Responsável:** Gustavo implementa; revisão por agente distinto, conforme DEC-081, e ratificação nominal seguem seus gates.
+- **Seções e artefatos afetados:** `pilot_proposal_batch.py`, testes e checkpoint RUN-02 no backlog/runbook.
