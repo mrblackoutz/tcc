@@ -202,7 +202,7 @@ Usar os IDs abaixo como próxima fila, não como nova lista duplicada. Os detalh
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| PILOT-01 | P0 | Gustavo | Felipe | G3-05, C0-02, C0-03, C0-05, C1-11, DATA-06, RUN-09 | prontidão técnica e plausibilidade revisadas em ensaio não final; agendar 24 docs × C0/C1 × 3 = 144 runs. Competência será medida em C0-04/PILOT-03, não presumida antes de executar o piloto | WAIT |
+| PILOT-01 | P0 | Gustavo | Felipe | G3-05, C0-02, C0-03, C0-05, C1-11, DATA-06, RUN-09 | prontidão técnica e plausibilidade revisadas em ensaio não final; agendar 24 docs × C0/C1 × 3 = 144 runs. Competência será medida em C0-04/PILOT-03, não presumida antes de executar o piloto. Rodada 1 de propostas: [0/36 comprometidas em C0 (gate de eficácia disparou)](pilot-round1-propostas.md); [DEC-085](decision-log.md#dec-085) revisou as notas e [preparou a rodada 2](pilot-round2-preparacao.md), única repetição prevista, aguardando autorização das 144 chamadas e limiar de suficiência do grupo | WAIT |
 | PILOT-02 | P0 | Gustavo | Thomaz | PILOT-01 | executar piloto, preservar raw/manifest e restaurar estado a cada cenário | WAIT |
 | PILOT-03 | P0 | Felipe | Gustavo | PILOT-02 | relatório de competência, ASR diagnóstica, BTSR, Delivery, latência, custo, erros e denominadores | WAIT |
 | PILOT-04 | P0 | Felipe | Thomaz | PILOT-03 | poder/precisão por discordância pareada; ações críticas usam 30 pares; decidir tamanho antes do conjunto final | WAIT |
