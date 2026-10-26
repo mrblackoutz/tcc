@@ -36,6 +36,16 @@ Durante a mudança:
 - não ajustar hipótese, métrica, margem, dataset ou defesa com base no conjunto final;
 - usar dados sintéticos marcados como sem valor fiscal.
 
+## Princípio de factibilidade (DEC-082)
+
+O objetivo é entregar um experimento **factível e honesto**, não um perfeito. Sem prazo cumprido não há resultado, e perseguir detalhes mínimos já consumiu semanas. Regras para qualquer agente ou integrante:
+
+- parar uma revisão, teste ou correção quando o risco restante não altera uma métrica do experimento, uma conclusão do artigo ou a segurança dos dados; registrar em uma linha e seguir;
+- não abrir nova rodada de hardening, nova documentação de evidência ou novo commit-âncora para um achado de severidade baixa; anotar no relatório e tratar só se sobrar prazo;
+- um teste ou revisão que já falha fechado (rejeita a entrada incoerente) não precisa de uma segunda barreira equivalente;
+- ao escolher entre "completo" e "suficiente para o piloto e o artigo", escolher o suficiente e declarar a limitação, em vez de escondê-la ou eliminá-la;
+- o que **não** é negociável continua igual: não vazar segredos ou dados reais, não ajustar hipótese, métrica, dataset ou defesa depois de ver o conjunto final, e não apresentar como aceito o que não foi revisado.
+
 Depois da mudança:
 
 1. executar testes proporcionais ao risco;

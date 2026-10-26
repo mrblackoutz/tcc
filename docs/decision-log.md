@@ -1373,3 +1373,32 @@ Substitui ou é substituída por:
 - **Evidência (26/10/2026):** ensaio `c47d128393ca43b690d9d912bb8e23e3` `PASS` sobre a base `ab774af` mais bundle de 150 fontes sem divergência: quatro ciclos POST (C0 exato, C0 adulterado, C1 exato, C1 adulterado), oito restaurações, três POSTs, uma negação C1 pela política real, um nonce consumido, perfil `runc`/Linux amd64 local, limpeza conferida. Regressão offline com 6.748 testes, sem falhas ou skips. As tentativas `50a7467a…` e `60028cae…` e o diagnóstico `2380ebb0…` permanecem preservados como interrompidos. [Hashes e limites](lab-runbook.md#gateway-registro-post). Raciocínio revisado por auxiliar automatizado com fontes primárias, sem aceite humano; guardas físicas continuam ativas.
 - **Responsável:** Gustavo implementa/testa; Thomaz revisa ambiente/segurança e Felipe mensuração/protocolo, pendentes.
 - **Artefatos afetados:** novo contrato de escopo temporal, produtores/harness/envelope POST e testes; documentação corrente e plano v1.2.20 preservado.
+
+<a id="dec-081"></a>
+
+## DEC-081 — Revisão adversarial por agente distinto enquanto revisores nominais estão indisponíveis
+
+- **Data:** 26/10/2026.
+- **Status:** aceita para o backlog pré-freeze; solicitada por Gustavo.
+- **Contexto:** Felipe e Thomaz não têm disponibilidade para as revisões nominais antes de 02/11. Catorze tarefas estão `AWAITING_REVIEW` ([DEC-034](#dec-034)) e o piloto não pode começar sem revisão independente. O desenvolvimento dessas tarefas foi feito por um agente de código baseado em LLM de outro provedor (assistente de código Codex/GPT, sob direção de Gustavo). A revisão passa a ser feita por Claude Sonnet 5.5 (`claude-sonnet-5-5`), outro modelo e outra sessão, que não escreveu os artefatos revistos.
+- **Alternativas:** esperar os revisores nominais (compromete 02/11); marcar `DONE` sem revisão (rejeitado: fabrica aceite); Gustavo revisar o que dirigiu (rejeitado: viola a regra de que ninguém assina o próprio componente); revisão adversarial por agente distinto com prova executada e rótulo próprio. Adota-se a última.
+- **Decisão:** criar o estado `AGENT_REVIEWED`: artefato revisto por agente distinto do autor, com achados corrigidos ou registrados, e aceite humano nominal ainda não dado. Regras mínimas de uma revisão válida: (1) identificar modelo, data e commit/hashes revistos; (2) tentar quebrar o artefato com contraexemplos **executados** (testes, propriedades, entradas hostis), e não apenas ler o código; (3) conferir a evidência contra a fonte (hashes, contagens, alegações da documentação); (4) corrigir os achados ou registrá-los com severidade e dono; (5) relatar o que não foi coberto; (6) alterações feitas pelo revisor depois da revisão não contam como revistas por ele. `AGENT_REVIEWED` satisfaz a dependência de "revisão independente" para **iniciar o piloto**. Não substitui a assinatura nominal exigida para o freeze (FRZ-*), que Gustavo decide como autoridade do grupo e declara; nada aqui assina em nome de Felipe ou Thomaz.
+- **Limites:** dois modelos de linguagem podem compartilhar pontos cegos; por isso o aceite exige prova executada. Uma revisão por agente não é revisão humana e não deve ser descrita assim no artigo: deve aparecer como limitação e como procedimento de mitigação, junto com o fato de o desenvolvimento também ter sido assistido por agente. O reviewer nominal conserva o direito de reabrir qualquer item; se reprovar, a tarefa volta a `ACTIVE` e os dependentes são revalidados.
+- **Consequências:** o backlog ganha o estado `AGENT_REVIEWED`; relatórios ficam em `docs/reviews/`; o `ai-usage.md` registra a revisão. Hipóteses, métricas, dataset e protocolo não mudam.
+- **Evidência:** pedido de Gustavo nesta conversa; [DEC-034](#dec-034); regra de independência do plano.
+- **Responsável:** Gustavo autoriza e responde pela decisão; Claude executa as revisões; Felipe e Thomaz permanecem os reviewers nominais para reabertura.
+- **Seções e artefatos afetados:** legenda de estados do backlog, `docs/reviews/`, `docs/ai-usage.md`.
+
+<a id="dec-082"></a>
+
+## DEC-082 — Princípio de factibilidade: suficiente e honesto antes de perfeito
+
+- **Data:** 26/10/2026.
+- **Status:** aceita; solicitada por Gustavo durante a revisão da [DEC-081](#dec-081).
+- **Contexto:** meses de incrementos de hardening, evidência e documentação consumiram o cronograma sem produzir o experimento. A aprovação interna é em 02/11 e a submissão até 08/11. Ver também [DEC-023](#dec-023).
+- **Alternativas:** manter o rigor máximo em cada componente (rejeitado: nunca termina); abandonar a revisão (rejeitado: o piloto exige revisão independente); limitar a profundidade pelo impacto no experimento e declarar o que ficou de fora. Adota-se a última.
+- **Decisão:** acrescentar ao `AGENTS.md` a seção "Princípio de factibilidade". Revisões e testes param quando o risco restante não altera métrica, conclusão do artigo ou segurança dos dados; achados de severidade baixa são anotados em uma linha, sem novo hardening, evidência ou commit-âncora. Permanecem inegociáveis: proteção de segredos e dados reais, não ajustar hipótese, métrica, dataset ou defesa com base no conjunto final, e não apresentar como aceito o que não foi revisado.
+- **Consequências:** revisões por agente ([DEC-081](#dec-081)) passam a ter profundidade proporcional e relatório curto; não alteram hipóteses, métricas, dataset nem protocolo.
+- **Evidência:** pedido de Gustavo nesta conversa.
+- **Responsável:** Gustavo.
+- **Seções e artefatos afetados:** `AGENTS.md`.
