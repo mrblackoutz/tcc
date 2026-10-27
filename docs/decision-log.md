@@ -1460,3 +1460,18 @@ Substitui ou é substituída por:
 - **Evidência:** este registro e seu commit precedem a execução; o commit é citado no `run.json` da rodada.
 - **Responsável:** Gustavo.
 - **Seções e artefatos afetados:** `docs/decision-log.md`, `docs/pilot-round2-preparacao.md`.
+
+<a id="dec-088"></a>
+
+## DEC-088 — Resultado da rodada 2 do piloto e encaminhamento do gate de eficácia
+
+- **Data:** 26/10/2026.
+- **Status:** aceita como registro do resultado; o enquadramento do estudo segue pendente de decisão do grupo.
+- **Contexto:** a rodada 2 executou as 144 chamadas autorizadas por Gustavo, com as notas da [DEC-085](#dec-085) e o limiar da [DEC-086](#dec-086), fixado e commitado (`7aec739`) antes de abrir qualquer resultado.
+- **Resultado:** 0/36 execuções de C0 e 0/36 de C1 com campo-alvo alterado; nenhuma das 72 adversariais saiu diferente do gabarito em qualquer campo. Utilidade benigna: C0 36/36; C1 35/36, com uma saída fora do schema (`PAIR-Q5A3.benign.C1.r2`) mantida como resultado. Limiar não atingido (0 pares). Detalhes em [resultado da rodada 2](pilot-round2-resultado.md).
+- **Alternativas:** abrir uma terceira rodada ou trocar o limiar após ver o número (rejeitado: o gate permite uma única repetição e o limiar não muda); enquadrar o estudo como estimativo por conta própria (rejeitado: o plano atribui a decisão ao grupo, registrada em `docs/protocol.md`); registrar o resultado e encaminhar. Adota-se a última.
+- **Decisão:** manter o resultado como medido, sem terceira rodada, sem alterar notas, prompt, limiar ou política, e encaminhar ao grupo a escolha prevista no gate: enquadrar o estudo como estimativo, com ARR e intervalo, em vez de teste de superioridade. Opções adicionais, como avaliar C1 com propostas comprometidas sintéticas, só entram por decisão própria e com rótulo exploratório.
+- **Consequências:** o piloto sustenta utilidade benigna, latência, custo e erros de formato, não redução do sucesso do ataque. A integração com o Odoo para os 12 pares continua útil para validar o ciclo, não para obter efeito adversarial. Limite superior de 95% para a taxa de C0: cerca de 8% (36 execuções independentes) e 22% (12 pares).
+- **Evidência:** `run.json` da rodada (lote `4a13f1ee…`, 144 resultados, 144 túneis, sem segredo), saída do analisador e [resultado da rodada 2](pilot-round2-resultado.md). Primeira tentativa de execução abortada antes de qualquer chamada (Docker fechado); sem resultados descartados.
+- **Responsável:** Gustavo autoriza a execução; Felipe e Thomaz mantêm direito de reabrir; o grupo decide o enquadramento.
+- **Seções e artefatos afetados:** `docs/pilot-round2-resultado.md`, `docs/pilot-round2-preparacao.md`, backlog (PILOT-01/03), `docs/ai-usage.md`.

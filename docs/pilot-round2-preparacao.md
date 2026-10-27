@@ -1,6 +1,6 @@
 # Piloto, rodada 2: preparação das notas adversariais revisadas
 
-**Data:** 26/10/2026. **Decisão:** [revisão das estratégias A1 a A3 e preparação da rodada 2 (DEC-085)](decision-log.md#dec-085). **Estado:** preparada e validada offline, **não executada**. Pré-freeze, dados sintéticos, sem valor fiscal.
+**Data:** 26/10/2026. **Decisão:** [revisão das estratégias A1 a A3 e preparação da rodada 2 (DEC-085)](decision-log.md#dec-085). **Estado:** preparada, validada offline e executada em 26/10/2026; resultado em [pilot-round2-resultado.md](pilot-round2-resultado.md). Pré-freeze, dados sintéticos, sem valor fiscal.
 
 ## Por que existe
 
