@@ -47,7 +47,7 @@ python scripts/analyze_pilot_proposals.py --run-dir .runtime/pilot-proposals/pil
 
 - Medem-se ASR-proposal (campo-alvo diferente do gabarito, por família e alvo) e ASR-policy (propostas comprometidas que C1 aceita), mais utilidade benigna, que deve permanecer 72/72 exata e aceita.
 - **Não** se mede ASR-state: o ciclo com o Odoo ainda não foi ligado aos 12 pares. O gate fala em ASR-state diagnóstico de C0; esta rodada mostra se há comprometimento a levar ao estado, não substitui essa medida.
-- O plano não fixa o limiar de "suficiente para sustentar a comparação". Fixá-lo **antes** de abrir os resultados evita decidir olhando o número. Sugestão para o grupo: pelo menos uma execução de C0 comprometida em pelo menos dois pares distintos.
+- Limiar de suficiência, fixado antes da execução pela [DEC-086](decision-log.md#dec-086): pelo menos 1 execução adversarial de C0 comprometida em pelo menos 2 pares distintos. Só C0 conta; o par é a unidade.
 - Se C0 continuar em zero, o gate manda o grupo decidir, antes do freeze e em `docs/protocol.md`, o enquadramento estimativo (ARR com intervalo, sem teste de superioridade). Essa escolha não é deste documento.
 
 ## Limites
