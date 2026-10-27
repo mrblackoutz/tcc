@@ -4,20 +4,26 @@ Reads the run evidence and every slot envelope. Reports per condition: benign ta
 success in the ERP state (BTSR), attack success in the state (ASR-state),
 unauthorized critical actions on A3a (UACR), compromised proposals, dispositions,
 model failures, latency and tokens. Paired differences C1 - C0 use a cluster
-bootstrap by pair (10,000 replicates, fixed seed); a degenerate distribution is
-reported as such, never as proof of zero risk. Nothing is written or modified.
+bootstrap by pair (10,000 replicates, fixed seed), BCa and percentile sensitivity.
+Degenerate distributions use the pre-specified conservative DEC-089 bound for
+the same contrast. No hypothesis decisions. Nothing is written or modified.
 """
 
 import argparse
 from collections import Counter, defaultdict
 import json
 from pathlib import Path
-import random
 import statistics
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "gateway/src"))
+
+from tcc_gateway.paired_analysis import cluster_interval
+
+
+METRIC_ROLES = {"benign_task_success": "benign", "state_violation": "adversarial",
+                "unauthorized_critical_action": "adversarial"}
 
 
 def load(run_dir):
@@ -40,9 +46,12 @@ def rate(values):
 
 
 def paired_bootstrap(rows, metric, *, replicates=10_000, seed=2026102801):
-    """Mean over slots of C1 - C0 per (pair, member, repetition), resampling pairs."""
+    """DEC-097: paired C1-C0 in the endpoint universe, clustered by pair."""
+    role = METRIC_ROLES[metric]
     cells = defaultdict(dict)
     for row in rows:
+        if row["role"] != role or (metric == "unauthorized_critical_action" and row["attack_family"] != "A3a"):
+            continue
         value = row["oracle"].get(metric)
         if value is not None:
             cells[(row["pair_id"], row["member_key"], row["repetition"])][row["condition"]] = int(value)
@@ -55,16 +64,14 @@ def paired_bootstrap(rows, metric, *, replicates=10_000, seed=2026102801):
         return None
     flat = [d for pair in pairs for d in by_pair[pair]]
     estimate = sum(flat) / len(flat)
-    generator = random.Random(seed)
-    samples = []
-    for _ in range(replicates):
-        chosen = [generator.choice(pairs) for _ in pairs]
-        values = [d for pair in chosen for d in by_pair[pair]]
-        samples.append(sum(values) / len(values))
-    samples.sort()
-    low, high = samples[int(0.025 * replicates)], samples[int(0.975 * replicates) - 1]
-    return {"estimate": estimate, "ci95_percentile": [low, high], "pairs": len(pairs), "slots": len(flat),
-            "degenerate": low == high}
+    interval = cluster_interval([(sum(by_pair[pair]), len(by_pair[pair])) for pair in pairs],
+                                seed=seed, bootstrap_samples=replicates)
+    percentile = interval["percentile_sensitivity"]
+    return {"estimate": estimate, "ci95": interval["ci95"], "method": interval["method"],
+            "reason": interval["reason"], "ci95_percentile": percentile,
+            "pairs": len(pairs), "slots": len(flat), "seed": seed, "replicates": replicates,
+            "degenerate": percentile is not None and percentile[0] == percentile[1],
+            "missing_bias_corrected": False}
 
 
 def main(argv=None):
@@ -97,8 +104,8 @@ def main(argv=None):
             violation = rate(row["oracle"]["state_violation"] for row in subset)
             values.append(f"{violation[0]}/{violation[1]}")
         print(f"{family}: ASR-state C0 {values[0]} | C1 {values[1]}")
-    print("\n== Diferenças pareadas C1 - C0 (bootstrap por par, percentil) ==")
-    for metric in ("benign_task_success", "state_violation"):
+    print("\n== Diferenças pareadas C1 - C0 (BCa por par; fronteira conservadora DEC-089) ==")
+    for metric in METRIC_ROLES:
         print(metric, json.dumps(paired_bootstrap(rows, metric)))
     print("\n== Latência por etapa (s): mediana / p95 ==")
     for name in ("llm", "observation", "policy", "execution", "capture", "reset"):

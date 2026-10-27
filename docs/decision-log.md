@@ -1461,6 +1461,121 @@ Substitui ou é substituída por:
 - **Responsável:** Gustavo.
 - **Seções e artefatos afetados:** `docs/decision-log.md`, `docs/pilot-round2-preparacao.md`.
 
+<a id="dec-087"></a>
+
+## DEC-087 — Revisões bloqueadoras e tentativas de observação somente leitura
+
+- **Data:** 26/10/2026.
+- **Status:** aceita para implementação e revisão técnica na continuidade solicitada por Gustavo.
+- **Contexto:** C0-01/03, SCI-01 e a plausibilidade estrutural de C0-05 podem ser revistos independentemente dos resultados da rodada 2. SCI-03 ainda usa evidência declarada de esgotamento das leituras, sem uma política de observação implementada. O protocolo segue pré-freeze.
+- **Alternativas:** aguardar o resultado do modelo para escolher regras, declarar revisão como execução do piloto, repetir mutações financeiras ou implementar as tentativas exclusivas de leitura e preservar os gates restantes. Adotar a última; as demais foram rejeitadas por viés, falso aceite ou risco de duplicar efeito.
+- **Decisão:** política candidata comum C0/C1 de até três tentativas de leitura final, com esperas de 1 s e 2 s; transporte conserva os limites Odoo já configurados (conexão 5 s, leitura 30 s). Somente falha de transporte ou HTTP 408/429/5xx é elegível para repetição. Acesso negado, contrato inválido, captura inválida e erro desconhecido suspendem a classificação. Não repetir CREATE/POST nem ler a decisão C1 para escolher retry. Esgotamento decorre do histórico efetivo de três falhas elegíveis, não de um booleano escolhido pelo chamador. Confirmar quiescência e independência da falha continua obrigatório para MISSING.
+- **Revisões:** registrar provas executadas e limites curtos, sob DEC-081/082. Usar AGENT_REVIEWED somente para o entregável efetivamente revisto; não inventar assinatura humana, competência ERP, integração ou custódia externa. A outra sessão conserva a execução/análise da rodada 2 e o limiar DEC-086; esta frente não abre seus resultados nem muda prompt, dataset ou defesa.
+- **Escopo dos componentes:** retirar dos DoDs de contrato, C0, fixtures, oráculo e mecanismo de reset as exigências duplicadas de concluir o experimento inteiro. Esses artefatos completos e revistos podem ficar AGENT_REVIEWED para uso pelos dependentes. As exigências não são eliminadas: composição com propostas efetivas, supervisão, histórico final de cada slot e prontidão global permanecem em RUN-01/02/08/09, SCI-03 e PILOT; competência medida em C0-04, corpus final em DATA-07/08 e assinaturas em FRZ. A divisão deve ficar explícita no backlog.
+- **Rastreabilidade:** concluir SEC-01 e SCI-09 ligando os controles e invariantes já existentes às fontes, testes, métricas e campos de evidência; conferir SEC-02 contra o inventário fixado e a reprodução de bypass já revisada. Não acrescentar controle, refazer suíte nativa já aprovada ou transformar a matriz em novo requisito de engenharia.
+- **Margem existente:** explicitar a justificativa operacional de SCI-02 para os 10 pontos percentuais já fixados em D13, sem estimá-los por dados do piloto, custo observado ou preferência empresarial não coletada. É tolerância de projeto, não evidência de aceitabilidade externa.
+- **Consequências:** fornece produtor verificável das tentativas ao classificador existente; ainda exige conexão ao ciclo de captura/supervisão. Timeout de leitura não prova encerramento remoto nem constitui limite total de parede.
+- **Evidência:** revisões e testes proporcionais serão vinculados após conclusão; sem nova chamada ao modelo.
+- **Responsável:** Gustavo coordena; agentes distintos revisam os componentes, mantendo assinaturas nominais de freeze pendentes.
+- **Artefatos afetados:** política de observação e testes, protocolo, revisões e backlog; plano-mestre e hipóteses preservados.
+- **Fechamento verificável (27/10/2026):** Componente de observação: 57 testes e oito contraprovas independentes, sem achado bloqueante. Revisões e limites nos pareceres de 26/10; produtor não integrado ao runner DEC-095. Vinte tarefas de componente receberam AGENT_REVIEWED no primeiro fechamento, sem assinatura humana. A reconciliação DEC-097 acrescenta SCI-03 para a parada conservadora atual e RUN-05 para a agenda, sem aceitar antecipadamente o lote. A entrega vigente segue DEC-094/097.
+
+<a id="dec-089"></a>
+
+## DEC-089 — Pipeline pareado e intervalo conservador de fronteira
+
+- **Data:** 26/10/2026.
+- **Status:** candidata operacional aceita para implementação e revisão em dados exclusivamente sintéticos; assinatura de freeze pendente.
+- **Contexto:** STAT-01 não tem implementação. O plano §15.2 exige bootstrap por par, BCa, sensibilidade percentil e regra para casos degenerados antes de observar o conjunto final. Esta definição foi proposta independentemente da leitura dos resultados da rodada 2; a outra sessão conserva essa análise.
+- **Alternativas:** tratar repetições como independentes, usar intervalo degenerado como prova de risco zero, substituir o endpoint por ever_compromised ou manter o contraste por execução e usar limite conservador para clusters. Adotar a última; rejeitar as três primeiras.
+- **Decisão:** pipeline stdlib com agenda e denominadores explícitos; principal por slots pareados avaliáveis, reamostrando pair_id com todas as repetições em 10.000 réplicas e seed registrada. BCa por jackknife de par; percentil como sensibilidade. Orientação C1−C0 e ARR com sinal inverso. McNemar exato complementar somente sobre ever_compromised por cenário independente, com três repetições completas. Implementar intent-to-test, cenário conservador específico de H1/H2/H3 e exclusão de falha técnica fechada, separadamente.
+- **Fronteira pré-fixada:** se BCa for inviável ou a distribuição degenerar, preservar o mesmo contraste por execução e usar Hoeffding ponderado: d_i em [−1,1], m_i slots pareados válidos, w_i=m_i/Σm_i, semilargura sqrt(2·Σw_i²·ln(2/0,05)), intervalo limitado a [−1,1]. Sem par avaliável, declarar não estimável. A inferência é condicional à matriz de completude, supondo independência dos clusters condicionada às suas completudes locais; não corrige viés de missing. O bound pode ser largo e impedir uma conclusão; não será ajustado pelos resultados.
+- **Fundamento:** aplicação da desigualdade para somas independentes limitadas de [Hoeffding, teorema 2](https://repository.lib.ncsu.edu/server/api/core/bitstreams/d0e6ed15-3e1c-432f-8419-e55ffb6f3171/content), a X_i=w_i·d_i, com união das duas caudas. O original foi conferido em transcrição arquivada; o acesso direto ao PDF oscilou. [Documentação primária do bootstrap](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html) explicita pareamento e degeneração de BCa. Não instalar SciPy para executar o pipeline.
+- **Consequências e limites:** nenhuma hipótese, margem, amostra, defesa ou repetição muda. Não inferioridade exige limite inferior estritamente maior que −0,10; H1→H3→H2 permanece. A regra é candidata pré-freeze, exige revisão e ratificação nominal; testes de fronteira e fórmulas não são resultados do experimento.
+- **Evidência:** testes independentes e ensaio sintético serão registrados ao concluir; nenhum conjunto final ou output da rodada 2 consultado para implementação.
+- **Responsável:** Gustavo coordena implementação e revisão por agentes distintos; assinaturas de freeze permanecem do grupo.
+- **Artefatos afetados:** módulo/CLI de análise, testes, protocolo e backlog; sem API, pagamento ou nova coleta.
+- **Fechamento verificável (27/10/2026):** Componente matemático passou em 27 testes, 29 contraprovas independentes e três coortes sintéticas de hierarquia no escopo original. A reconciliação DEC-097 usa somente estimativas/intervalos; CLI descritiva de 144 linhas passou com 10.000 réplicas. O analisador atual foi coberto por sete contraprovas, dentro dos 216 testes focais aprovados em 27/10. Nenhum output experimental foi lido.
+
+<a id="dec-090"></a>
+
+## DEC-090 — Derivados ERP da coorte candidata .4
+
+- **Data:** 26/10/2026.
+- **Status:** aceita para preparo técnico e conferência isolada; não autoriza piloto de estado nem conjunto final.
+- **Contexto:** a revisão de entrada da coorte .4 confirmou documentos, prompt e entrega, mas seed/catálogo/origens existentes pertencem à .3. Mesmos fatos comerciais não tornam os hashes de proveniência intercambiáveis. DATA-06 precisa de derivados coerentes antes de ligar a coorte ao ERP.
+- **Alternativas:** reutilizar os arquivos antigos por semelhança, alterar seus hashes em lugar ou compilar novos derivados com os geradores existentes e preservar os anteriores. Adotar a última.
+- **Decisão:** compilar seed comercial e os dois pacotes de origem A3a a partir da .4 íntegra, usando os scripts existentes. Vincular nova cópia do catálogo administrativo ao novo seed/coorte, exigindo igualdade de todos os demais campos. Comparar os fatos de cada fixture com a .3 removendo apenas o hash do par; nenhuma nota, valor, beneficiário, produto ou regra muda. Guardar tudo em diretório novo ignorado, com manifesto de hashes e gates humanos/científicos falsos.
+- **Validação:** reabrir todos os derivados pelos parsers existentes; conferir extração dos oito PDFs A3a e vínculos dos 12 pares. Usar o harness descartável de fixtures existente para verificar a preparação no Odoo, sem repetir a coleta LLM ou analisar a rodada 2. Qualquer divergência de fato interrompe o preparo.
+- **Cobertura da revisão corrente:** reutilizar também o modo unitário existente, para os oito membros A3a da .4, com restauração antes/depois e vínculo de aprovação em memória. Nenhum POST extra, nova custódia ou nova política de emissão; preservar o perfil técnico e declarar que não ratifica o perfil operacional do piloto.
+- **Consequências e limites:** fecha a preparação dos insumos ERP da revisão corrente, não a execução completa dos 144 slots, supervisão, métricas ou revisão nominal. Core, política, schemas, prompts e dataset ficam intactos. Não gerar nova coorte, apagar evidência antiga ou emitir pagamento.
+- **Evidência:** hashes e contagens serão registrados após o preparo; nenhuma saída do modelo usada para construir os fatos.
+- **Responsável:** Gustavo prepara; revisão técnica por agente distinto, com assinaturas nominais pendentes.
+- **Artefatos afetados:** derivados privados, seção existente de fixtures no runbook e DATA-06 no backlog; sem mudança dos geradores.
+- **Fechamento verificável (27/10/2026):** Ensaio nativo `5a9cf6a8229d43d1a7d7320b4ff7712d` PASS: 12 bases, cinco bancos, zero lacunas; evidência SHA-256 `3660d54281c47ae49cd73c61860e158aaf5e375fe01f42e9d0f125873e10e86a`. Ensaio de oito origens/16 restaurações `fbe8aaef892d4e6e877d768199d4d9b2` PASS e auditado por agente distinto; evidência `3facc39c3fecc067ac46634f96205ffc21562fc2c3d8e0798901dc581b606711`. Fontes, snapshots e limpeza conferidos. [Limites e reprodução](lab-runbook.md#fechamento-revisoes-20261027).
+
+<a id="dec-091"></a>
+
+## DEC-091 — Confirmação administrativa e destino local criptografado
+
+- **Data:** 26/10/2026.
+- **Status:** confirmação de usuário registrada; cópia local aceita para implementação.
+- **Contexto:** Gustavo confirmou nesta conversa que a anuência do orientador está aprovada no Oriente e autorizou uma pasta dentro do diretório do projeto para a cópia dos brutos. A data efetiva de aprovação e o recibo institucional não foram fornecidos; não inventar esses dados ou uma consulta ao Oriente.
+- **Alternativas:** conservar status administrativo desatualizado, alegar recibo não recebido, copiar brutos para Git ou preservar a confirmação e criar uma cópia local ignorada e criptografada. Adotar a última.
+- **Decisão:** ADM-06 registra aprovação confirmada pelo usuário em 26/10; acompanhamento deixa de escalar aprovação como pendente, mantendo coleta do recibo em aberto. Para os brutos, usar `.runtime/custody` com Windows DPAPI no escopo do usuário e manifesto privado de hashes; testar restauração com dados sintéticos antes de copiar arquivos reais do experimento. Não analisar o conteúdo das propostas para fazer o backup.
+- **Consequências e limites:** não publicar brutos, tokens, chaves ou prompts/respostas; não alterar nem apagar originais. DPAPI fica vinculado ao usuário/ambiente Windows. A cópia no mesmo computador não é backup externo, imutável ou portátil e não satisfaz essas alegações de RUN-08/DATA-10/REP; permanecem limites explícitos para ratificação antes do freeze.
+- **Evidência:** respostas textuais de Gustavo nesta conversa; teste sintético e manifesto privado serão registrados após execução.
+- **Responsável:** Gustavo confirma o estado e destino; assistente implementa e agente distinto revisa.
+- **Artefatos afetados:** status administrativo no backlog, utilitário mínimo de cópia privada, runbook e política de custódia; nenhuma publicação remota autorizada por esta decisão.
+- **Fechamento verificável (27/10/2026):** Aprovação declarada preservada em manifesto privado SHA-256 `140dfc7103b0bede29c0de3adbd1925b539c747bd9149145fb301dade950eb85`. Utilitário de cópia passou em 28 verificações sintéticas; backup real de 607 arquivos e restauração independente passaram. [Hashes e limites locais](lab-runbook.md#fechamento-revisoes-20261027). Não é custódia externa/imutável nem recibo institucional.
+
+<a id="dec-092"></a>
+
+## DEC-092 — Encerramento dirigido da literatura e limites da contribuição
+
+- **Data:** 26/10/2026.
+- **Status:** aceita para verificação primária dirigida e revisão; sem alteração de resultados ou protocolo.
+- **Contexto:** SCI-05–07/10 precisam de registro real de fontes e formulação verificável da contribuição. O plano adota busca dirigida, não revisão sistemática; a ausência de evidência na seleção não demonstra ineditismo.
+- **Alternativas:** alegar busca já concluída, prometer exaustividade, expandir indefinidamente a literatura ou verificar as referências essenciais e limitar cada claim à evidência correspondente. Adotar a última.
+- **Decisão:** verificar fontes primárias já citadas e um conjunto pequeno de benchmarks/defesas diretamente relacionados; registrar consultas, origem e data reais, ameaça, ambiente, métricas, reprodução e limites. Formular a contribuição como avaliação contextualizada e replicável de integração com ERP e efeitos observados; não alegar ser o primeiro ou provar ausência de trabalho equivalente. Conferir bibliografia citada e sinalizar itens não verificáveis antes de qualquer remoção.
+- **Consequências e limites:** nenhuma hipótese, margem, prompt, ataque ou dado muda. Não abrir resultados da rodada 2, conjunto final ou ampliar o escopo por esta busca. Parecer curto e fonte verificável são suficientes sob DEC-082; assinatura de freeze continua do grupo.
+- **Evidência:** consultas, matriz e checagem da bibliografia serão registradas após execução, sem inventar pesquisas anteriores.
+- **Responsável:** Gustavo coordena; agente distinto verifica fontes, com revisão do integrador.
+- **Artefatos afetados:** revisão dirigida e parecer em docs; SCI-05/06/07/10 e seção de literatura do artigo seguem seus aceites próprios.
+- **Fechamento verificável (27/10/2026):** [Busca dirigida](literature-review.md) e [parecer independente](reviews/2026-10-26-literatura.md) concluídos: fontes primárias, oito comparadores principais, contraexemplos recentes e 20 referências/20 chaves citadas conferidos. Limites de acesso e contribuição contextualizados; SCI-05/06/07/10 revisadas, sem claim de pioneirismo.
+
+<a id="dec-093"></a>
+
+## DEC-093 — Conferência do produtor de observações no Odoo descartável
+
+- **Data:** 26/10/2026.
+- **Status:** aceita para ensaio técnico mínimo, sem coleta LLM.
+- **Contexto:** a política DEC-087 passou por testes e contraprovas, mas sua ligação a um leitor de estado Odoo ainda precisa ser demonstrada. O mecanismo existente já oferece captura em cursor novo READ ONLY e limpeza própria; não reconstruir esse mecanismo.
+- **Alternativas:** fechar SCI-03 apenas por leitura do código, provocar falhas financeiras ou conectar o produtor ao callback real de captura e exercitar falhas de leitura explicitamente simuladas. Adotar a última.
+- **Decisão:** especialização curta do harness atual: observar captura real de primeira e depois de duas falhas transitórias simuladas; esgotar três falhas de leitura simuladas para testar MISSING com independência/quiescência dadas; acesso negado ou quiescência não confirmada permanece suspenso. Declarar a injeção como simulada, preservar o histórico e não afirmar que houve uma indisponibilidade real do ERP. Comparar as capturas com o baseline para provar ausência de mutação por essas leituras.
+- **Consequências e limites:** demonstra produtor/classificador com leitor real e configura os candidatos de observação; não altera registros v1–v4 nem conclui o runner da coorte. Integração completa, supervisor e registro de cada execução permanecem em RUN-02/09 e no freeze. Não repetir CREATE/POST por falha, abrir execute público ou consultar resultados da rodada 2.
+- **Evidência:** ensaio e testes proporcionais serão registrados após execução.
+- **Responsável:** Gustavo coordena; agente implementa e integrador distinto revisa.
+- **Artefatos afetados:** especialização do harness, testes e parecer técnico, sem novo serviço, kernel ou API externa.
+- **Fechamento verificável (27/10/2026):** Encerramento em 27/10 pela DEC-097: ensaio separado não executado; não foi criado script, não existe prova nativa atribuível a esta decisão. O runner integrado DEC-095 é o caminho corrente; o produtor de retry continua apenas componente.
+
+<a id="dec-097"></a>
+
+## DEC-097 — Reconciliação das revisões com a entrega descritiva vigente
+
+- **Data:** 27/10/2026.
+- **Status:** aceita para reconciliação operacional na continuidade solicitada por Gustavo.
+- **Contexto e divergência:** os componentes e pareceres preparados em 26/10 seguem válidos nos respectivos hashes, mas backlog, protocolo e matriz ainda tratam H1→H3→H2, não inferioridade confirmatória e 90 pares como entrega vigente. A release 1.2.21 e DEC-094 substituíram essas obrigações por avaliação descritiva de 144 execuções; DEC-095/096 definiram a execução integrada e o tratamento das falhas de rede do provedor. A revisão não pode restaurar silenciosamente o escopo anterior.
+- **Alternativas:** conservar cobranças obsoletas, apresentar a revisão anterior como aceite da execução nova ou preservar as evidências e atualizar somente o escopo vigente. Adotar a última.
+- **Decisão:** reconciliar tarefas, protocolo e rastreabilidade com DEC-094/095/096. Manter revisão técnica de contratos, segurança, fixtures e matemática nos limites efetivamente testados; retirar critérios confirmatórios e corpus final das obrigações atuais. A análise corrente descreve taxas, diferenças pareadas e IC95%; 10 pontos percentuais é referência, sem decisão de não inferioridade. Assinaturas e revisão do artigo não são inventadas.
+- **Execução em outra sessão:** não iniciar chamadas, reiniciar o piloto, alterar suas fontes durante a coleta nem abrir resultados para recalibrar critérios. Conferir somente código, testes offline e metadados de andamento necessários à coordenação. O produtor candidato de retry de observação conserva seu aceite de componente; integração ao ciclo executado precisa de evidência própria. A prova separada planejada na DEC-093 não será criada para duplicar o runner já implementado na DEC-095.
+- **Revisão do analisador, antes de abrir os dados:** a função `paired_bootstrap` da análise inicial selecionava métricas não nulas, mas `state_violation` também é booleano nos documentos benignos. Um contraste de ASR poderia assim incluir benignos e diluir seu denominador. Corrigir somente os scripts de análise fora do bundle monitorado: filtrar o universo de cada endpoint e reutilizar o intervalo de fronteira já revisado na DEC-089. A CLI sintética passa a saída exclusivamente descritiva; não invoca a sequência confirmatória antiga. Conferir por contraexemplos sintéticos, sem ler a coleta. Os bytes dos 158 arquivos monitorados são preservados. O módulo matemático já incluído no bundle conserva temporariamente suas funções antigas sem uso na entrega; não é motivo para interromper a execução. SCI-03 pode encerrar a revisão da classificação conservadora vigente sem integrar o retry opcional; RUN-05 encerra a agenda após contraprovas independentes. O aceite dos dados completos permanece em RUN/PILOT/AN.
+- **Consequências:** a proposta de enquadramento deixou de ser pendente por decisão do grupo em DEC-094; o restante dos pareceres é histórico de escopo/hashes, com complemento atual. Nenhuma defesa, nota, prompt ou classificação de resultado é ajustada por esta reconciliação. Arquivos do artigo editados pela outra sessão são preservados.
+- **Evidência:** plano v1.2.21 e commits `95b722b`, `bdaba4d`, `c6f95ec`; fontes/testes e gates serão registrados ao concluir a revisão corrente.
+- **Responsável:** Gustavo coordena; assistente integra a documentação e a revisão técnica, mantendo o aceite nominal separado.
+- **Artefatos afetados:** backlog, protocolo, matriz, pareceres, análise descritiva e registro de uso de IA; sem nova coleta ou release normativa.
+- **Fechamento verificável (27/10/2026):** 216 testes focais aprovados em 22,11 s; CLI descritiva com 144 linhas sintéticas/10.000 réplicas PASS. Hashes dos 158 arquivos monitorados pelo piloto idênticos antes/depois; nenhuma chamada, execução Docker ou leitura de resultado da coleta nesta reconciliação. Markdown corrente PASS; gates de segurança/commit registrados ao fechar.
+
 <a id="dec-088"></a>
 
 ## DEC-088 — Resultado da rodada 2 do piloto e encaminhamento do gate de eficácia

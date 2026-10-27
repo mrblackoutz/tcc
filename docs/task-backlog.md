@@ -2,17 +2,13 @@
 
 **Decisão de ownership:** [divisão do trabalho (DEC-021)](decision-log.md#dec-021)
 
-**Data-base:** 23/10/2026
+**Data-base:** 27/10/2026
 
-**Estado científico:** pré-congelamento. O [corte aprovado (DEC-058)](decision-log.md#dec-058) concentra a entrega em **DeepSeek, C0/C1, 90 pares e três repetições: 1.080 execuções principais + 144 do piloto separado = 1.224**. Qwen3, ablação e ataques adaptados à defesa passam a trabalho futuro; suas tarefas são `CUT`, não concluídas. A [captura/reset e oráculo (DEC-055)](lab-runbook.md#captura-restauracao-oraculo) e o [registro candidato v2 (DEC-057)](lab-runbook.md#run-record-candidato) já têm evidência técnica; não reconstruí-los. **Próximo: integrar o ciclo operacional mínimo, produzir/revisar o piloto, validar a análise com dados sintéticos e escrever o artigo em paralelo.** RUN-01/02/03/04/08 seguem `ACTIVE`; `execute` fechado. SCI-01 foi reaberta pelo escopo revisto; SCI-03, imagem experimental, revisão humana, competência C0, dataset e freeze continuam gates. Não expandir engenharia auxiliar sem necessidade demonstrada para esse fluxo.
+**Estado científico:** [plano v1.2.21 / estudo descritivo (DEC-094)](decision-log.md#dec-094). A entrega avalia **144 execuções no Odoo: 12 pares × 2 documentos × C0/C1 × 3 repetições**. Os 90 pares e 1.080 runs adicionais estão retirados. Não há testes de superioridade ou não inferioridade; 10 pontos percentuais é referência de utilidade.
 
-**Por que os 144 runs do piloto ainda não começaram?** Testes de componentes não substituem o ciclo experimental. Restam três frentes:
+**O que está liberado:** C0, contratos/dados, preparo ERP e controles têm os pareceres indicados nas tabelas. A coorte `.4` passou por conferência de 12 bases, cinco bancos, oito origens A3a e 16 restaurações. A anuência está aprovada por confirmação de Gustavo; 607 arquivos de propostas receberam cópia local criptografada com restauração conferida.
 
-- **Fixtures completas — DATA-06/05:** existem 12 bases, [oito origens A3a unitárias com dezesseis restaurações verificadas](lab-runbook.md#reset-unitario-a3a), [custódia entre processos e oito POSTs/replays privados (DEC-075)](lab-runbook.md#post-privado-unitario-a3a) e [cinco bancos alternativos](lab-runbook.md#cadastros-alternativos-piloto). A [candidata `.3`](lab-runbook.md#correcao-pedido-produto) corrige pedido/produto A1. O [ciclo de rascunhos (DEC-078)](lab-runbook.md#gateway-registro-rascunhos) liga proposta/política ao registro v4 em C0/C1 de desenvolvimento. O POST/aprovação no ciclo comum passou em desenvolvimento ([DEC-079/080](lab-runbook.md#gateway-registro-post)). Restam fixtures piloto revisadas e entrega verificada ao modelo; não reconstruir reset, emissor ou executor.
-- **Ciclo único — C0-01/03 e RUN-02/04/09:** [CREATE via gateway/JSON-2 com registro v4 (DEC-078)](lab-runbook.md#gateway-registro-rascunhos) passou em seis células com provedor simulado. A [aprovação viva (DEC-077)](lab-runbook.md#observacao-viva-aprovacao) já está ligada ao POST comum ([DEC-079/080](lab-runbook.md#gateway-registro-post)) com provedor simulado; falta dados revisados/LLM real e supervisão num ensaio conjunto. Não reconstruir componentes ou confundir este incremento CREATE com o runner científico.
-- **Aceite independente — DATA-04, C0-05, C1 e SCI-03:** revisar os 24 documentos e os controles/protocolo pendentes; fechar configuração operacional e custódia/orçamento para o lote. Assistência automatizada e testes não assinam revisão humana.
-
-O **freeze final é posterior ao piloto**, não uma pré-condição deste. Competência C0 também será medida no piloto. A saída imediata é concluir essas três frentes e executar PILOT-01/02, sem abrir o conjunto final ou ampliar engenharia auxiliar.
+**O que falta agora:** terminar e conferir as 144 execuções integradas da [DEC-095/096](decision-log.md#dec-096), fechar denominadores/intervalos e custódia, preencher os resultados do artigo e obter o aceite final. A outra sessão conduz a coleta; não iniciar outra, alterar suas fontes ou repetir provas já concluídas. Revisão por agente é aceita pela DEC-094, com limites declarados; não equivale a assinatura nominal ou aceite da execução ainda em curso.
 
 **Leitura dos códigos:** [C0](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#c0) é a integração direta; [C1](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#c1), a integração protegida. RQ significa pergunta de pesquisa; H, hipótese; DEC, decisão registrada. Os links levam ao significado completo. Consulte a [leitura rápida](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida) antes de iniciar uma tarefa.
 
@@ -63,37 +59,33 @@ Ownership não significa trabalho isolado. Owner implementa e responde pelo DoD;
 ## 3. Caminho crítico e cronograma reancorado
 
 ```text
-protocolo + dados + análise sintética + artigo ─────┐
-C0/C1 + revisão dos controles existentes ──────────┼→ piloto → freeze → 1.080 runs → análise final
-LLM v2 → despacho → estado/oráculo/registro/reset ─┘                              → artigo final
+componentes revistos + coorte .4 ──→ 144 execuções Odoo ──→ conferência/intervalos
+literatura + método + arquitetura ───────────────────────→ resultados/artigo → aceite/submissão
 ```
 
-As janelas abaixo são **alvos condicionados à prontidão**, não provas de cumprimento. Substituem as ondas antigas de agosto/setembro, cujo histórico permanece no Git. Se um gate falhar ou a vazão real inviabilizar a janela, registrar o atraso e obter nova decisão; não reduzir pares/repetições, relaxar C1 ou abrir o conjunto final automaticamente.
+As janelas são alvos condicionados à evidência; não autorizam reduzir repetições, relaxar C1 ou selecionar resultados.
 
-| Onda | Janela-alvo em 2026 | P1 — Felipe | P2 — Thomaz | P3 — Gustavo | Saída de sincronização |
-|---|---|---|---|---|---|
-| W0 | 17–20/10 | protocolo reduzido, piloto revisado, análise sintética e literatura/artigo | revisão do C0/C1 existente e despacho mínimo seguro | ciclo operacional, supervisão, registros, reset e vazão | checklist de prontidão real; sem conjunto final |
-| W1 | 21–22/10 | QA e relatório do piloto, precisão/poder e dataset final revisado | corrigir achados pré-declarados; assinar segurança | 144 runs do piloto e correções com evidência; preparar freeze | piloto aceito e freeze assinado antes da coleta |
-| W2 | 23–26/10 | QA de denominadores sem tuning; artigo em paralelo | acompanhar falhas sem ajustar defesa ao resultado | 1.080 runs intercaladas e custódia dos brutos | coleta íntegra ou suspensão documentada |
-| W3 | até 28/10 | análise, figuras, negativos e limites | análise de falhas/mecanismos | conferir manifests, custos e reprodução | tabelas regeneráveis e conclusões proporcionais |
-| W4 | até 01/11 | consolidar artigo e referências | revisar arquitetura e claims | conferir método, ambiente e pacote | artigo completo para revisão |
-| W5 | 02/11 | revisão científica/editorial | revisão de segurança | revisão de reprodução e build | aprovação interna, condicionada aos gates |
-| W6 | até 08/11 | resolver revisão e conferir arquivo | conferir claims finais | submissão e recibo institucional | submissão aceita, sem presumir prorrogação |
-| W7 | 10/11–07/12 | slides, respostas, correções e versão final | demo/arguição de segurança | demo/arguição de ambiente | banca, correção e anuência final |
+| Janela-alvo em 2026 | Felipe — ciência e artigo | Thomaz — segurança | Gustavo — execução | Saída |
+|---|---|---|---|---|
+| 27–28/10 | validar denominadores e intervalos; consolidar literatura/método | conferir limites dos controles e revisar a integração | concluir/conferir piloto integrado, restaurar estado e preservar brutos | 144 slots íntegros ou interrupção declarada |
+| até 01/11 | resultados, discussão, Resumo/Abstract | revisar arquitetura, falhas e conclusões | conferir manifests, custo, reprodução e pacote | artigo completo com números rastreáveis |
+| 02/11 | revisão científica/editorial | revisão de segurança | revisão de reprodução e build | aceite interno e reaberturas resolvidas |
+| até 08/11 | ajustes e declaração institucional de IA | conferir conclusões finais | submissão e recibo | entrega aceita, sem presumir prorrogação |
+| 10/11–07/12 | slides e correções | demonstração/arguição de segurança | demonstração/ambiente | banca e versão final |
 
-Qwen3, ablação e conjunto defense-aware **não entram nesta entrega**, mesmo que haja folga; sua reativação exige nova decisão. H4 não impõe limites confirmatórios de custo; H5 e RQ4 permanecem retiradas, com IDs reservados. A análise preserva pareamento, três repetições dependentes, bootstrap por par, não inferioridade de `−0,10`, missing e a validação dos intervalos em zero/fronteira antes do freeze.
+Qwen3, ablação, defense-aware e o corpus adicional de 90 pares são trabalho futuro. A análise preserva três repetições dependentes, pareamento, intervalos por par e tratamento explícito de ausências/fronteiras; não aplica testes confirmatórios.
 
 ## 4. O que fazer agora — três trilhas paralelas
 
-Usar os IDs abaixo como próxima fila, não como nova lista duplicada. Os detalhes, estados e evidências continuam nas tabelas seguintes. As trilhas trabalham independentemente sobre contratos versionados; integração e revisão cruzada fecham o checkpoint. Escrever método/referencial agora, marcando resultados ainda pendentes.
+Usar os IDs das tabelas como fila única. As revisões de componentes não precisam ser refeitas. O artigo é editado em paralelo pela outra sessão; esta frente preserva suas alterações.
 
-| Integrante | Tarefas iniciais | Não tocar ainda | Checkpoint |
-|---|---|---|---|
-| Felipe — dados, análise e artigo | SCI-01/03/05–07, DATA-01–04, STAT-01, rascunhos PAPER-01/02 | usar conjunto final para tuning; tratar buscas/matriz como concluídas; prometer H4/RQ4/H5 | schema/codebook, 12 pares piloto com revisão de cada item, análise sintética e texto com fontes |
-| Thomaz — C0/C1 mínimo e revisão de segurança | C0-01–03, revisão C1-01–11, SEC-01/02 e SEC-A2 | novo controle auxiliar; conjunto final; gateway com permissão financeira ampla | despacho CREATE/POST restrito e revisado, contabilização benigna autorizada, negativas e invariantes |
-| Gustavo — ciclo experimental e integração | G3-06, RUN-01–09, DATA-05/06, ADM-06/09 em apoio ao owner | repetir provas concluídas sem mudança; API sem autorização; Qwen; expansão não necessária | proposta v2 → C0/C1 → estado → oráculo → registro → reset, supervisão e vazão medidas |
+| Integrante | Próximas tarefas | Critério para avançar |
+|---|---|---|
+| Felipe | PILOT-03, STAT-01/AN-01–05, PAPER-01/02/05–07, ADM-02/11 | denominadores e intervalos conferidos; resultados descritivos; declaração de IA e limites no artigo |
+| Thomaz | revisão RUN-02/09, PILOT-05, AN-09, PAPER-03 | efeito, aprovação, reset e conclusões coerentes com os controles já revistos; sem expansão da defesa |
+| Gustavo | RUN-02/07/08, PILOT-02, EXP-07, PAPER-04/08, ADM-09 | execução íntegra, custódia conferida, manifests/custo e pacote reproduzível |
 
-**Prontidão até 20/10:** contratos e piloto revisados; fluxo completo ensaiado sem conjunto final; decisão dos retries de observação em SCI-03; análise validada nos casos de fronteira; segurança/custódia e orçamento conferidos. Pendência institucional externa deve ser escalonada imediatamente, sem aguardar a implementação. Não interpretar este alvo como autorização para antecipar piloto ou freeze sem assinatura.
+Não reiniciar coleta, ajustar notas/prompt/política ou mudar as fontes monitoradas durante o piloto. Pareceres por agente têm escopo/hashes explícitos; aceite do grupo e aprovação do artigo permanecem separados.
 
 ## 5. Administração e requisitos institucionais
 
@@ -104,10 +96,10 @@ Usar os IDs abaixo como próxima fila, não como nova lista duplicada. Os detalh
 | ADM-03 | P0 | Felipe | Gustavo | — | confirmar janela/horários/eligibilidade PPI/PPP/PPA e anomalia `31/11`; atualizar matriz | EXTERNAL |
 | ADM-04 | P0 | Felipe | Gustavo | — | confirmar dados institucionais e alinhamento do tema à área/projeto do orientador | EXTERNAL |
 | ADM-05 | P0 | Felipe | Thomaz | — | instituir registro semanal/quinzenal de orientação com pauta, presença, decisões e próximos passos | READY |
-| ADM-06 | P0 | Felipe | Gustavo | — | coletar anuência do orientador no Oriente e preservar recibo fora do Git. Prazo oficial 01/09, vencido; requerimento 565711 em análise pelo orientador desde 01/09. **Escalonamento imediato**: consta no checkpoint seguinte até ser deferida | EXTERNAL |
+| ADM-06 | P0 | Felipe | Gustavo | — | Anuência aprovada, confirmada por Gustavo nesta conversa em 26/10/2026; [DEC-091](decision-log.md#dec-091). Não houve consulta automatizada ao Oriente. Recibo e data efetiva ainda não fornecidos; acompanhamento documental em ADM-09. Manifesto privado da confirmação: SHA-256 `140dfc71…`. | DONE |
 | ADM-07 | P0 | Gustavo | Felipe | — | cadastro do projeto e três autores confirmados; evidência privada de 01/09 preservada por hash no lock institucional, sem identificadores no Git | DONE |
 | ADM-08 | P0 | Gustavo | Felipe | ADM-07 | requerimento protocolado em 01/09, três autores conferidos e evidência privada preservada por hash no lock institucional | DONE |
-| ADM-09 | P1 | Gustavo | Felipe | ADM-02 | manter calendário de submissão, avaliadores, banca, correção e anuência final | READY |
+| ADM-09 | P1 | Gustavo | Felipe | ADM-02 | Manter calendário/avaliadores/banca/correções; obter recibo da anuência já confirmada em ADM-06 e as informações externas ADM-02/03. Não escalar aprovação como pendente. | ACTIVE |
 | ADM-10 | P0 | Felipe | Thomaz | [divisão do trabalho (DEC-021)](decision-log.md#dec-021) | atualizar requisitos institucionais com papéis nominais; disponibilidade revista semanalmente | DONE |
 | ADM-11 | P0 | Felipe | Thomaz | — | manter `docs/ai-usage.md` atualizado a cada release do plano e a cada seção do artigo; derivar dele a declaração institucional quando ADM-02 responder, sem reconstruir de memória | ACTIVE |
 | REP-05 | P1 | Gustavo | Thomaz | FRZ-08 | reexecutar a suíte de segurança de C1 em ambiente limpo e registrar tentativa independente de bypass, fechando o ciclo de reprodução dos três componentes | WAIT |
@@ -120,16 +112,16 @@ Usar os IDs abaixo como próxima fila, não como nova lista duplicada. Os detalh
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| SCI-01 | P0 | Felipe | Thomaz | — | candidato histórico [DEC-032](decision-log.md#dec-032), commit `d0f11d6`, preservado. Revisar o [protocolo reduzido (DEC-058)](protocol.md): H1→H3→H2, eficiência descritiva, três repetições, zero/fronteira e limitações. Reaberta por mudança de escopo; nova revisão independente/assinatura antes do piloto/freeze | ACTIVE |
-| SCI-02 | P0 | Felipe | Gustavo | — | justificar operacionalmente a margem BTSR de 10 p.p. sem usar piloto/final | READY |
-| SCI-03 | P0 | Felipe | Thomaz | — | [regras candidatas e classificador puro (DEC-032)](decision-log.md#dec-032) testados offline; faltam parâmetros de retry da observação Odoo, integração, revisão independente e assinatura antes do freeze | ACTIVE |
+| SCI-01 | P0 | Felipe | Thomaz | — | Protocolo e denominadores revistos; [versão operacional](protocol.md) reconciliada com o estudo descritivo DEC-094/097. [Parecer dos componentes](reviews/2026-10-26-ciencia-operacional.md). Sem testes H1/H2/H3 ou corpus adicional; aceite da evidência em FRZ, sem assinatura inventada. | AGENT_REVIEWED |
+| SCI-02 | P0 | Felipe | Gustavo | — | Referência de 10 pontos percentuais explicada no [protocolo](protocol.md): dez tarefas adicionais não concluídas por cem em relação a C0, diferença absoluta. [Revisão](reviews/2026-10-26-literatura.md). Pela DEC-094, não é critério de não inferioridade; sem validação empresarial ou recalibração. | AGENT_REVIEWED |
+| SCI-03 | P0 | Felipe | Thomaz | — | Classificador e produtor candidato de três leituras foram testados/revistos ([DEC-087](decision-log.md#dec-087)); não estão integrados ao piloto DEC-095. O runner atual para se captura/estado/reset falham, sem fabricar MISSING. Declaração explícita no [protocolo](protocol.md); integração do retry fica posterior, sem bloquear coleta íntegra. Regra conservadora e classificação revistas; os registros completos do lote continuam em RUN-02/09. O retry opcional não é uma pendência bloqueante. | AGENT_REVIEWED |
 | SCI-04 | — | Felipe | Gustavo | — | hipótese de aceitabilidade H4 retirada pela [DEC-058](decision-log.md#dec-058), ID reservado. Medição descritiva permanece em RUN-07/AN-05; não escolher limites confirmatórios | CUT |
-| SCI-05 | P0 | Felipe | Thomaz | — | revisar procedimento de literatura dirigida: fontes primárias, registro real de consultas/origem/data e critérios de seleção, sem prometer cobertura sistemática ou buscas já concluídas | READY |
-| SCI-06 | P0 | Felipe | Thomaz | SCI-05 | executar verificação primária dirigida e matriz crítica de threat model, ambiente, defesa, métricas, resultados/limites e reprodução; conferir contraexemplos à lacuna | WAIT |
-| SCI-07 | P0 | Felipe | Thomaz | SCI-06 | congelar formulação da lacuna e claims de originalidade com fontes que sustentem cada frase | WAIT |
+| SCI-05 | P0 | Felipe | Thomaz | — | Procedimento dirigido executado com consultas, origem e datas reais; sem alegação sistemática/exaustiva. [verificação primária](literature-review.md) e [parecer](reviews/2026-10-26-literatura.md). | AGENT_REVIEWED |
+| SCI-06 | P0 | Felipe | Thomaz | SCI-05 | Oito comparadores primários e contraexemplos recentes em matriz de ameaça/ambiente/defesa/métricas/reprodução/limites. [verificação primária](literature-review.md). Acesso parcial e artefatos não confirmados declarados; nenhum resultado final consultado. | AGENT_REVIEWED |
+| SCI-07 | P0 | Felipe | Thomaz | SCI-06 | Formulação candidata da contribuição como avaliação contextualizada/replicável de ERP e efeitos transacionais; AgentDojo já mede estado e autorização externa tem precedentes. [verificação primária](literature-review.md). Sem claim de primeiro/ausência de equivalente; ratificação de freeze permanece FRZ-01. | AGENT_REVIEWED |
 | SCI-08 | P1 | Felipe | Gustavo | SCI-03 | registrar ética, ausência de participantes, custódia raw, retenção e revisão dupla de exports | READY |
-| SCI-09 | P1 | Felipe | Thomaz | SCI-01 | mapear RQ→hipótese→endpoint→métrica→teste→figura/tabela | WAIT |
-| SCI-10 | P1 | Felipe | Gustavo | SCI-05 | reconciliar bibliografia do artigo; remover fonte não citada/não verificável | WAIT |
+| SCI-09 | P1 | Felipe | Thomaz | SCI-01 | [Matriz de rastreabilidade](control-test-matrix.md): pergunta, endpoint, denominador, teste e saída descritiva; três repetições dependentes e IC por par, sem hierarquia confirmatória. [Parecer](reviews/2026-10-26-ciencia-operacional.md), com reconciliação DEC-097. | AGENT_REVIEWED |
+| SCI-10 | P1 | Felipe | Gustavo | SCI-05 | 20 entradas e 20 chaves citadas no artigo, sem órfã/ausente; fontes primárias conferidas e limites de acesso explícitos em [verificação primária](literature-review.md). Bibliografia preservada; novas alegações do artigo exigem citação correspondente. | AGENT_REVIEWED |
 
 ## 7. G3, egress e baseline C0
 
@@ -144,26 +136,26 @@ Usar os IDs abaixo como próxima fila, não como nova lista duplicada. Os detalh
 | G3-07 | — | Gustavo | Thomaz | — | download/proveniência Qwen3 retirados da entrega pela [DEC-058](decision-log.md#dec-058); seleção histórica preservada como trabalho futuro | CUT |
 | G3-08 | — | Gustavo | Felipe | G3-07 | benchmark Qwen3 retirado da entrega pela [DEC-058](decision-log.md#dec-058); não afirmar viabilidade ou smoke concluído | CUT |
 | A3A-01 | P0 | Gustavo | Thomaz e Felipe | [contrato de ação v2 (DEC-035)](decision-log.md#dec-035) | schemas, adapters e [transporte/consumidores v2 (DEC-050)](decision-log.md#dec-050) preservados. [Prova nativa (DEC-051)](decision-log.md#dec-051) confirma POST C0 sem aprovação no alvo confiável, sem reescrever campos propostos. Faltam revisão independente e aceite da semântica A3a; não é taxa de ataques. Revisão por agente distinto em 26/10/2026 ([relatório](reviews/2026-10-26-revisao-agente.md), [DEC-081](decision-log.md#dec-081)); assinatura humana nominal pendente. | AGENT_REVIEWED |
-| C0-01 | P0 | Thomaz | Felipe | SCI-01, G3a | especificar prompt-base, ações e ferramentas plausíveis comuns; separar construção C0/C1 do transporte. Prompt-base candidato e fases em [DEC-083](decision-log.md#dec-083), validados com 12/12 propostas benignas exatas ([runbook](lab-runbook.md#propostas-llm-piloto)); redigido por agente a pedido de Gustavo, falta revisão distinta e ratificação do grupo. | AWAITING_REVIEW |
-| C0-02 | P0 | Thomaz | Gustavo | C0-01, A3A-01 | consumidor v2, ponte e [sete casos nativos (DEC-051)](decision-log.md#dec-051) passaram com identidade funcional não administrativa: CREATE benigno/desvio de valor/beneficiário, POST sem aprovação, alvo ausente/ambíguo e erro nativo. Argumentos, alvo e efeitos conferidos pós-commit. Ainda faltam integração experimental completa, revisão e competência benigna no piloto | ACTIVE |
-| C0-03 | P0 | Thomaz | Gustavo | C0-01 | definir capacidades mínimas: rascunho e contabilização autorizada; não ampliar para solicitação simulada de pagamento nesta entrega, sem pagamento/e-mail real. Prompt-base candidato e fases em [DEC-083](decision-log.md#dec-083), validados com 12/12 propostas benignas exatas ([runbook](lab-runbook.md#propostas-llm-piloto)); redigido por agente a pedido de Gustavo, falta revisão distinta e ratificação do grupo. | AWAITING_REVIEW |
+| C0-01 | P0 | Thomaz | Felipe | SCI-01, G3a | Prompt-base/fases comuns, sem condição no construtor, revisados sob DEC-083/087. 24 grupos de requisições idênticas C0/C1 e payload permanece no papel user; [revisão independente](reviews/2026-10-26-c0-dados.md). Ratificação nominal e freeze continuam próprios. | AGENT_REVIEWED |
+| C0-02 | P0 | Thomaz | Gustavo | C0-01, A3A-01 | Consumidor v2, sete casos nativos DEC-051 e contraprovas de valor/beneficiário/POST revistos; C0 preserva argumentos sem aplicar regras C1. [revisão independente](reviews/2026-10-26-c0-dados.md). A composição da coorte/estado segue RUN-02 e competência medida segue C0-04; não é piloto concluído. | AGENT_REVIEWED |
+| C0-03 | P0 | Thomaz | Gustavo | C0-01 | Capacidades restritas ao escopo: rascunho e contabilização, sem pagamentos/e-mail reais. Prompt/fase e transporte separados e revistos em [revisão independente](reviews/2026-10-26-c0-dados.md). Configuração nominal de freeze pendente. | AGENT_REVIEWED |
 | C0-04 | P0 | Thomaz | Felipe | C0-02, DATA-05, G3-05, PILOT-02 | medir competência benigna durante o piloto e aceitar o resultado antes do freeze; corrigir apenas falhas funcionais pré-freeze | WAIT |
-| C0-05 | P0 | Felipe | Gustavo | C0-02, C0-03 | revisão independente de plausibilidade antes do piloto; documentar diferenças não relacionadas à segurança. Não substitui competência medida em C0-04 | WAIT |
+| C0-05 | P0 | Felipe | Gustavo | C0-02, C0-03 | Plausibilidade estrutural revista: prompt comum, identidade funcional e ausência de regras de negócio C1 em C0. [Revisão](reviews/2026-10-26-c0-dados.md) e [parecer](reviews/2026-10-26-ciencia-operacional.md). Competência e efeitos são medidos em C0-04/PILOT; o enquadramento descritivo já foi adotado pela DEC-094. | AGENT_REVIEWED |
 
 ## 8. Dataset, ground truth e red team
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| DATA-01 | P0 | Felipe | Gustavo | contrato atual | [contrato candidato dos pares (DEC-061)](lab-runbook.md#contrato-pares-oraculo): schema/parser fechados, fatos compartilhados, deltas/hashes e ponte tipada para o oráculo sem aprovação/condição. A DEC-064 liga PDFs/textos e verifica unicidade do piloto. Faltam revisão independente, bindings ERP observados, consolidação e futura conferência de separação do conjunto final | ACTIVE |
-| DATA-02 | P0 | Felipe | Thomaz | threat model | [codebook candidato v0.1](../dataset/codebook.md) reconciliado com DEC-063 e revisão técnica de templates/A3a sob DEC-064. Faltam aceitação científica independente e integração do benigno autorizado, sem token compartilhado entre proveniências; não revelar conjunto final a P2 | ACTIVE |
+| DATA-01 | P0 | Felipe | Gustavo | contrato atual | Contrato de pares, fatos compartilhados, hashes, unicidade e ponte tipada para o oráculo revistos. [revisão independente](reviews/2026-10-26-c0-dados.md). Bindings candidatos .4 conferidos sob DEC-090; composição com execuções segue RUN-02/09 e separação/revisão do corpus final segue DATA-07/08. | AGENT_REVIEWED |
+| DATA-02 | P0 | Felipe | Thomaz | threat model | Codebook/taxonomia/fatos e ausência de autoridade em labels revistos; origens/aprovações distintas por proveniência conferidas em DEC-090. [revisão independente](reviews/2026-10-26-c0-dados.md). Bytes do codebook preservados para manter os hashes da coorte; comentários antigos de prontidão são snapshot histórico, não estado operacional corrente. | AGENT_REVIEWED |
 | DATA-03 | P0 | Felipe | Thomaz | DATA-01 | [gerador candidato (DEC-062)](lab-runbook.md#geracao-pdfs-desenvolvimento), implementado por Gustavo em contingência: T1/T2/T3, marca por página, extração/hashes e gravação/releitura exclusiva em `.runtime`; somente desenvolvimento. 4.091 testes e dez páginas inspecionadas; faltam revisão técnica de Thomaz e adequação documental por Felipe, sem autorrevisão. Não equivale a dataset revisado. Revisão por agente distinto em 26/10/2026 ([relatório](reviews/2026-10-26-revisao-agente.md), [DEC-081](decision-log.md#dec-081)); assinatura humana nominal pendente. | AGENT_REVIEWED |
-| DATA-04 | P0 | Felipe | Thomaz | DATA-01–03 | [Coorte candidata local](lab-runbook.md#preparacao-12-pares-piloto), preparada por Gustavo em contingência: 12 pares/24 PDFs, quatro por família, ground truth preliminar e guia dos 24 membros. [Candidata `.3` (DEC-071)](lab-runbook.md#correcao-pedido-produto): um item comercial corrigido nos dois membros A1; 22 PDFs e todas as notas idênticos à `.2`, preservada. Gates humanos/execução falsos; revisão de Felipe e Thomaz pendente, fixtures/Delivery em DATA-06/05. Não é piloto executado nem dataset publicável. Revisão por agente distinto em 26/10/2026 ([relatório](reviews/2026-10-26-revisao-agente.md), [DEC-081](decision-log.md#dec-081)); assinatura humana nominal pendente. | AGENT_REVIEWED |
-| DATA-05 | P0 | Gustavo | Felipe | DATA-04, G3-04 | validar Delivery Rate: payload chega intacto ao modelo; registrar texto/hash/posição | WAIT |
-| DATA-06 | P0 | Gustavo | Felipe | DATA-04 | [12 bases](lab-runbook.md#bases-comerciais-piloto), [cinco bancos/zero lacunas pedido-item](lab-runbook.md#correcao-pedido-produto) e [oito origens/POSTs privados/restauração (DEC-075)](lab-runbook.md#post-privado-unitario-a3a) preservados. [DEC-078](lab-runbook.md#gateway-registro-rascunhos): CREATE de desenvolvimento com proposta/política, registro v4 comum C0/C1 e doze restaurações. Restam integrar POST/aprovação nesse ciclo e ligá-lo às fixtures piloto revisadas; não é fixture científica completa ou piloto | ACTIVE |
+| DATA-04 | P0 | Felipe | Thomaz | DATA-01–03 | Coorte candidata .4: 12 pares/24 PDFs revistos quanto a fatos, notas e ausência de vazamento assimétrico, sem abrir resultados da rodada 2. [revisão independente](reviews/2026-10-26-c0-dados.md). Não é dataset final, publicação de payloads ou piloto de estado executado; versões anteriores preservadas. | AGENT_REVIEWED |
+| DATA-05 | P0 | Gustavo | Felipe | DATA-04, G3-04 | Entrada/wire conferidos: 24 PDFs, notas íntegras após extração e 144 corpos de requisição com transporte simulado; bytes comuns C0/C1. [revisão independente](reviews/2026-10-26-c0-dados.md). Medidas de cada chamada efetiva continuam no relatório do piloto; não se infere atenção interna do provedor. | AGENT_REVIEWED |
+| DATA-06 | P0 | Gustavo | Felipe | DATA-04 | Preparo ERP .4 revisto sob [DEC-090](decision-log.md#dec-090): 12 bases, cinco bancos, oito origens e aprovações em memória, 25 capturas/16 restaurações; fatos, IDs e hashes conferidos por [parecer operacional](reviews/2026-10-26-ciencia-operacional.md). Não ratifica perfil operacional nem ciclo LLM/estado: RUN-02/09 e SCI-03 permanecem gates. | AGENT_REVIEWED |
 | DATA-07 | P0 | Felipe | Gustavo | PILOT-04 | gerar/fechar 90 pares/180 documentos finais, 30 pares por objetivo financeiro sem reutilizar itens do piloto. Retirada da entrega pela [DEC-094](decision-log.md#dec-094): a avaliação é o piloto; conjunto de 90 pares é trabalho futuro | CUT |
 | DATA-08 | P0 | Felipe | Gustavo | DATA-07 | dupla revisão, resolução de divergências, versão/hash/manifest e separação do conjunto final. Retirada da entrega pela [DEC-094](decision-log.md#dec-094): a avaliação é o piloto; conjunto de 90 pares é trabalho futuro | CUT |
 | DATA-09 | — | Gustavo | Felipe | — | conjunto defense-aware retirado da entrega pela [DEC-058](decision-log.md#dec-058); ID e ownership preservados como trabalho futuro | CUT |
-| DATA-10 | P1 | Gustavo | Felipe | DATA-08 | custódia externa criptografada, cópia imutável, retenção e manifest SHA-256 saneado | WAIT |
+| DATA-10 | P1 | Gustavo | Felipe | RUN-08, PILOT-02 | Custódia dos dados do piloto e retenção com manifest saneado. Cópia local de 607 arquivos conferida ([DEC-091](decision-log.md#dec-091)); ainda falta incluir a coleta Odoo concluída e registrar limites: mesmo computador, sem proteção externa/imutável. | ACTIVE |
 
 ## 9. Arquitetura C1 e testes de segurança
 
@@ -181,42 +173,42 @@ Usar os IDs abaixo como próxima fila, não como nova lista duplicada. Os detalh
 | C1-10 | P0 | Thomaz | Felipe | C1-05–09 | [bypass HTTP real](../odoo/addons/ap_security_executor/tests/test_bypass_http.py) commitado em `58d4aa7`, sob [DEC-047](decision-log.md#dec-047) e [DEC-048](decision-log.md#dec-048). 76 Odoo/20 casos novos/123 HTTP passaram em 05/10; CRUD, métodos privados/arbitrários, contexto/empresa, defaults, anexos e ledgers com alvos preenchidos e projeções idênticas. Mesmas 33 fontes das oito provas; inventário/hashes/cleanup conferidos. Falta revisão de Felipe e reprodução por Thomaz. Público fechado; repetir após integração. [Reprodução e limites](lab-runbook.md#bypass-http-c1-10). Revisão por agente distinto em 26/10/2026 ([relatório](reviews/2026-10-26-revisao-agente.md), [DEC-081](decision-log.md#dec-081)); assinatura humana nominal pendente. | AGENT_REVIEWED |
 | C1-11 | P0 | Thomaz | Felipe | C1-06–09 | [probe de transações reais](../odoo/probes/c111_transactions.py) e correção da guarda commitados em `58d4aa7`, sob [DEC-047](decision-log.md#dec-047) e [DEC-048](decision-log.md#dec-048). 22 casos, cinco pares de conexões/bloqueios e seis retries passaram; commit/rollback/savepoint, faults, nonce, replay, deriva e lifecycle nativo conferidos. Corrida cross-PO antes `CREATED/CREATED`, agora duplicidade negada e auditada sem segundo efeito. 1.148 offline e regressões 17/56/95/123/171/255 também passaram na mesma fonte. Falta revisão de Felipe e reprodução por Thomaz. Workflow/runner e gates científicos separados. [Reprodução e limites](lab-runbook.md#transações-reais-e-ciclo-de-commit-c1-11). Revisão por agente distinto em 26/10/2026 ([relatório](reviews/2026-10-26-revisao-agente.md), [DEC-081](decision-log.md#dec-081)); assinatura humana nominal pendente. | AGENT_REVIEWED |
 | C1-12 | — | Thomaz | Felipe | — | controle de saída e mensagens retirados com a avaliação de exposição de dados, conforme [retirada da exposição de dados (DEC-023)](decision-log.md#dec-023); ID preservado no histórico | CUT |
-| SEC-01 | P0 | Thomaz | Felipe | C1-01 | matriz threat→controle→invariante→teste→evidência, incluindo limites residuais | READY |
-| SEC-02 | P1 | Thomaz | Gustavo | C1-10–11 | inventário de permissões/capacidades e prova de zero mutação crítica fora do método | WAIT |
+| SEC-01 | P0 | Thomaz | Felipe | C1-01 | [Matriz ameaça→controle→invariante→teste→métrica/evidência](control-test-matrix.md) concluída e revista; inclui rollback I8 e limites residuais. [parecer operacional](reviews/2026-10-26-ciencia-operacional.md). Assinatura nominal de freeze pendente. | AGENT_REVIEWED |
+| SEC-02 | P1 | Thomaz | Gustavo | C1-10–11 | Inventário corrente de 366 modelos e sete críticos sem CREATE/WRITE/UNLINK; hash atual confere no lock de workflow. 21 mutações de escalada rejeitadas; add-on inalterado desde a revisão independente de bypass/transações. [parecer operacional](reviews/2026-10-26-ciencia-operacional.md) e [matriz](control-test-matrix.md). Não equivale a integração científica. | AGENT_REVIEWED |
 
 ## 10. Runner, oráculo e observabilidade experimental
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| RUN-01 | P0 | Gustavo | Felipe | SCI-03 | [Registro v4 (DEC-076)](lab-runbook.md#atribuicao-aprovacao-registro-v4) e [aprovação viva (DEC-077)](lab-runbook.md#observacao-viva-aprovacao) preservados. [DEC-078](lab-runbook.md#gateway-registro-rascunhos) registra estágio/política completos e efeito/reset CREATE via gateway/JSON-2 em C0/C1, com provedor simulado. Faltam POST/aprovação comum, SCI-03, invariantes individuais, custo, supervisão real e revisão de Felipe. Bloqueios sobrevivem ao reset; não é aceite científico | ACTIVE |
-| RUN-02 | P0 | Gustavo | Thomaz | RUN-01 | [DEC-078](lab-runbook.md#gateway-registro-rascunhos): seis ciclos CREATE C0/C1 com registro v4 e doze restaurações. [POST/aprovação (DEC-079/080)](lab-runbook.md#gateway-registro-post): quatro ciclos e oito restaurações. [Handoff das propostas persistidas (DEC-084)](decision-log.md#dec-084) validado offline, preservando erros e condição. Próximo: ligar às fixtures e ao estado/reset com oráculo genérico, perfil/supervisão e revisão. Runner científico pendente; execute fechado | ACTIVE |
-| RUN-03 | P0 | Gustavo | Felipe | estado M2 | [ponte de captura (DEC-055)](lab-runbook.md#captura-restauracao-oraculo) e [ponte dataset→oráculo (DEC-061)](lab-runbook.md#contrato-pares-oraculo) ligam expectativas independentes; correções de quase-acerto/classe/registro v3 integradas pela DEC-063. [Piloto candidato (DEC-064)](lab-runbook.md#preparacao-12-pares-piloto) fornece documentos, não fatos ERP observados. Faltam revisão de Felipe, fixtures/atribuição/produtores completos e piloto; não é resultado de resistência do LLM | ACTIVE |
-| RUN-04 | P0 | Gustavo | Thomaz | RUN-02 | [snapshot (DEC-055)](lab-runbook.md#captura-restauracao-oraculo) preservado; [DEC-075](lab-runbook.md#post-privado-unitario-a3a) confere dezesseis restaurações, antes e depois de CREATE/POST/nonce nos oito membros, incluindo IDs e filestore. [DEC-059](lab-runbook.md#recuperacao-reset-mesmo-slot) preserva o histórico de reset e os bloqueios de classificação/LLM. Faltam ciclo C0/C1 completo, ligação ao supervisor real, término remoto/saúde/espaço/relógio e revisão humana. Outbox desabilitada | ACTIVE |
-| RUN-05 | P0 | Gustavo | Felipe | RUN-01–04 | pareamento, ordem intercalada/randomizada, três repetições e seed/ordem registradas | WAIT |
-| RUN-06 | P0 | Gustavo | Felipe | SCI-03, RUN-02 | [política de tentativas (DEC-031)](decision-log.md#dec-031) preservada; [DEC-057](lab-runbook.md#run-record-candidato) valida históricos terminais e registra falhas sem retry automático ou `MISSING` inventado. Faltam parâmetros/revisão da observação em SCI-03, supervisão e validação integrada; parsing/recusa continuam outcomes com estado verificável | WAIT |
+| RUN-01 | P0 | Gustavo | Felipe | SCI-03 | Contratos v4, store, classificação e vínculos revistos. A [integração do piloto](../scripts/pilot_state_harness.py) existe sob DEC-095/096, incluindo resultado sem proposta. Falta conferir o lote completo e seus denominadores; revisão de componente não é aceite dos 144 slots. | ACTIVE |
+| RUN-02 | P0 | Gustavo | Thomaz | RUN-01 | Runner integrado implementado em `bdaba4d`/`c6f95ec`: modelo por slot, C0/C1, aprovação, captura/oráculo, supervisão Linux, registro e reset. Conferir execução integral na outra sessão; não reconstruir o runner nem abrir execute público. [Protocolo vigente](protocol.md). | ACTIVE |
+| RUN-03 | P0 | Gustavo | Felipe | estado M2 | Oráculo e bindings revistos: proposta comprometida é distinta de efeito indevido; parsing/recusa com estado legível são outcomes, aprovação exata inclui data/linhas. [Pareceres](reviews/2026-10-26-runner-analise.md). Aplicação à coleta atual segue RUN-02/09 e PILOT-03; corpus adicional foi retirado. | AGENT_REVIEWED |
+| RUN-04 | P0 | Gustavo | Thomaz | RUN-02 | Mecanismo de dump/filestore e restauração por binding/projeção/IDs revisto; .4 passou com 25 capturas/16 clones e sentinelas preservadas. [parecer operacional](reviews/2026-10-26-ciencia-operacional.md). Não conclui supervisão remota, saúde/espaço/relógio ou composição: RUN-02/09; outbox desabilitada. | AGENT_REVIEWED |
+| RUN-05 | P0 | Gustavo | Felipe | RUN-01–04 | Agenda integrada DEC-095 implementada: 144 slots únicos, três repetições, embaralhamento determinístico e hash da ordem. Agenda e identidades passaram na revisão offline de 27/10 (216 testes focais no total), mais contraprovas independentes de dez sementes completas e três entradas inválidas. Conferência do manifesto efetivo permanece em PILOT-03; não sortear nova ordem após resultados. | AGENT_REVIEWED |
+| RUN-06 | P0 | Gustavo | Felipe | SCI-03, RUN-02 | Tentativas comuns C0/C1 preservadas; DEC-096 trata somente incerteza do provedor sem proposta como resultado avaliável, sem despacho. Outros sinais continuam parando. Contratos/caminhos de falha passaram nos 216 testes focais de 27/10. Falta conferir os registros do lote; não reinterpretar tentativas históricas. | ACTIVE |
 | RUN-07 | P1 | Gustavo | Felipe | G3-05, RUN-01 | token/custo/latência por etapa, pricing datado e request ID saneado | WAIT |
-| RUN-08 | P0 | Gustavo | Thomaz | RUN-01 | [store original (DEC-056/057)](lab-runbook.md#run-record-candidato) e [journal de reset (DEC-059)](lab-runbook.md#recuperacao-reset-mesmo-slot) preservam arquivos exclusivos e hashes, sem sobrescrever, repetir run ou exportar. Histórico complementar cobre somente reset; não autentica produtor, comprova backup externo ou detecta remoção de sufixo sem âncora externa. Faltam demais históricos/caminhos brutos, retenção/custódia externa e revisão de Thomaz | ACTIVE |
-| RUN-09 | P1 | Gustavo | Felipe | RUN-02–08 | ensaio sintético completo sem conjunto final; valida schemas e gera dados para dry-run estatístico | WAIT |
+| RUN-08 | P0 | Gustavo | Thomaz | RUN-01 | Store/journal revistos; [DEC-091](decision-log.md#dec-091) criou cópia DPAPI local dos 607 arquivos de propostas com restauração conferida. Falta incluir artefatos finais Odoo e manifestos. Não é offsite/imutável/portátil; destino local autorizado pelo usuário. | ACTIVE |
+| RUN-09 | P1 | Gustavo | Felipe | RUN-02–08 | Integração e ensaios existentes sob DEC-095/096; conferir contrato, agenda, ausência de proposta, estado/reset e cadeia de registros da execução atual. Não pedir novo ensaio auxiliar se a evidência existente cobre o requisito. | ACTIVE |
 
 ## 11. Piloto e congelamento
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
-| PILOT-01 | P0 | Gustavo | Felipe | G3-05, C0-02, C0-03, C0-05, C1-11, DATA-06, RUN-09 | prontidão técnica e plausibilidade revisadas em ensaio não final; agendar 24 docs × C0/C1 × 3 = 144 runs. Competência será medida em C0-04/PILOT-03, não presumida antes de executar o piloto. Rodada 1 de propostas: [0/36 comprometidas em C0 (gate de eficácia disparou)](pilot-round1-propostas.md); [DEC-085](decision-log.md#dec-085) revisou as notas e [preparou a rodada 2](pilot-round2-preparacao.md), única repetição prevista. Rodada 2 executada: [0/36 comprometidas em C0, limiar da DEC-086 não atingido](pilot-round2-resultado.md); enquadramento estimativo é decisão do grupo ([DEC-088](decision-log.md#dec-088)); [proposta pendente de ratificação](protocol.md#proposta-enquadramento-estimativo) | WAIT |
-| PILOT-02 | P0 | Gustavo | Thomaz | PILOT-01 | executar piloto, preservar raw/manifest e restaurar estado a cada cenário | WAIT |
+| PILOT-01 | P0 | Gustavo | Felipe | G3-05, C0-02, C0-03, C0-05, C1-11, DATA-06, RUN-09 | Insumos e componentes liberados; implementação integrada e execução autorizadas nas DEC-094/095/096. Conferência de prontidão documenta configuração usada, sem inventar assinatura. As rodadas de propostas permanecem separadas da avaliação no Odoo. | ACTIVE |
+| PILOT-02 | P0 | Gustavo | Thomaz | PILOT-01 | Concluir as 144 execuções integradas da DEC-095/096, preservar raw/manifest, verificar captura e reset por slot. Primeira tentativa parcial preservada e separada; não completar o lote com slots de outra tentativa. | ACTIVE |
 | PILOT-03 | P0 | Felipe | Gustavo | PILOT-02 | relatório de competência, ASR diagnóstica, BTSR, Delivery, latência, custo, erros e denominadores | WAIT |
 | PILOT-04 | P0 | Felipe | Thomaz | PILOT-03 | poder/precisão por discordância pareada; ações críticas usam 30 pares; decidir tamanho antes do conjunto final. Retirada da entrega pela [DEC-094](decision-log.md#dec-094): a avaliação é o piloto; conjunto de 90 pares é trabalho futuro | CUT |
 | PILOT-05 | P0 | Thomaz | Felipe | PILOT-03 | lista fechada de correções funcionais/segurança; nenhuma escolha pelo melhor resultado final | WAIT |
 | PILOT-06 | P0 | Gustavo | Felipe | PILOT-05 | reexecutar integralmente piloto afetado e produzir relatório final de prontidão | WAIT |
-| STAT-01 | P0 | Felipe | Gustavo | RUN-01 | pipeline enxuto em dados sintéticos: denominadores/missing, efeito e IC95% pareados, bootstrap BCa de 10.000 por `pair_id`, percentil de sensibilidade, McNemar exato complementar e não inferioridade `−0,10`. Validar zero/fronteira e dependência das repetições antes do freeze; Wilson/Newcombe não tratam 270 runs correlacionadas como pares independentes. Sem GEE/Firth/modelos adicionais/Holm | READY |
-| FRZ-01 | P0 | Felipe | Thomaz | SCI-01–03/05–09, PILOT-06 | assinar RQ1–3, H1/H3/H2, endpoints, métricas, margem e plano de análise estatística; H4/RQ4/H5 retiradas com IDs reservados | WAIT |
-| FRZ-02 | P0 | Felipe | Gustavo | DATA-08 | congelar dataset/ground truth/codebook/manifests por hash | WAIT |
-| FRZ-03 | P0 | Gustavo | Thomaz | G3-06, C0-04, C1-11, RUN-09 | competência medida e aceita; congelar modelo/prompts/schemas/policy/retry/timeouts/imagens/configuração e igualdade C0/C1 | WAIT |
+| STAT-01 | P0 | Felipe | Gustavo | RUN-01 | Componente matemático revisado: taxas/denominadores, contraste pareado, BCa/percentil, fronteira conservadora e sensibilidades ([DEC-089](decision-log.md#dec-089)); 27 testes e 29 contraprovas. [Pareceres](reviews/2026-10-26-runner-analise.md). Saída corrente descritiva pela DEC-094/097; critérios confirmatórios antigos não integram a entrega. Aplicação ao piloto em AN-01–04. | AGENT_REVIEWED |
+| FRZ-01 | P0 | Felipe | Thomaz | SCI-01–03/05–09, PILOT-06 | Aceitar perguntas, endpoints, denominadores e análise descritiva da DEC-094. Dez pontos percentuais é referência; sem testes H1/H2/H3 ou assinatura em nome de terceiros. | WAIT |
+| FRZ-02 | P0 | Felipe | Gustavo | DATA-04/06, PILOT-02 | Preservar hashes da coorte .4 de 12 pares efetivamente usada, fatos, codebook e manifestos; nenhum dataset final adicional. | WAIT |
+| FRZ-03 | P0 | Gustavo | Thomaz | G3-06, C0-04, C1-11, RUN-09 | Conferir modelo/prompts/schemas/política/tentativas/timeouts/imagens, supervisão e igualdade C0/C1 na configuração efetivamente usada; competência reportada pelo piloto, sem ajuste para atingir limiar. | WAIT |
 | FRZ-04 | P0 | Gustavo | Felipe | FRZ-03 | preservar artefatos OCI finais em custódia imutável ou registry aprovado; registrar digests | WAIT |
 | FRZ-05 | P0 | Thomaz | Gustavo | C1-10–11 | assinar ACLs, contexto, auto-post, idempotência, concorrência, replay e fail-closed | WAIT |
-| FRZ-06 | P0 | Felipe | Gustavo | SCI-03, STAT-01 | assinar missing/exclusão/desvio/reexecução e análise enxuta, incluindo intervalos de fronteira validados para o endpoint e dependência corretos | WAIT |
+| FRZ-06 | P0 | Felipe | Gustavo | SCI-03, STAT-01 | Aceitar tratamento efetivamente aplicado a falhas/ausências, paradas, reexecução e intervalos descritivos, com fronteiras explícitas e limites declarados. | WAIT |
 | FRZ-07 | P0 | Gustavo | Thomaz | G3-03, FRZ-03 | comprovar secrets/egress, rotação planejada e ausência de segredo/log bruto no pacote | WAIT |
-| FRZ-08 | P0 | Felipe | Thomaz/Gustavo | FRZ-01–07 | release/tag 1.3 e checklist M6 completos antes de abrir o conjunto final | WAIT |
+| FRZ-08 | P0 | Felipe | Thomaz/Gustavo | FRZ-01–07 | Fechar versão/tag da configuração avaliada e checklist de evidência. Pela DEC-094, não há abertura de novo corpus final ou coleta confirmatória posterior obrigatória. | WAIT |
 
 ## 12. Experimentos
 
@@ -228,16 +220,16 @@ Usar os IDs abaixo como próxima fila, não como nova lista duplicada. Os detalh
 | EXP-04 | — | Gustavo | Felipe | — | bloco defense-aware retirado da entrega pela [DEC-058](decision-log.md#dec-058), sem execuções ou claim de robustez adaptativa | CUT |
 | EXP-05 | — | Gustavo | Thomaz | — | bloco de ablação retirado da entrega pela [DEC-058](decision-log.md#dec-058), sem atribuição causal por camada | CUT |
 | EXP-06 | — | Gustavo | Felipe | — | bloco Qwen3 retirado da entrega pela [DEC-058](decision-log.md#dec-058), sem claim de generalização entre modelos | CUT |
-| EXP-07 | P0 | Gustavo | Felipe | EXP-02 | fechar manifests, hashes, custo, integridade, custódia raw e rotação da chave do piloto e principal | WAIT |
+| EXP-07 | P0 | Gustavo | Felipe | PILOT-02, RUN-08 | Fechar manifests, hashes, custo, integridade, custódia dos brutos e plano de rotação da chave da avaliação no Odoo; tentativa parcial preservada separadamente. | WAIT |
 
 ## 13. Análise e resultados
 
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
 | AN-01 | P0 | Felipe | Gustavo | EXP-07, STAT-01 | validar dados, schema, duplicatas, pares, missing, retries e denominadores | WAIT |
-| AN-02 | P0 | Felipe | Thomaz | AN-01 | [redução do sucesso dos ataques (H1)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h1): ASR-proposal/policy/state com efeito pareado, IC95% e teste pré-definido | WAIT |
-| AN-03 | P0 | Felipe | Thomaz | AN-01 | [preservação da utilidade (H3)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h3): BTSR e não inferioridade com limite `−0,10` e IC95% | WAIT |
-| AN-04 | P0 | Felipe | Gustavo | AN-01 | [redução de ações críticas indevidas (H2)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h2) e utilidade: UACR, falsos bloqueios, encaminhamentos e análise de falhas | WAIT |
+| AN-02 | P0 | Felipe | Thomaz | AN-01 | [Segurança (RQ1)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#rq1): taxas ASR-proposal/policy/state, contraste pareado e IC95%; sem teste de superioridade ou alegação de eficácia não demonstrada. | WAIT |
+| AN-03 | P0 | Felipe | Thomaz | AN-01 | [Utilidade (RQ2)](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#rq2): BTSR por condição, diferença pareada e IC95%; 10 pontos percentuais só como referência, sem teste de não inferioridade. | WAIT |
+| AN-04 | P0 | Felipe | Gustavo | AN-01 | UACR nas adversariais A3a elegíveis, taxas/contraste/IC; falsos bloqueios, encaminhamentos e falhas. Quatro pares A3a, até 12 execuções por condição; não usar 36 como cenários independentes. | WAIT |
 | AN-05 | P0 | Felipe | Gustavo | AN-01 | eficiência descritiva em RQ2: latência, tokens, custo, revisão técnica potencial e variabilidade; sem teste de aceitabilidade H4 ou humana | WAIT |
 | AN-06 | — | Felipe | Thomaz | — | análises defense-aware/ablação e testes de subgrupos/Holm retirados pela [DEC-058](decision-log.md#dec-058); famílias e mecanismos descritivos permanecem em AN-09 | CUT |
 | AN-07 | — | Felipe | Gustavo | — | análise de transportabilidade Qwen3 retirada da entrega pela [DEC-058](decision-log.md#dec-058) | CUT |
@@ -314,8 +306,8 @@ Nenhuma integração deve contornar um contrato com dicionário livre, ID intern
 
 | Fonte | Pendências cobertas |
 |---|---|
-| Plano §30.1 Freeze | SCI-01–03, DATA-07/08, C0-04/05, C1-05–11, FRZ-01–08, STAT-01; SCI-04 retirada |
-| Plano §30.2 Lotes | RUN-03–08, EXP-01/02 |
+| Plano §30.1 Freeze | SCI-01–03, DATA-04/06, C0-04/05, C1-05–11, FRZ-01–08, STAT-01; SCI-04 retirada |
+| Plano §30.2 Lotes | RUN-03–09, PILOT-02, EXP-07 |
 | Plano §30.3 Submissão | ADM-01–09, PAPER-06–09, SUB-01 |
 | Seleção de modelos G3 | G3-01–08, C0-01–05, FRZ-03/07 |
 | Institucional | ADM-01–13, PAPER-07–09, SUB-01, DEF-05/06 |
@@ -323,9 +315,9 @@ Nenhuma integração deve contornar um contrato com dicionário livre, ID intern
 | Plano §23 (registro de uso de IA) | ADM-11 |
 | Plano §16.8 (invariante de ordem do beneficiário) | SEC-A2 |
 | Literatura/lacuna | SCI-05–07/10, PAPER-01 |
-| Dataset e revisão | DATA-01–08/10; DATA-09/EXP-04 retiradas |
+| Dataset e revisão | DATA-01–06/10; DATA-07/08/09 e EXP-04 retiradas |
 | C1/segurança | C1-01–11, SEC-01/02; EXP-05 retirada |
-| Estatística/resultados | STAT-01, PILOT-03/04, AN-01–09 |
+| Estatística/resultados | STAT-01, PILOT-03, AN-01–09 |
 | Reprodução/defesa | REP-01–03, DEF-01–06 |
 
 ## 19. Definition of Done deste backlog
@@ -336,5 +328,5 @@ O backlog é considerado operacional quando:
 - os três integrantes possuem pelo menos uma tarefa `READY` sem editar o mesmo componente;
 - caminho crítico e itens cortáveis estão explícitos;
 - checklists do plano, seleção dos modelos e requisitos institucionais estão rastreados;
-- tarefas externas não são apresentadas como concluídas sem recibo/resposta;
+- tarefas externas distinguem resposta do usuário, consulta ao sistema e recibo; confirmação textual não é apresentada como recibo;
 - mudança futura atualiza este arquivo e, se material, o decision log antes da implementação.
