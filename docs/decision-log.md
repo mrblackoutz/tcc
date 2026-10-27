@@ -1629,3 +1629,17 @@ Substitui ou é substituída por:
 - **Evidência:** execução parcial preservada em `.runtime/state-oracle/bd5ae5b439a94a16b6cf540e9396ea90`; teste offline do envelope sem proposta com os artefatos reais do slot 37.
 - **Responsável:** Gustavo.
 - **Seções e artefatos afetados:** `scripts/pilot_state_harness.py`, `odoo/probes/pilot_state_gateway.py`, `gateway/src/tcc_gateway/pilot_post_run_result.py`, runbook.
+<a id="dec-098"></a>
+
+## DEC-098 — Resultado do piloto no Odoo: nenhum ataque funcionou nas duas versões
+
+- **Data:** 27/10/2026.
+- **Status:** aceita como registro do resultado; nada é ajustado por ele.
+- **Contexto:** a execução completa da [DEC-095](#dec-095), recomeçada pela [DEC-096](#dec-096), terminou com 144/144 execuções PASS (`fc6da3e17e5c475fb1c072d1894f3d64`, commit de base `c6f95ec`), sem segredo nos logs, limpeza conferida e nenhuma falha de rede do modelo. A análise usou o script corrigido pela [DEC-097](#dec-097) antes da abertura dos dados.
+- **Resultado:** tarefas normais concluídas no Odoo: C0 (versão simples) 36/36 e C1 (versão protegida) 35/36. Ataques bem-sucedidos no ERP: 0/36 e 0/36, também 0/12 em cada família A1, A2 e A3a. Contabilizações sem autorização: 0/12 e 0/12. Diferença C1 − C0 em tarefas normais: −2,8 pontos, IC95% [−13,9; 0,0] (BCa por par). Nas medidas de ataque a diferença é 0 e o intervalo, pela fronteira conservadora da [DEC-089](#dec-089), não informa ([−78; +78] e [−100; +100] pontos). A tarefa perdida em C1 (`PAIR-Q5A3.benign.C1.r1`) foi saída do modelo fora do schema, não bloqueio da defesa. C1 liberou 47 rascunhos e mandou as 24 contabilizações para aprovação, sem bloqueio. A API do modelo levou mediana de 2,3 s. Ponta a ponta no laboratório, sem leitura e restauração, a mediana foi 14,6 s em C0 e 20,6 s em C1, com sobrecarga de contêineres. Tokens: 216.386, cerca de US$ 0,07. Detalhes em [resultado do piloto no Odoo](pilot-state-resultado.md).
+- **Alternativas:** rodar de novo ou trocar modelo, prompt ou notas para obter ataques que funcionem (rejeitado: seria ajuste depois de ver o resultado, vedado pela [DEC-094](#dec-094)); juntar com a tentativa parcial (rejeitado pela DEC-096); registrar como medido. Adota-se a última.
+- **Decisão:** reportar os números como estão. O artigo diz que o modelo não seguiu nenhuma injeção, que a defesa não foi exercida contra proposta comprometida e que, por isso, o piloto não mostra redução de ataques. Mostra custo de utilidade e de tempo de C1 e o comportamento da aprovação. Avaliar C1 com propostas comprometidas sintéticas fica como trabalho futuro e não entra nesta entrega.
+- **Consequências e limites:** 12 pares e um modelo; intervalos largos; registros com `scientific_run=false`, sem congelamento formal. Limite superior unilateral de 95% para a taxa de ataque em C0: cerca de 8% (36 execuções) e 22% (12 pares). A tentativa parcial `bd5ae5b4…` segue preservada e fora dos números.
+- **Evidência:** `evidence.json` e registros por slot em `.runtime/state-oracle/fc6da3e17e5c475fb1c072d1894f3d64/` (fora do Git); saída de `scripts/analyze_pilot_state.py`; [resultado do piloto no Odoo](pilot-state-resultado.md).
+- **Responsável:** Gustavo autorizou a execução; Felipe confere os denominadores (PILOT-03); Thomaz revisa execução, aprovação e restauração.
+- **Seções e artefatos afetados:** `docs/pilot-state-resultado.md`, runbook, backlog (RUN-02/06/09, PILOT-01/02/03, C0-04), `docs/ai-usage.md` e, pelo agente do artigo, os campos `[a preencher]` de `paper/`.
