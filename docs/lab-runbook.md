@@ -650,6 +650,8 @@ O [backlog](task-backlog.md) e o [protocolo](protocol.md) seguem a avaliação d
 
 **Observação:** o componente de três leituras é candidato testado/revisto, não integrado. O runner atual para diante de falha de captura/estado/reset; não produz MISSING por declaração. A prova auxiliar DEC-093 foi substituída pelo trabalho integrado e não ocorreu. Não reconstruir infraestrutura para essa melhoria antes da entrega.
 
+**Fechamento do piloto em 27/10:** as 144 execuções e seus cálculos passaram na [revisão independente](reviews/2026-10-27-piloto-concluido.md), sem motivo para repetir coleta. Os 20.678 arquivos do lote receberam cópia local DPAPI com restauração e originais conferidos; [hashes e limitações](reviews/2026-10-27-piloto-concluido.md#custódia-concluída). Restam artigo, pacote saneado e aceite final; não há congelamento retroativo ou evidência de redução de ataques.
+
 ### Executar M1 e M2
 
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke_test_m2.ps1

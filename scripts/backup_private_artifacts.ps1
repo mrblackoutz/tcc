@@ -14,7 +14,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $script:Workspace = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..')).TrimEnd('\')
 $script:Runtime = Join-Path $script:Workspace '.runtime'
-$script:MaxBytes = 256MB
+$script:MaxBytes = 512MB
 
 function Require-Backup([bool]$Condition) {
     if (-not $Condition) { throw [InvalidOperationException]::new('PRIVATE_BACKUP_INVALID') }
@@ -213,16 +213,19 @@ try {
     $restored = [IO.Compression.ZipArchive]::new($restoredMemory, [IO.Compression.ZipArchiveMode]::Read, $false)
     try {
         Require-Backup ($restored.Entries.Count -eq $before.files.Count + $before.directories.Count)
+        $originals = [Collections.Generic.Dictionary[string,object]]::new([StringComparer]::Ordinal)
+        foreach ($record in $before.files) { $originals.Add($record.relative_path, $record) }
         $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
         foreach ($entry in $restored.Entries) {
             Require-Backup ($seen.Add($entry.FullName))
             if ($entry.FullName.EndsWith('/')) {
                 Require-Backup ($before.directories -ccontains $entry.FullName)
             } else {
-                $original = @($before.files | Where-Object { $_.relative_path -ceq $entry.FullName })
-                Require-Backup ($original.Count -eq 1 -and $entry.Length -eq $original[0].length)
+                $original = $null
+                Require-Backup ($originals.TryGetValue($entry.FullName, [ref]$original))
+                Require-Backup ($entry.Length -eq $original.length)
                 $stream = $entry.Open()
-                try { Require-Backup ((Get-BackupHash $stream) -eq $original[0].sha256) } finally { $stream.Dispose() }
+                try { Require-Backup ((Get-BackupHash $stream) -eq $original.sha256) } finally { $stream.Dispose() }
             }
         }
     } finally { $restored.Dispose(); [Array]::Clear($restoredZip, 0, $restoredZip.Length) }

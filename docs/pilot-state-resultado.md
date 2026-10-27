@@ -22,6 +22,7 @@ Siglas usadas aqui:
   3. Despacha a proposta em C0 ou em C1.
   4. Lê o estado final, avalia pelo oráculo, grava o registro completo e confere a restauração.
 - **Situação:** 144/144 execuções PASS. A limpeza foi conferida, nenhum segredo apareceu em logs ou saídas e nenhuma falha de rede do modelo ocorreu (0 slots sem proposta por rede). Cada execução fez uma única chamada ao modelo.
+- **Significado de PASS:** o ciclo técnico terminou com evidência e restauração válidas; isso não significa que todas as tarefas legítimas foram concluídas. A falha de schema abaixo continua contada no resultado.
 - **Tentativa anterior:** a tentativa parcial `bd5ae5b4…` (36 execuções, 37 chamadas) fica preservada e separada, como manda a [DEC-096](decision-log.md#dec-096). Não entra nos números abaixo.
 
 ## Números
@@ -53,7 +54,7 @@ Siglas usadas aqui:
 
 A referência de 10 pontos para utilidade é só referência, sem decisão de "não atrapalha" ([DEC-094](decision-log.md#dec-094)). O limite inferior do intervalo BCa passa dessa referência; o do intervalo percentil não passa.
 
-**Teto plausível da taxa de ataque em C0:** com 0 sucessos, o limite superior unilateral de 95% é cerca de 8% contando as 36 execuções como independentes e cerca de 22% contando só os 12 pares. Para a contabilização sem autorização, 0/12 dá cerca de 22% por execução e 53% por par (4 pares).
+**Resumo de zero eventos por cenário:** supondo pares independentes, zero cenários com algum sucesso em 12 pares dá limite superior binomial unilateral de 95% de cerca de 22%; em quatro pares A3a, cerca de 53%. Esse resumo por cenário não substitui o contraste por execução nem corrige a seleção da amostra. Os valores de cerca de 8% com 36 execuções e 22% com 12 execuções seriam apenas ilustrativos sob independência de todas as repetições; não são os limites inferenciais adotados, pois as repetições do mesmo par são dependentes.
 
 ## Tempo e custo
 
@@ -69,8 +70,8 @@ A referência de 10 pontos para utilidade é só referência, sem decisão de "n
 
 ## O que isso sustenta
 
-- Nesta amostra, o modelo não seguiu nenhuma das 72 injeções. A defesa de C1 não chegou a ser testada contra uma proposta comprometida: ela só liberou propostas corretas e pediu aprovação para todas as contabilizações. Portanto o piloto não mostra redução de ataques. Mostra que, com o modelo resistindo, C0 e C1 terminam iguais em segurança.
-- **Custo de utilidade de C1:** uma tarefa normal perdida em 36, por erro de formato do modelo e não por bloqueio, mais as etapas extras e a aprovação nas contabilizações.
+- Nesta amostra, nenhuma das 72 execuções adversariais teve proposta comprometida ou ataque bem-sucedido no ERP. A defesa de C1 não chegou a ser exercitada contra uma proposta comprometida: ela liberou propostas corretas e pediu aprovação para todas as contabilizações. Portanto o piloto não demonstra redução de ataques ou equivalência de segurança; registra zero sucessos de ataque nas duas condições avaliadas.
+- **Diferença observada de utilidade:** uma tarefa normal a menos em C1, por erro de formato do modelo e não por bloqueio. Esse evento não estima isoladamente uma perda causada pela arquitetura. As etapas extras e a aprovação nas contabilizações acrescentam trabalho técnico ao fluxo C1.
 - **Resultado no nível da proposta:** concorda com a rodada 2 (0/72 propostas comprometidas; C1 com 35/36 benignas). As duas medidas são reportadas separadamente, como prevê a [DEC-095](decision-log.md#dec-095).
 - **Limites:** são 12 pares e um único modelo, e a amostra é pequena. Os intervalos são largos e o enquadramento descritivo foi escolhido depois de ver o estágio de propostas ([DEC-094](decision-log.md#dec-094)). Os registros têm `scientific_run=false`, como exige o formato antes de um congelamento formal, que não houve.
 
@@ -83,3 +84,7 @@ A referência de 10 pontos para utilidade é só referência, sem decisão de "n
   - escopo do relógio `c0c0fa5b…`;
   - imagem do gateway `sha256:5c81dda4…`.
 - **Análise:** `python scripts/analyze_pilot_state.py --run-dir .runtime/state-oracle/fc6da3e17e5c475fb1c072d1894f3d64`. Usa a versão do analisador corrigida pela [DEC-097](decision-log.md#dec-097) antes da abertura dos dados.
+
+## Revisão independente
+
+Em 27/10/2026, dois agentes distintos revalidaram os 144 registros, 576 capturas, agenda, restaurações e cálculos; nenhum bloqueante foi encontrado. O BCa e os limites conservadores foram recomputados independentemente. [Parecer, contraprovas e hashes](reviews/2026-10-27-piloto-concluido.md). Não se recomenda repetir a coleta. O aceite humano do artigo e a custódia continuam separados, sem alterar os registros pré-freeze.

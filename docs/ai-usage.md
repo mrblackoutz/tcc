@@ -121,6 +121,8 @@ não redigida de memória.
 
 | 26–27/10/2026 | Codex e agentes distintos (família GPT-6; variante/backend não expostos) | SCI/C0/DATA/SEC/RUN/STAT — fechamento das revisões e reconciliação | [DEC-087/089–093](decision-log.md#dec-087) e [DEC-097](decision-log.md#dec-097) | Gustavo coordena; AGENT_REVIEWED de componentes, sem assinatura nominal | Pareceres independentes com contraprovas; preparo ERP .4; anuência por declaração do usuário; cópia local criptografada/restauração de 607 arquivos; matriz e backlog; correção sintética dos denominadores/intervalos da análise, com 216 testes focais. Fontes monitoradas e resultados da coleta em outra sessão preservados; sem novas chamadas nesta frente. |
 
+| 27/10/2026 | Codex e três agentes distintos (família GPT-6; variante/backend não expostos) | Revisão do piloto concluído e custódia | [DEC-099](decision-log.md#dec-099) e [parecer](reviews/2026-10-27-piloto-concluido.md) | Gustavo coordena; revisão automatizada, sem assinatura humana | Revalidação de 144 envelopes/576 capturas/144 restaurações e cálculos; 34 testes e oito contraprovas estatísticas, quatro adulterações de registros rejeitadas. Backup: teto512MiB e busca por índice, revisão independente e 28 testes sintéticos. Brutos e artigo preservados; sem nova coleta ou alteração de defesa/dataset/método. |
+
 ## Pendências
 
 - ADM-02: o edital V4 (27/10/2026) define a declaração: Anexo I da Resolução RE-CONSU-017/2026,
