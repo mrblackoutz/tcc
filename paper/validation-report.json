@@ -1,15 +1,15 @@
 {
   "schema_version": "paper-validation/v1",
-  "validated_on": "2026-10-17",
-  "decision": "DEC-058",
+  "validated_on": "2026-10-26",
+  "decision": "DEC-058; pilot proposal results from DEC-085, DEC-086 and DEC-088",
   "plan_version": "1.2.19",
   "artifact": {
     "path": "paper/relatorio_tcc_ii.pdf",
-    "sha256": "1ac6a4fd071e0db73da0401d30d851533c9429897ad5d5a62a7738ec85dd5117",
-    "bytes": 238147,
-    "pages": 18,
+    "sha256": "3432829dbd949ab01d0b45697f11001e2bfe5f5e864a1ddea32d63f2e1b4d348",
+    "bytes": 258946,
+    "pages": 19,
     "page_size": "A4",
-    "status": "pre-experimental"
+    "status": "pre-experimental; pilot proposal stage reported"
   },
   "automated_checks": {
     "status": "PASS",
@@ -17,8 +17,8 @@
     "citation_keys": 20,
     "bibliography_entries": 20,
     "internal_article_targets": 9,
-    "resumo_words": 213,
-    "abstract_words": 189,
+    "resumo_words": 242,
+    "abstract_words": 217,
     "overfull_boxes": 0,
     "underfull_boxes": 0,
     "undefined_citations_or_references": 0,
@@ -26,30 +26,31 @@
     "required_main_headings": 6,
     "forbidden_placeholders": 0,
     "page_word_counts": [
-      324,
-      529,
-      573,
-      553,
-      581,
-      437,
-      532,
-      344,
-      456,
-      466,
-      536,
-      630,
-      341,
-      445,
+      353,
+      547,
+      578,
+      548,
+      578,
+      429,
+      523,
+      337,
+      436,
       458,
-      525,
-      348,
-      226
+      401,
+      664,
+      562,
+      440,
+      542,
+      517,
+      589,
+      416,
+      292
     ],
     "pdf_text_and_metadata": "PASS",
     "encrypted": false,
     "javascript": false
   },
-  "validation_command": "python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log <same-build>/main.log",
+  "validation_command": "python -X utf8 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log .runtime/paper-build/main.log",
   "visual_inspection": {
     "status": "PASS",
     "pages_inspected": [
@@ -70,7 +71,8 @@
       15,
       16,
       17,
-      18
+      18,
+      19
     ],
     "cover_and_summaries": "PASS",
     "dense_tables": "PASS",
@@ -78,7 +80,7 @@
     "conclusion_and_references": "PASS",
     "intermediate_header_only_pages": 0,
     "residual_table_line_pages": 0,
-    "method": "Poppler rendered all 18 final pages at 1100 pixels; six three-page sheets were inspected for cover/summaries, dense tables, section transitions and references."
+    "method": "Poppler rendered all 19 final pages at 45 dpi in four contact sheets; cover, pilot results page and pending-results page (1, 15, 16) were also inspected at 70 dpi."
   },
   "metadata": {
     "title": "Desenvolvimento e implementação de uma arquitetura de proteção na integração de LLMs em ERPs: estudo de caso com Odoo e Contas a Pagar",
@@ -92,43 +94,42 @@
     "traceability": "reproducibility/institutional-sources.lock.json"
   },
   "source_sha256": {
-    "paper/main.tex": "c2cac0b9604c02495f2c059d458f8398ec409feab54b8f5d0b8102e825f87dfa",
+    "paper/main.tex": "a879efdc460b734d7ad7332923c9320e2fdd71f3e1e8dffad667c3659e704263",
     "paper/sections/01-introducao.tex": "5523f12a93452a58f0e83927245e2d297a8761365e6c6e2aa1ac4d30a2978084",
     "paper/sections/02-referencial.tex": "7b444689afbc3c749b144d34c8246708d311842dcf44eefdab14c68abbcf0e8f",
-    "paper/sections/03-metodologia.tex": "516d17236ae4c9741f9289d75abecd521fccab8848f65b2a4079a11f95636368",
-    "paper/sections/04-resultados.tex": "c9582af7d374fd9d078fcf25b8ecab646aef90883e2167c7f3838bf76ddd8f1c",
-    "paper/sections/05-conclusao.tex": "a67ce6cab0c081191dbc8350a00a4b5afa75b97f9902ee097167ce87886bdb33",
-    "paper/sections/resumo-en.tex": "98bc3f760ca1fdf8e86334632434a251f6089e5bb330bb4f6becb41ce86329c4",
-    "paper/sections/resumo-pt.tex": "424c9a4cc1dec1de31c35996db921cabf77bda8c5c43791ac1be098b870f2f73",
+    "paper/sections/03-metodologia.tex": "55b1fc9cca8a0aa1ef63081dae1b973e39cca281e1a32cf2d7532a9d1f706c4e",
+    "paper/sections/04-resultados.tex": "9074942d35457629ea09add448d7bf54969fe2f9cc7f923141a79e59cdf1db92",
+    "paper/sections/05-conclusao.tex": "3b255bf0f3f2c7e678a638298f52945f61c22803b8d4a726a43a29e7ccbf3505",
+    "paper/sections/resumo-en.tex": "cd714ad2377ecdb30955b130a7c85c5ae0e2859e92de6794f2ebcc625147691d",
+    "paper/sections/resumo-pt.tex": "424503d76acc2e471c81a152443453df54cf4677ede0632101c4a9bab6eb965b",
     "paper/referencias.bib": "9e448f74bee367e5536ea4fb14772d3c4207f22b7d85895444fa73cb7648e1a3",
     "paper/assets/fci-header.png": "ad7c11fbe2cbf8da370fecb8d2f0316eaef8bc962f8c26338ff5910cf1939d9c",
-    "scripts/validate_current_docs.py": "4b1e50c77ac0faccba4eec4c8bfcd76f9e688904852797d31c31cb5f9a37e79b"
+    "scripts/validate_current_docs.py": "23f161cadc29107034eecaefc757c7d566c7fa920803d06d37794dcdb183532b"
   },
   "build_evidence": {
-    "final_log_sha256": "f79ea3a1175da56c89a3f6d9cdf75992de0a5dd7b82c40b345ef4927e1b7c7d1",
-    "bibliography_output_sha256": "ef2c564b7c0ce9fa6afc6aa303b75a0dd112f45c79f5edd99f6e0ae31d3859af",
+    "final_log_sha256": "f84235a556459c70bfe66cfd64e9104c9f66c0ece63583f02e13c4c45f22aeff",
+    "bibliography_output_sha256": "ea745caa3a868a0f7f2e4ec1500ff39287172aa467cdefdcb8df38edcc03f5e6",
     "logs_retained_outside_git": true,
-    "attempts_note": "Initial direct WSL argv invocation failed before a PDF was created; shell-scoped paths resolved it. Windows Poppler lookup selected an unconfigured MiKTeX shim; final validation used existing Ubuntu binaries. No downloads or installations."
+    "attempts_note": "Built with paper/build.ps1 on Windows MiKTeX. The first full validator run failed decoding pdftotext output as cp1252; rerunning Python in UTF-8 mode passed. No downloads or installations."
   },
   "toolchain": {
-    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
-    "bibtex": "BibTeX 0.99d (TeX Live 2023/Debian)",
-    "pdfinfo": "Poppler 24.02.0",
-    "pdftotext": "Poppler 24.02.0",
+    "pdflatex": "MiKTeX-pdfTeX 4.23 (MiKTeX 25.12), producer pdfTeX-1.40.28",
+    "bibtex": "MiKTeX-BibTeX 4.2 (MiKTeX 25.12)",
+    "pdfinfo": "Poppler 24.04.0",
+    "pdftotext": "from PATH at validation time",
     "bibliography_style": "abntex2-alf 1.9.7",
-    "notice": "Existing Ubuntu/WSL toolchain; no network, package downloads or installations. Shell escape disabled; auxiliaries and logs remain outside Git."
+    "notice": "Existing local toolchain; no network, package downloads or installations. Auxiliaries and logs remain outside Git."
   },
   "scientific_boundary": {
-    "technical_evidence_date": "Historical M1/M2: 2026-08-31; later private checkpoints cited through DEC-057, not rerun by the paper build.",
+    "technical_evidence_date": "Historical M1/M2: 2026-08-31; later private checkpoints cited through DEC-057; pilot proposal stage rounds 1 and 2 on 2026-10-26 (DEC-083, DEC-085, DEC-088), not rerun by the paper build.",
     "runtime_tests_rerun_in_this_revision": false,
     "experimental_runs_in_this_revision": 0,
     "not_yet_measured": [
       "C1 efficacy",
       "ASR-state",
-      "BTSR",
+      "BTSR in ERP state",
       "UACR",
-      "latency",
-      "cost"
+      "end-to-end latency and cost"
     ],
     "scope": "One DeepSeek model; 90 pairs, 30 per A1/A2/A3a; 180 documents, C0/C1, three repetitions, 1080 principal runs plus 144 separate pilot runs; overhead descriptive. Qwen3, ablation and defense-aware are future work.",
     "previous_technical_evidence": [
@@ -137,15 +138,19 @@
       "private C0/C1 paths with their own technical acceptance",
       "native state capture and snapshot restoration",
       "candidate records preserving failures"
+    ],
+    "measured_in_pilot": [
+      "ASR-proposal and ASR-policy, C0 and C1, two rounds",
+      "benign proposal exactness",
+      "LLM stage latency, tokens and cost"
     ]
   },
   "submission_blockers": [
-    "complete and independently review operational v2 dispatch, supervision, authorization, capture, record and reset",
-    "generate and independently review pilot and final ground truth",
-    "implement and review grouped-endpoint intervals including zero/boundary cases, precision/power and missing rules before freeze",
-    "validate scientific C0 competence and legitimate authorized C1 critical actions in the pilot",
-    "freeze and execute the principal dataset, preserving raw custody",
+    "group decision on the pending estimative framing proposal (docs/protocol.md section 5)",
+    "connect the integrated Odoo cycle to the 12 pilot pairs and measure ASR-state, UACR and BTSR",
+    "complete nominal review of documents, C1, protocol and analysis rules before freeze",
+    "generate and independently review final ground truth; freeze and execute the principal dataset, preserving raw custody",
     "complete directed literature selection/matrix and replace unmeasured result states with observed effects and intervals",
-    "confirm accepted extension, AI disclosure policy and advisor approval in Oriente"
+    "confirm accepted extension, AI disclosure policy and final group/advisor approval in Oriente"
   ]
 }

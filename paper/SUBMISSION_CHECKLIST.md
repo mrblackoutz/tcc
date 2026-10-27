@@ -1,12 +1,12 @@
 # Checklist de submissão — artigo TCC II
 
-**Estado:** versão pré-experimental de 17/10/2026, plano v1.2.19 e [corte da entrega (DEC-058)](../docs/decision-log.md#dec-058). Compilação, validação automática e inspeção das 18 páginas renovadas na mesma árvore; hashes no `validation-report.json`. O checklist diferencia PDF tecnicamente válido, revisão humana e autorização de envio; a submissão continua bloqueada pelos gates científicos/institucionais.
+**Estado:** versão de trabalho de 26/10/2026, plano v1.2.19 e [corte da entrega (DEC-058)](../docs/decision-log.md#dec-058), com o estágio de propostas do piloto reportado. Compilação, validação automática e inspeção das 19 páginas renovadas na mesma árvore; hashes no `validation-report.json`. O checklist diferencia PDF tecnicamente válido, revisão humana e autorização de envio; a submissão continua bloqueada pelos itens abertos abaixo.
 
 ## Estrutura e formato
 
-- [x] PDF corrente possui entre 10 e 20 páginas, incluindo referências: 18
-- [x] Resumo corrente possui entre 150 e 250 palavras: 213
-- [x] Abstract corrente possui entre 150 e 250 palavras e é semanticamente equivalente ao Resumo: 189
+- [x] PDF corrente possui entre 10 e 20 páginas, incluindo referências: 19
+- [x] Resumo corrente possui entre 150 e 250 palavras: 242
+- [x] Abstract corrente possui entre 150 e 250 palavras e é semanticamente equivalente ao Resumo: 217
 - [x] Palavras-chave e Keywords foram conferidos no PDF corrente
 - [x] seis títulos principais aparecem literalmente na ordem exigida no PDF corrente
 - [ ] referências correntes seguem estilo autor-data compatível com ABNT NBR 6023:2018

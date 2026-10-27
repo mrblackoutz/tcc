@@ -4,7 +4,7 @@ Este diretório contém a fonte editável do artigo científico estendido destin
 
 ## Estado atual
 
-A fonte corrente é **pré-experimental**, revisada em **17/10/2026** conforme o plano **v1.2.19** e o [corte de entrega (DEC-058)](../docs/decision-log.md#dec-058). Ela distingue M1/M2 históricos das provas posteriores de caminhos privados C0/C1, captura/restauração e registro candidato v2. Integração operacional completa, revisão independente, piloto, freeze e coleta principal continuam pendentes; os testes técnicos não fornecem taxas científicas de eficácia.
+A fonte corrente foi revisada em **26/10/2026** conforme o plano **v1.2.19** e o [corte de entrega (DEC-058)](../docs/decision-log.md#dec-058). Além das provas técnicas, ela reporta o estágio de propostas do piloto ([rodada 1](../docs/pilot-round1-propostas.md), [rodada 2](../docs/pilot-round2-resultado.md), [DEC-088](../docs/decision-log.md#dec-088)) e a [proposta de enquadramento estimativo](../docs/protocol.md#proposta-enquadramento-estimativo), registrada sem adoção. Efeito no estado do ERP, revisão nominal, freeze e coleta principal continuam pendentes; nenhum resultado confirmatório é reportado.
 
 O compromisso é um único modelo DeepSeek, 90 pares/180 documentos, C0/C1 e três repetições: **1.080 execuções principais**, mais **144 do piloto separado**, totalizando **1.224**, sem retries. Qwen3, ablação e ataques adaptados à defesa são trabalhos futuros, não blocos condicionais desta entrega. H4 deixa de ser hipótese de aceitabilidade e a eficiência será descritiva; RQ4/H5 ficam retiradas com IDs reservados. H1/H3/H2, a margem de −10 pontos percentuais, o pareamento e os gates de poder/intervalos permanecem. A revisão dirigida da literatura não é apresentada como revisão sistemática executada.
 
@@ -32,7 +32,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paper\build.ps1
 
 Arquivos auxiliares e logs ficam em `.runtime`, fora do Git. O script copia para este diretório somente o PDF final e executa a validação automaticamente.
 
-A compilação de 17/10/2026 tem **18 páginas**, Resumo de **213 palavras** e Abstract de **189**, com 20 citações e referências reconciliadas. Passou nos gates automáticos, metadados e inspeção das 18 páginas, sem caixas excedentes ou referências indefinidas. Os hashes dos fontes, PDF e log final estão em `validation-report.json`. Isso valida o artefato editorial pré-experimental, não os resultados científicos ou a aprovação humana para envio.
+A compilação de 26/10/2026 tem **19 páginas**, Resumo de **242 palavras** e Abstract de **217**, com 20 citações e referências reconciliadas. Passou nos gates automáticos, metadados e inspeção visual das 19 páginas, sem caixas excedentes ou referências indefinidas. Os hashes dos fontes, PDF e log final estão em `validation-report.json`. Isso valida o artefato editorial desta revisão, não o conteúdo confirmatório.
 
 Também é possível compilar com a toolchain TeX Live já instalada no Ubuntu/WSL, sem rede ou instalação de pacotes. A sequência é pdfLaTeX, BibTeX no diretório de saída e mais duas passagens de pdfLaTeX, com fontes e estilos resolvidos localmente. Usar `-no-shell-escape`, manter auxiliares em `.runtime` e registrar versões e hashes. Se faltar dependência, interromper e relatar; não ativar instalação automática durante a compilação.
 

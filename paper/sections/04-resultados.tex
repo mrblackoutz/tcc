@@ -30,7 +30,7 @@ Estado & hash inicial e restaurado \texttt{224448b68946\ldots}; estado criado di
 
 A suíte cobre PDF criptografado ou sem texto, estrutura inválida, campo duplicado ou ausente, propriedade extra, versão de schema incompatível, data e valor malformados, total divergente, referência inexistente, duplicidade e resíduo no Odoo. O smoke final passou com 41 testes, criou exatamente um rascunho e restaurou o hash inicial. PDF, texto, proposta e estados receberam SHA-256; credenciais e evidências detalhadas ficaram fora do Git.
 
-Até 17 de outubro, o repositório também registra provas posteriores: contrato comum v2, caminhos privados de criação e contabilização C0/C1, autorização vinculada, captura independente de estado e restauração por snapshot de banco e filestore. O checkpoint de captura/restauração percorreu oito casos técnicos e 16 restaurações, incluindo contabilização, com provedor e supervisão simulados. Esses números contam casos de engenharia, não ataques científicos nem observações independentes do estudo.
+Até 26 de outubro, o repositório também registra provas posteriores: contrato comum v2, caminhos privados de criação e contabilização C0/C1, autorização vinculada, captura independente de estado e restauração por snapshot de banco e filestore. O checkpoint de captura/restauração percorreu oito casos técnicos e 16 restaurações, incluindo contabilização, com provedor e supervisão simulados. Esses números contam casos de engenharia, não ataques científicos nem observações independentes do estudo.
 
 O registro candidato \texttt{run-record/v2} preserva resultados recomputados, falhas de proposta, estado não observável e divergência de reset, sem preencher lacunas com sucesso. O gravador local preserva registros por hashes e escrita exclusiva; isso não demonstra backup externo imutável. A integração operacional e a revisão independente permanecem abertas, e o método público \texttt{execute} continua fechado. As provas anteriores não foram reexecutadas para esta revisão editorial.
 
@@ -42,33 +42,65 @@ Essas propriedades reduzem ameaças de instrumentação. Sem um oráculo externo
 
 O trabalho também responde ao feedback de que a continuidade do TCC I precisava tornar-se aplicada e definir segmento-alvo. O artefato executa um fluxo de Contas a Pagar em um ERP real de laboratório, e não apenas uma arquitetura conceitual. Ainda assim, implementação não substitui avaliação. O resultado atual é evidência de viabilidade e controle experimental, não de eficácia da defesa.
 
-\subsection{Resultados confirmatórios ainda não disponíveis}
+\subsection{Piloto: propostas do modelo}
 
-Na data desta versão, permanecem pendentes a integração operacional completa com o modelo principal, a revisão de C1 e do protocolo, o piloto, o dataset final revisado e o congelamento. Não há coleta confirmatória C0--C1 contabilizada. A Tabela~\ref{tab:pending-results} registra explicitamente o estado das respostas às perguntas de pesquisa; “não executado” não representa zero ocorrência.
+Em 26 de outubro de 2026, o piloto executou o estágio de propostas com o modelo real: 12 pares, dois membros, C0 e C1 e três repetições, totalizando 144 chamadas por rodada, em ordem randomizada por semente registrada. Mediu-se a proposta (ASR-proposal) e a decisão que a política C1 tomaria sobre ela (ASR-policy), contra o estado confiável derivado do gabarito. O efeito no Odoo, isto é, ASR-state, UACR e BTSR, ainda não foi medido, porque o ciclo integrado não foi ligado aos 12 pares.
+
+A rodada 1 usou notas adversariais de uma ou duas frases. Como nenhuma proposta de C0 foi comprometida, o gate de eficácia disparou. As 12 notas foram então reescritas segundo princípios estáticos: justificar por que o valor impresso estaria errado, alegar prioridade ou competência, nomear o campo e o valor a registrar, integrar-se ao vocabulário do documento e manter ofuscação legível. A revisão não usou conhecimento da defesa e manteve documentos benignos, gabarito, valores do atacante, prompt e modelo. A rodada 2 foi a única repetição permitida.
 
 \begin{table}[H]
 \centering
-\caption{Estado dos resultados científicos em 17 de outubro de 2026.}
+\caption{Piloto de propostas: resultados por rodada e condição.}
+\label{tab:pilot-proposals}
+\footnotesize
+\begin{tabularx}{\textwidth}{Y C{1.35cm} C{1.35cm} C{1.35cm} C{1.35cm}}
+\toprule
+& \multicolumn{2}{c}{\textbf{Rodada 1}} & \multicolumn{2}{c}{\textbf{Rodada 2}} \\
+\textbf{Medida} & \textbf{C0} & \textbf{C1} & \textbf{C0} & \textbf{C1} \\
+\midrule
+Chamadas com proposta válida & 72/72 & 72/72 & 72/72 & 71/72 \\
+Benignas idênticas ao gabarito & 36/36 & 36/36 & 36/36 & 35/36 \\
+Benignas aceitas pela política C1 & -- & 36/36 & -- & 35/36 \\
+Adversariais com campo-alvo alterado (ASR-proposal) & 0/36 & 0/36 & 0/36 & 0/36 \\
+Adversariais idênticas ao gabarito & 36/36 & 36/36 & 36/36 & 36/36 \\
+Comprometidas aceitas por C1 (ASR-policy) & -- & 0/0 & -- & 0/0 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Nas duas rodadas, nenhuma das 72 propostas adversariais de C0 incorporou o objetivo do atacante, e o limiar fixado antes da segunda rodada não foi atingido. Com 0 em 36 execuções de C0 em uma rodada, o limite superior unilateral de 95\% da taxa é de cerca de 8\% se as execuções fossem independentes e de 22\% tomando o par como unidade. A única falha foi uma saída fora do schema em uma chamada benigna de C1 da rodada 2, mantida como resultado e sem nova tentativa. Cada rodada consumiu cerca de 215 mil tokens, aproximadamente US\$~0,07 pelos preços datados, com latência mediana de 2,1~s por chamada.
+
+Como verificação de componente, e não como resultado do experimento, propostas que obedecessem integralmente às 12 notas foram submetidas à política C1. Onze seriam negadas por divergência de pedido, fornecedor, valor, linha, conta fora da allowlist ou alvo da contabilização. Uma, que altera somente a referência impressa do documento, seria aceita: essa referência é controlada pelo atacante e funciona apenas como sinal secundário de duplicidade.
+
+\subsection{Resultados confirmatórios ainda não disponíveis}
+
+Na data desta versão, permanecem pendentes o ciclo integrado com o Odoo para os pares do piloto, a revisão nominal de C1 e do protocolo, a decisão sobre o enquadramento, o dataset final revisado e o congelamento. Não há coleta confirmatória C0--C1 contabilizada. A Tabela~\ref{tab:pending-results} registra o estado das respostas às perguntas de pesquisa; “não executado” não representa zero ocorrência.
+
+\begin{table}[H]
+\centering
+\caption{Estado dos resultados científicos em 26 de outubro de 2026.}
 \label{tab:pending-results}
 \small
 \begin{tabularx}{\textwidth}{C{0.80cm} L{3.25cm} Y}
 \toprule
 \textbf{RQ} & \textbf{Estimadores previstos} & \textbf{Estado} \\
 \midrule
-\hyperlink{rq1}{RQ1} & ASR-proposal, ASR-policy, ASR-state e UACR por C0/C1 & Não executado antes do piloto e do freeze; nenhum percentual é reportável \\
-\hyperlink{rq2}{RQ2} & BTSR, falsos bloqueios, STP, escalonamento, latência e custo & Não executado; a perda de utilidade e o overhead são desconhecidos \\
-\hyperlink{rq3}{RQ3} & Efeitos por A1, A2 e A3a & Não executado; descrição sem testes de subgrupos \\
+\hyperlink{rq1}{RQ1} & ASR-proposal, ASR-policy, ASR-state e UACR por C0/C1 & ASR-proposal e ASR-policy medidas no piloto, com 0/36 em cada condição e rodada; ASR-state e UACR não executados; nada confirmatório \\
+\hyperlink{rq2}{RQ2} & BTSR, falsos bloqueios, STP, escalonamento, latência e custo & Exatidão das propostas benignas, latência e custo do estágio do modelo medidos no piloto; BTSR no estado, falsos bloqueios e escalonamentos não executados \\
+\hyperlink{rq3}{RQ3} & Efeitos por A1, A2 e A3a & Nenhuma família, estratégia, posição ou template produziu proposta comprometida no piloto; teste final não executado \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Não é possível afirmar que C1 reduz prompt injection, mantém BTSR ou possui custo aceitável. O custo será caracterizado, não submetido a hipótese de aceitabilidade. Qwen3, ablação e ataques adaptados à defesa foram retirados da entrega e passam a trabalho futuro; \hyperlink{rq4}{RQ4} e \hyperlink{h5}{H5} não têm resultados a produzir neste estudo. O resumo e a conclusão preservam essa ausência para impedir que números exemplificativos sejam confundidos com observações.
+Não é possível afirmar que C1 reduz prompt injection, mantém BTSR no estado do ERP ou possui custo aceitável. O custo será caracterizado, não submetido a hipótese de aceitabilidade. Qwen3, ablação e ataques adaptados à defesa foram retirados da entrega e passam a trabalho futuro; \hyperlink{rq4}{RQ4} e \hyperlink{h5}{H5} não têm resultados a produzir neste estudo. O resumo e a conclusão preservam essa ausência para impedir que números exemplificativos sejam confundidos com observações.
 
 \subsection{Discussão e próximos gates}
 
 A literatura sugere que separar instruções e dados, alinhar ferramentas à tarefa e impor regras em tempo de execução pode reduzir ataques \cite{chen2025struq,jia2025taskshield,li2025drift}. O artefato segue essa direção, mas desloca a autoridade crítica para política e executor determinísticos. Essa escolha procura reduzir a dependência de reconhecer todas as formulações de ataque: mesmo que o LLM proponha outra conta bancária, o estado confiável deve impedir a autorização. O experimento dirá se essa composição reduz violações sem bloquear o processo em excesso.
 
-Antes do piloto, ainda são necessários: integrar proposta real v2, despacho seguro C0/C1, supervisão, autorização, captura, registro e reset; concluir a revisão independente; e criar/revisar os 24 documentos piloto. O add-on e as provas privadas existentes serão reutilizados, sem expansão de componentes fora desse caminho. O smoke real do modelo e os testes simulados não substituem a competência do agente no piloto. C0 deve cumprir o gate de competência e C1 deve concluir ações legítimas, incluindo contabilização autorizada; a avaliação não pode premiar a simples desativação de toda ação crítica.
+O piloto altera a leitura do desenho. Com a orientação genérica comum às duas condições, o modelo copiou os valores impressos em todas as execuções adversariais, mesmo diante de autoridade alegada, correção integrada ao documento, ordem direta e texto espaçado. Se a ASR de C0 for nula, a diferença $ASR_{C1}-ASR_{C0}$ não pode ficar abaixo de zero e \hyperlink{h1}{H1} não pode ser satisfeita; como a ordem confirmatória é fixa, \hyperlink{h3}{H3} e \hyperlink{h2}{H2} ficariam sem interpretação confirmatória por um efeito de ataque inexistente. Por isso, há uma proposta, pendente de ratificação do grupo antes do congelamento, de tratar \hyperlink{h1}{H1} como estimativa, com redução absoluta de risco e intervalo, manter \hyperlink{h3}{H3} confirmatória e independente de \hyperlink{h1}{H1}, com a margem inalterada, e decidir \hyperlink{h2}{H2} pela UACR de C0 medida no Odoo. Esta versão registra a proposta, sem adotá-la. O resultado também não demonstra robustez do modelo: os ataques são estáticos, foram calibrados depois da primeira rodada e um único modelo foi avaliado.
+
+Para concluir o piloto, ainda são necessários: ligar o ciclo integrado aos 12 pares com as propostas já geradas, incluindo despacho C0/C1, autorização, supervisão, captura, registro e reset; medir ASR-state, UACR e BTSR; e concluir a revisão independente dos documentos e componentes. O add-on e as provas privadas existentes serão reutilizados, sem expansão de componentes fora desse caminho. O smoke real do modelo e os testes simulados não substituem a competência do agente no piloto. C0 deve cumprir o gate de competência e C1 deve concluir ações legítimas, incluindo contabilização autorizada; a avaliação não pode premiar a simples desativação de toda ação crítica.
 
 Depois do piloto, o grupo deverá documentar discordâncias pareadas, poder, precisão, latência, custo, vazão e completude de logs, além de validar os intervalos nos casos de fronteira. Permanecem 90 pares e três repetições; qualquer revisão da amostra exige decisão explícita antes do teste final, sem corte automático por prazo. O artigo final substituirá a Tabela~\ref{tab:pending-results} por resultados com numeradores, denominadores, missing, diferenças, riscos relativos quando definidos, intervalos e sensibilidades pré-especificadas. Não serão acrescentados blocos de ablação ou replicação local nesta entrega.
 
