@@ -385,12 +385,18 @@ def assemble_create(args):
         policy_sha256=context["policy_sha256"], supervision=supervision, case=case, trace=trace,
         expected_effect=expected_effect, baseline=baseline, before=before, after=after, restored=restored,
         deny_class=deny_class)
-    result = build_gateway_run_result(record, workflow=parse_workflow(entry["gateway_workflow"]),
-                                      policy_input=policy_input, policy_decision=decision)
+    from tcc_gateway.pilot_post_run_result import build_pilot_no_proposal_result, parse_pilot_no_proposal_result
+    if proposal is None:
+        result = build_pilot_no_proposal_result(record, workflow=parse_workflow(entry["gateway_workflow"]))
+        reparse = parse_pilot_no_proposal_result
+    else:
+        result = build_gateway_run_result(record, workflow=parse_workflow(entry["gateway_workflow"]),
+                                          policy_input=policy_input, policy_decision=decision)
+        reparse = parse_gateway_run_result
     value = result.to_mapping()
     write_once(root / "slot.gateway-run.json", value)
     persisted = fs._json(fs._read_bounded(root / "slot.gateway-run.json", MAX_OUTPUT_BYTES))
-    require(parse_gateway_run_result(persisted).to_mapping() == value, "PILOT_STATE_ENVELOPE_REPARSE")
+    require(reparse(persisted).to_mapping() == value, "PILOT_STATE_ENVELOPE_REPARSE")
     write_once(root / "slot.gateway-result.json", {"schema_version": "pilot-state-gateway-result/v1", "status": "PASS",
         "slot_key": slot["slot_key"], "run_id": args.slot_run_id, "database": args.database,
         "record_sha256": canonical_json_sha256(value["record"]), "wrapper_sha256": canonical_json_sha256(value),

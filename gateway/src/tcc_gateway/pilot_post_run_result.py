@@ -195,7 +195,7 @@ def _validate(value):
     trace, policy = evidence["trace"], value["policy_evidence"]
     stage = _stage(evidence["stage"])
     if stage.status != "success":
-        _require(trace["proposal"] is None and trace["disposition"] is None and trace["effect_move_id"] is None
+        _require(trace["disposition"] is None and trace["effect_move_id"] is None
             and trace["executed_methods"] == [] and policy is None and value["unsigned_command"] is None
             and producers["policy"] is None)
         return
@@ -288,3 +288,55 @@ def build_pilot_post_run_result(record: RunRecord, *, workflow: TrustedWorkflow,
         return parse_pilot_post_run_result(value)
     except (ValueError, TypeError, AttributeError, KeyError, IndexError, StopIteration, OverflowError, RecursionError):
         raise PilotPostRunResultError("invalid private pilot POST result") from None
+
+
+NO_PROPOSAL_VERSION = "pilot-no-proposal-run-result/v1"
+_NO_PROPOSAL_FIELDS = {"schema_version", "record", "record_sha256", "workflow", "workflow_sha256",
+                       "scientific_run", "human_review_complete"}
+
+
+def _validate_no_proposal(value):
+    _closed(value, _NO_PROPOSAL_FIELDS)
+    _require(value["schema_version"] == NO_PROPOSAL_VERSION and value["scientific_run"] is False
+        and value["human_review_complete"] is False)
+    record = parse_run_record_v4(value["record"]).to_mapping()
+    _require(value["record_sha256"] == canonical_json_sha256(record)
+        and value["workflow_sha256"] == canonical_json_sha256(value["workflow"]))
+    evidence, identity, trace = record["evidence"], record["identity"], record["evidence"]["trace"]
+    _closed(value["workflow"], TrustedWorkflow.__dataclass_fields__)
+    fields = dict(value["workflow"])
+    _require(type(fields["allowed_bank_refs"]) is list)
+    fields["allowed_bank_refs"] = tuple(fields["allowed_bank_refs"])
+    workflow = TrustedWorkflow(**fields)
+    _require(workflow.phase == "DRAFT_INTAKE" and workflow.scenario_id == identity["scenario_id"]
+        and workflow.document_sha256 == evidence["request"]["document"]["document_sha256"]
+        and workflow.company_name == evidence["case"]["company_name"]
+        and evidence["case"]["expected_action"] == "CREATE_DRAFT_BILL")
+    # The model stage ended without a proposal; nothing was dispatched or executed.
+    _require(_stage(evidence["stage"]).status != "success"
+        and trace["disposition"] is None and trace["effect_move_id"] is None and trace["executed_methods"] == []
+        and record["derived"]["reset_status"] == "VERIFIED")
+
+
+def parse_pilot_no_proposal_result(value):
+    try:
+        value = _json_snapshot(value)
+        _validate_no_proposal(value)
+        return PilotPostRunResult(canonical_json_bytes(value))
+    except (ValueError, TypeError, AttributeError, KeyError, IndexError, StopIteration, OverflowError, RecursionError):
+        raise PilotPostRunResultError("invalid private pilot no-proposal result") from None
+
+
+def build_pilot_no_proposal_result(record: RunRecord, *, workflow: TrustedWorkflow):
+    """CREATE slot whose model stage produced no valid proposal (an outcome, not a gap)."""
+    try:
+        _require(type(record) is RunRecord and type(workflow) is TrustedWorkflow)
+        workflow_value = asdict(workflow)
+        workflow_value["allowed_bank_refs"] = list(workflow.allowed_bank_refs)
+        record_value = parse_run_record_v4(record.to_mapping()).to_mapping()
+        return parse_pilot_no_proposal_result({"schema_version": NO_PROPOSAL_VERSION, "record": record_value,
+            "record_sha256": canonical_json_sha256(record_value), "workflow": workflow_value,
+            "workflow_sha256": canonical_json_sha256(workflow_value), "scientific_run": False,
+            "human_review_complete": False})
+    except (ValueError, TypeError, AttributeError, KeyError, IndexError, StopIteration, OverflowError, RecursionError):
+        raise PilotPostRunResultError("invalid private pilot no-proposal result") from None

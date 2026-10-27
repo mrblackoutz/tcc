@@ -1501,3 +1501,16 @@ Substitui ou é substituída por:
 - **Evidência:** a registrar com o ensaio simulado e a execução final.
 - **Responsável:** Gustavo.
 - **Seções e artefatos afetados:** novo runner do piloto e probes, runbook, backlog (RUN-02/05/06/09, PILOT-02/03), resultados no artigo.
+<a id="dec-096"></a>
+
+## DEC-096 — Falha de rede na chamada ao modelo vira resultado, e o piloto no Odoo recomeça do zero
+
+- **Data:** 27/10/2026.
+- **Status:** aceita por Gustavo nesta conversa.
+- **Contexto:** a primeira execução real da [DEC-095](#dec-095) (`bd5ae5b439a94a16b6cf540e9396ea90`) concluiu 36 slots e parou no 37º: a chamada ao DeepSeek falhou três vezes por transporte e o registro marcou `HALT_LLM_UNCERTAIN`, que pela [política de tentativas (DEC-031)](#dec-031) exige parar o lote. O envelope de rascunho também não aceitava execução sem proposta. Foram feitas 37 chamadas reais. A limpeza foi conferida e a evidência parcial foi preservada.
+- **Alternativas:** (1) manter a regra e parar a cada nova falha de rede do modelo; (2) aproveitar os 36 slots e completar os 108 restantes, misturando duas execuções; (3) recomeçar os 144 do zero e registrar como resultado a falha de rede limitada à chamada do modelo. Gustavo escolheu a 3.
+- **Decisão:** recomeçar a execução completa com nova chamada por slot (cerca de mais 144 chamadas e US$ 0,07). Quando a única incerteza do slot for a chamada ao modelo (`HALT_LLM_UNCERTAIN`), o slot é registrado como execução sem proposta, avaliável, com a tarefa contada como não concluída, e a execução continua. Essa incerteza não toca o estado do ERP: nada é despachado sem proposta e o estado final é lido e restaurado normalmente. Qualquer outro sinal de parada (reset, aprovação, estado) continua interrompendo a execução. A execução sem proposta de rascunho usa o envelope `pilot-no-proposal-run-result/v1`; a de contabilização já cabia no envelope do piloto. O total desses slots é reportado. A execução parcial não se mistura com a nova.
+- **Consequências e limites:** muda a DEC-031 apenas para a chamada ao modelo nesta execução do piloto. Falhas de rede do provedor afetam igualmente C0 e C1 e contam contra a utilidade das duas versões. Não houve escolha de slots: a nova execução é integral, com a mesma semente.
+- **Evidência:** execução parcial preservada em `.runtime/state-oracle/bd5ae5b439a94a16b6cf540e9396ea90`; teste offline do envelope sem proposta com os artefatos reais do slot 37.
+- **Responsável:** Gustavo.
+- **Seções e artefatos afetados:** `scripts/pilot_state_harness.py`, `odoo/probes/pilot_state_gateway.py`, `gateway/src/tcc_gateway/pilot_post_run_result.py`, runbook.

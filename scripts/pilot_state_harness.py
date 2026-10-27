@@ -515,13 +515,19 @@ class PilotStateHarness(GatewayPostHarness, PilotResetHarness):
             "provider_mode": self.provider_mode, "supervision": supervision.to_mapping(),
             "scientific_run": False, "human_review_complete": False}))
         self.pilot_gateway(mode, database, directory, value["run_id"])
-        parser = parse_pilot_post_run_result if mode == "assemble-post" else parse_gateway_run_result
-        envelope = parser(fs._json(fs._read_bounded(directory / "slot.gateway-run.json", 128 * 1024 * 1024)))
+        from tcc_gateway.pilot_post_run_result import parse_pilot_no_proposal_result
+        raw = fs._json(fs._read_bounded(directory / "slot.gateway-run.json", 128 * 1024 * 1024))
+        parser = (parse_pilot_post_run_result if mode == "assemble-post" else
+                  parse_pilot_no_proposal_result if raw.get("schema_version") == "pilot-no-proposal-run-result/v1"
+                  else parse_gateway_run_result)
+        envelope = parser(raw)
         record = envelope.record.to_mapping()
         receipt = read_record(directory / "slot.gateway-result.json")
         require(receipt["status"] == "PASS" and receipt["wrapper_sha256"] == canonical_json_sha256(envelope.to_mapping())
                 and record["derived"]["reset_status"] == "VERIFIED" and record["supervision"] == supervision.to_mapping(),
                 "PILOT_STATE_SLOT_RECORD")
+        # DEC-096: provider-only uncertainty is an outcome; any other halt stops the run with evidence kept.
+        require(record["derived"]["batch_gate"] in {"CONTINUE", "HALT_LLM_UNCERTAIN"}, "PILOT_STATE_BATCH_HALT")
         self.release(generation)
         self.release(generation + 1)
         return {"position": slot["position"], "slot_key": slot["slot_key"], "run_id": value["run_id"],
@@ -564,6 +570,7 @@ class PilotStateHarness(GatewayPostHarness, PilotResetHarness):
             "snapshots": {name: value["sha256"] for name, value in self.snapshots.items()},
             "baseline_state_sha256": {name: capture.reset_sha256 for name, capture in self.baselines.items()},
             "clock_scope_sha256": canonical_json_sha256(self.clock_scope), "slot_count": len(rows), "slots": rows,
+            "llm_uncertain_slot_count": sum(row["batch_gate"] == "HALT_LLM_UNCERTAIN" for row in rows),
             "external_provider_called": self.provider_mode == "OBSERVED", "scientific_run": False,
             "human_review_complete": False, "public_executor_enabled": False, "existing_lab_touched": False}
         self.write_evidence()
@@ -571,6 +578,9 @@ class PilotStateHarness(GatewayPostHarness, PilotResetHarness):
     def cleanup(self):
         try:
             if getattr(self, "compose_up", False):
+                logs = subprocess.run([*COMPOSE, "logs", "--no-color", "--timestamps", "egress-proxy", "llm-client-g3c"],
+                                      cwd=ROOT, capture_output=True, timeout=300, check=False)
+                (self.root / "compose-services-final.log").write_bytes(logs.stdout + logs.stderr)
                 completed = subprocess.run([*COMPOSE, "down", "--remove-orphans"], cwd=ROOT, capture_output=True,
                                            timeout=300, check=False)
                 (self.root / "compose-down.log").write_bytes(completed.stdout + completed.stderr)
