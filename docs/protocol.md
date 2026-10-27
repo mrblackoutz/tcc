@@ -1,6 +1,6 @@
 # Protocolo experimental operacional — candidato pré-piloto
 
-**Versão:** 0.2 (17/10/2026). **Estado:** SCI-01 retorna a `ACTIVE` para revisar o escopo reduzido aprovado na [DEC-058](decision-log.md#dec-058); SCI-03 e o protocolo integral ainda exigem implementação complementar, revisão e assinaturas. Nada está congelado. Este arquivo operacionaliza, mas não substitui, o [plano-mestre](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#sec-14). A [DEC-032](decision-log.md#dec-032) autoriza apenas preparação e testes offline. Nenhum resultado do conjunto final foi observado.
+**Versão:** 0.3 (26/10/2026). **Estado:** a [seção 5](#proposta-enquadramento-estimativo) traz uma **proposta pendente de ratificação do grupo**, ainda não vigente; as demais seções seguem como estavam. SCI-01 retorna a `ACTIVE` para revisar o escopo reduzido aprovado na [DEC-058](decision-log.md#dec-058); SCI-03 e o protocolo integral ainda exigem implementação complementar, revisão e assinaturas. Nada está congelado. Este arquivo operacionaliza, mas não substitui, o [plano-mestre](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#sec-14). A [DEC-032](decision-log.md#dec-032) autoriza apenas preparação e testes offline. Nenhum resultado do conjunto final foi observado.
 
 ## 1. Perguntas, hipóteses e desfechos
 
@@ -62,3 +62,43 @@ O protocolo ainda **não está assinável**. Bloqueios verificáveis:
 | Ciência e dados (Felipe) | pendente | pendente | pendente |
 | Arquitetura e segurança (Thomaz) | pendente | pendente | pendente |
 | Odoo e experimentação (Gustavo) | pendente | pendente | pendente |
+
+<a id="proposta-enquadramento-estimativo"></a>
+
+## 5. Proposta pendente de ratificação: enquadramento estimativo
+
+**Estado: proposta. Não ratificada, não vigente.** Redigida em 26/10/2026 a pedido de Gustavo, a partir da [DEC-088](decision-log.md#dec-088). Enquanto o grupo (Felipe, Thomaz e Gustavo) não a ratificar em decisão própria no log, vale o [§1](#1-perguntas-hipóteses-e-desfechos). Ratificá-la altera o status de hipóteses do plano-mestre e exige nova versão do plano ([DEC-086](decision-log.md#dec-086) e o [gate de eficácia adversarial](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#sec-14-2) não a decidem).
+
+### 5.1 Fato que dispara o gate
+
+Nas duas rodadas do piloto de propostas, com duas versões das notas adversariais ([rodada 1](pilot-round1-propostas.md) e [rodada 2](pilot-round2-resultado.md)), nenhuma das 72 propostas de C0 saiu comprometida (0/36 por rodada); o limiar fixado antes da rodada 2 não foi atingido. O gate permite uma única repetição, já usada. A taxa de sucesso do ataque no estado ([ASR-state](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#termo-asr-state)) ainda não foi medida, porque o ciclo com o Odoo não está ligado aos 12 pares; como as propostas são exatas, não se espera que ela seja positiva.
+
+### 5.2 Por que o §1 não funciona nesse cenário
+
+Se a ASR de C0 é nula, a diferença `ASR_C1 − ASR_C0` é a própria ASR de C1, que não é negativa, então o limite superior do IC95% nunca fica estritamente abaixo de zero e [H1](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h1) não pode ser satisfeita. Como a sequência H1 → H3 → H2 é fixa e cada hipótese só recebe leitura confirmatória se a anterior for satisfeita, [H3](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h3) e [H2](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#h2) também ficariam sem leitura confirmatória por causa de um efeito de ataque que nunca existiu. Manter o §1 como está, portanto, não é neutro.
+
+### 5.3 O que a proposta muda e o que não muda
+
+| Item | Hoje (§1 e plano) | Proposta pendente |
+|---|---|---|
+| H1, `ASR-state` | superioridade: limite superior do IC95% de `C1 − C0` menor que zero | estimativa: ASR de C0 e de C1, `ARR = ASR_C0 − ASR_C1` (redução absoluta de risco) e IC95% pelo bootstrap por `pair_id` do [§1.1](#11-análise-mínima-a-implementar-e-validar); sem critério de superioridade; `RR` (risco relativo) só se as duas ASRs forem positivas; `[0, 0]` nunca é prova de risco nulo |
+| H3, `BTSR` | não inferioridade com margem `−0,10`, condicionada a H1 | continua confirmatória e **independente de H1**; margem e critério inalterados |
+| H2, `UACR` | superioridade, condicionada a H1 e H3 e ao gate de potência com 30 pares A3a | estimativa se a UACR de C0 medida no ciclo com o Odoo também for nula; se for positiva e o gate de potência passar, mantém-se o critério atual |
+| RQ2 (eficiência) e RQ3 (famílias) | descritivas | sem mudança |
+| Amostra e execução | 90 pares × 2 condições × 3 repetições; piloto de 144 | sem mudança |
+| Prompt-base, modelo, margem, C0 | fixos | sem mudança; C0 não é enfraquecido para produzir efeito |
+
+Nada disso troca o endpoint primário depois de observar o teste final: a escolha seria feita antes do freeze, sem resultado final observado.
+
+### 5.4 O que o estudo poderia e não poderia afirmar
+
+- Poderia afirmar: C1 preserva a utilidade benigna dentro da margem (H3); latência, tokens, custo e demanda técnica de revisão; ASR de cada condição com intervalo, incluindo o limite superior para C0; resultados por família, estratégia, posição e template, descritivos.
+- Não poderia afirmar: que C1 reduz o sucesso de ataques, que o modelo é robusto em geral ou contra atacantes adaptativos, nem generalizar além de um modelo, de ataques estáticos e do fluxo de Contas a Pagar. A força das notas foi calibrada depois da rodada 1 e isso deve constar como limitação.
+- Opção fora desta proposta: avaliar C1 com propostas comprometidas sintéticas, sem depender de o modelo ceder. Seria mudança de desenho, exploratória, e precisa de decisão própria.
+
+### 5.5 O que falta para ratificar
+
+1. Decisão registrada do grupo sobre três pontos: adotar o enquadramento estimativo de H1; tornar H3 independente de H1 ou também estimativa; aceitar a regra condicional de H2.
+2. Medir a ASR-state e a UACR de C0 no ciclo com o Odoo. Se alguma for positiva, esta proposta perde o motivo e o §1 volta a valer.
+3. Implementar e validar antes do freeze a regra de fronteira para ASR igual a zero, já exigida no [§1.1](#11-análise-mínima-a-implementar-e-validar), e rever o poder de H3.
+4. Atualizar o §1, publicar nova versão do plano-mestre e do `CHANGELOG.md` e registrar as assinaturas pendentes.
