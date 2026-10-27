@@ -100,7 +100,7 @@ Usar os IDs abaixo como próxima fila, não como nova lista duplicada. Os detalh
 | ID | P | Owner | Reviewer | Dep. | Entregável e DoD | Estado |
 |---|---:|---|---|---|---|---|
 | ADM-01 | P0 | Felipe | Gustavo | — | obter Regulamento Geral e Guia Geral vigentes; registrar origem/hash sem PII | READY |
-| ADM-02 | P0 | Felipe | Thomaz | — | confirmar no Oriente extensão de arquivo, política/declaracão de IA e preservar resposta saneada | EXTERNAL |
+| ADM-02 | P0 | Felipe | Thomaz | — | confirmar no Oriente extensão de arquivo, política/declaracão de IA e preservar resposta saneada. Edital V4 (27/10) define a declaração de IA: Anexo I da RE-CONSU-017/2026, assinado pelos três alunos e pelo orientador e anexado ao final do artigo ([requisitos](institutional-requirements.md)). Falta preencher/assinar e confirmar extensão do arquivo e se o anexo conta nas 20 páginas | EXTERNAL |
 | ADM-03 | P0 | Felipe | Gustavo | — | confirmar janela/horários/eligibilidade PPI/PPP/PPA e anomalia `31/11`; atualizar matriz | EXTERNAL |
 | ADM-04 | P0 | Felipe | Gustavo | — | confirmar dados institucionais e alinhamento do tema à área/projeto do orientador | EXTERNAL |
 | ADM-05 | P0 | Felipe | Thomaz | — | instituir registro semanal/quinzenal de orientação com pauta, presença, decisões e próximos passos | READY |

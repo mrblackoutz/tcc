@@ -120,6 +120,7 @@ não redigida de memória.
 
 ## Pendências
 
-- ADM-02: confirmar no Oriente a política institucional de uso e declaração de IA e derivar
-  daqui a declaração exigida.
+- ADM-02: o edital V4 (27/10/2026) define a declaração: Anexo I da Resolução RE-CONSU-017/2026,
+  preenchido no formulário indicado no edital a partir deste registro, assinado pelos três alunos e pelo
+  orientador e anexado ao final do artigo. Falta preencher e assinar.
 - Manter o registro por sessão, e não por commit, a partir de 05/09/2026.

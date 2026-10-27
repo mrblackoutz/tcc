@@ -1,6 +1,6 @@
 # Matriz de conformidade institucional — TCC II FCI 2026/2
 
-**Status da auditoria:** edital semestral e template de artigo conferidos em 30/08/2026; lacunas residuais identificadas.
+**Status da auditoria:** edital semestral e template de artigo conferidos em 30/08/2026; edital V4 conferido em 27/10/2026; lacunas residuais identificadas.
 
 **Decisões vinculadas:** DEC-010 / D14 e DEC-011 / D15.
 
@@ -14,7 +14,8 @@ O plano-mestre não é o arquivo de submissão. Ele preserva a especificação c
 
 | Fonte | Identidade observada | Papel | Estado |
 |---|---|---|---|
-| `assets/EditalTCC.pdf` | `EditalTCC_2026_2-V1`, 16 páginas, criado em 17/08/2026 | regras e calendário de 2026/2 | auditado |
+| `assets/EditalTCC.pdf` | `EditalTCC_2026_2-V1`, 16 páginas, criado em 17/08/2026 | regras e calendário de 2026/2 | substituído pela V4 |
+| `EditalTCC_2026_2-V4.pdf` (cópia local ignorada) | 17 páginas, criado em 09/09/2026, recebido em 27/10/2026 | edital vigente de 2026/2 | auditado |
 | `TemplateArtigo_TCC_FCI_2026.doc` | Word legado, quatro páginas | arquivo-base editável do artigo | auditado em modo somente leitura |
 | `TemplateArtigo_TCC_FCI_2026.pdf` | criado em 15/08/2026, quatro páginas | referência visual e textual | auditado |
 | `src/relatorio_tcc_fci.tex` | fonte histórica do TCC I | continuidade de conteúdo; não é o template TCC II vigente | auditado |
@@ -52,6 +53,9 @@ O cadastro do grupo no Oriente e o requerimento no Portal do Aluno devem ser rea
 | Referências bibliográficas | ABNT NBR 6023:2018; somente obras citadas | auditoria bidirecional citação↔referência |
 | Formato | template disponibilizado no Oriente | comparação visual e checklist assinado |
 | Submissão | tarefa do Oriente entre 03 e 09/11/2026 | recibo de envio preservado |
+| Declaração de uso de IA | Anexo I da Resolução RE-CONSU-017/2026, preenchido no formulário REDCap indicado no edital, baixado, assinado pelos três alunos e pelo orientador e anexado ao final do artigo (edital V4) | PDF assinado anexado ao arquivo submetido |
+
+Na V4, a declaração de uso de IA é obrigatória para o TCC II. Fluxo: (1) um aluno preenche o formulário do Anexo I declarando o uso de IA no trabalho; (2) baixa o documento gerado, que também chega por e-mail; (3) todos os alunos e o orientador assinam; (4) o documento assinado vai como anexo no final do artigo. A base para as respostas é `docs/ai-usage.md`. O edital não diz se esse anexo conta nas 20 páginas; até confirmar, manter o corpo do artigo com folga.
 
 O edital não informa a extensão de arquivo aceita para o TCC II. Não presumir DOC, DOCX ou PDF: confirmar na tarefa do Oriente e registrar a resposta antes de gerar o pacote de submissão.
 
@@ -112,7 +116,9 @@ Para conceito Excelente ou Muito Bom, o termo de autorização do Adelpha deve s
 
 - [ ] obter Regulamento Geral e Guia Geral de TCC vigentes;
 - [ ] confirmar a extensão aceita pela tarefa de submissão no Oriente;
-- [ ] confirmar política institucional para uso e declaração de IA;
+- [x] política institucional de uso e declaração de IA: definida no edital V4 (Anexo I da RE-CONSU-017/2026, anexado ao final do artigo);
+- [ ] preencher, assinar (três alunos e orientador) e anexar a declaração de uso de IA;
+- [ ] confirmar se o anexo da declaração conta no limite de 20 páginas;
 - [ ] confirmar janela, horários e elegibilidade dos avaliadores da banca diante do erro `31/11/2026` e das condições PPI/PPP/PPA;
 - [ ] confirmar condição PPI/PPP e dados institucionais do orientador;
 - [ ] confirmar formalmente o alinhamento do tema à área ou projeto de pesquisa do orientador;
@@ -138,5 +144,6 @@ O artigo só está pronto para a submissão inicial quando:
 - o grupo e o orientador aprovaram o arquivo;
 - o alinhamento do tema à área ou projeto de pesquisa do orientador foi confirmado;
 - as reuniões semanais ou quinzenais de orientação e a participação do grupo possuem registro;
+- a declaração de uso de IA (Anexo I) foi preenchida, assinada pelos três alunos e pelo orientador e anexada ao final;
 - a extensão aceita pelo Oriente foi confirmada;
 - o recibo de submissão até 09/11/2026 foi preservado.

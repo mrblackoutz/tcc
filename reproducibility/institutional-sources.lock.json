@@ -29,7 +29,7 @@
     },
     {
       "id": "tcc1_available_evaluations",
-      "relative_path": "relatorio_tcc_I_fci_pacote/src/AVALIACAO DOS AVALIADORES APÓS APRESENTACO QUE CADASTRARAM NO SISTEMA.txt",
+      "relative_path": "relatorio_tcc_I_fci_pacote/src/AVALIACAO DOS AVALIADORES AP\u00d3S APRESENTACO QUE CADASTRARAM NO SISTEMA.txt",
       "role": "feedback historico disponivel; o conteudo permanece local e somente sua identidade criptografica e versionada",
       "bytes": 9256,
       "sha256": "56b91980803912dba299ea855b5d9dcaee0352d74fcc8a456934e9929504edaa",
@@ -46,6 +46,19 @@
       "document_created_at": "2026-08-17T17:19:15-03:00",
       "sha256": "f466dcf3c8f1ee0e546f07bd34f5a7dee5fab2e78cf18eaa7f62a8be8f7e7b7a",
       "tracking_status": "untracked_in_nested_repository"
+    },
+    {
+      "id": "fci_tcc_notice_2026_2_v4",
+      "relative_path": ".runtime/institutional/EditalTCC_2026_2-V4.pdf",
+      "role": "edital semestral vigente; substitui a V1 para regras e calendario de 2026/2",
+      "bytes": 400972,
+      "pages": 17,
+      "document_title": "EditalTCC_2026_2-V4",
+      "document_created_at": "2026-09-09T17:58:19-03:00",
+      "sha256": "bde36e671b1c33274bb462d122e882926e774beea5722be9df56e4c81a4c34a6",
+      "received_on": "2026-10-27",
+      "tracking_status": "ignored_local_copy",
+      "change_note": "Em relacao a V1, o TCC II passa a exigir a Declaracao de Uso de Sistemas de IA (Anexo I da Resolucao RE-CONSU-017/2026), preenchida no formulario REDCap, assinada pelos alunos e pelo orientador e anexada ao final do artigo. Prazos, extensao de 10 a 20 paginas, banca e nota permanecem iguais; a data inexistente 31/11/2026 continua no texto."
     },
     {
       "id": "fci_article_template_2026_doc",
@@ -104,7 +117,7 @@
   "open_confirmations": [
     "extensao de arquivo aceita pela tarefa de TCC II no Oriente",
     "Regulamento Geral e Guia Geral de TCC vigentes",
-    "politica institucional para uso e declaracao de IA",
+    "se a Declaracao de Uso de IA (Anexo I, definida no edital V4) conta nas 20 paginas do artigo",
     "janela, horarios e elegibilidade dos avaliadores da banca diante do erro 31/11 e das condicoes PPI/PPP/PPA",
     "alinhamento do tema com a area ou projeto de pesquisa do orientador",
     "condicao PPI ou PPP e dados institucionais do orientador"
