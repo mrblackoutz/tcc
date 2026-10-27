@@ -1488,3 +1488,16 @@ Substitui ou é substituída por:
 - **Evidência:** escolha registrada nesta conversa; [proposta de enquadramento](protocol.md#proposta-enquadramento-estimativo); [resultado da rodada 2](pilot-round2-resultado.md).
 - **Responsável:** Gustavo.
 - **Seções e artefatos afetados:** plano-mestre (release 1.2.21), `docs/protocol.md` §5, `docs/task-backlog.md`, `CHANGELOG.md`, README e, pelo agente do artigo, `paper/`.
+<a id="dec-095"></a>
+
+## DEC-095 — Piloto no Odoo com chamada ao modelo dentro de cada execução
+
+- **Data:** 27/10/2026.
+- **Status:** aceita por Gustavo nesta conversa; implementação em andamento.
+- **Contexto:** a [DEC-094](#dec-094) fez das 144 execuções do piloto no Odoo a avaliação da entrega, usando as propostas já gravadas na rodada 2. O registro completo de execução (`run-record/v4`) exige que a etapa do modelo esteja dentro do intervalo supervisionado da própria execução, no mesmo relógio Linux ([DEC-080](#dec-080)). As propostas da rodada 2 foram medidas em outro processo e não cabem nesse registro sem uma variante nova.
+- **Alternativas:** (1) criar uma variante do registro para "proposta gravada", ligada por hash à rodada 2; (2) guardar só evidências essenciais por execução, sem o envelope completo; (3) chamar o modelo de novo dentro de cada execução, no padrão completo de evidência. Gustavo escolheu a 3.
+- **Decisão:** cada uma das 144 execuções (12 pares × 2 documentos × C0/C1 × 3 repetições, ordem sorteada por semente registrada) restaura um clone do baseline do piloto, prepara o documento (fluxo registrado para rascunho; rascunho de origem e aprovação vinculada para contabilização), chama o DeepSeek pelo `llm-client` e pelo proxy fixo com o prompt `ap-task-prompt/v1`, despacha em C0 (JSON-2 direto) ou C1 (observação, política e executor restrito, com aprovação para contabilizar), captura o estado, avalia pelo oráculo, monta o `run-record/v4` com envelope e confere a restauração. O padrão de evidência é o das provas DEC-078 a DEC-080 (relógio Linux, custódia da aprovação, envelopes). Modelo, parâmetros, prompt, notas, política e coorte `.4` não mudam. Ensaios de depuração usam provedor simulado; as chamadas reais ficam só na execução final, autorizada por Gustavo (cerca de US$ 0,07).
+- **Consequências e limites:** substitui o item (c) da DEC-094 apenas quanto à origem das propostas: o piloto no Odoo gera propostas novas, que podem diferir das da rodada 2; as duas medidas são reportadas, sem escolher a mais favorável. A rodada 2 continua como resultado do estágio de propostas. Os registros mantêm `scientific_run=false`, como exige o formato v4 antes do freeze. Prazo estimado de 3 a 4 dias de construção.
+- **Evidência:** a registrar com o ensaio simulado e a execução final.
+- **Responsável:** Gustavo.
+- **Seções e artefatos afetados:** novo runner do piloto e probes, runbook, backlog (RUN-02/05/06/09, PILOT-02/03), resultados no artigo.
