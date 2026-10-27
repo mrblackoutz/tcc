@@ -1,15 +1,15 @@
 {
   "schema_version": "paper-validation/v1",
   "validated_on": "2026-10-26",
-  "decision": "DEC-058; pilot proposal results from DEC-085, DEC-086 and DEC-088",
+  "decision": "DEC-058; pilot proposal results from DEC-085, DEC-086 and DEC-088; directed literature review and critical matrix from DEC-092",
   "plan_version": "1.2.19",
   "artifact": {
     "path": "paper/relatorio_tcc_ii.pdf",
-    "sha256": "3432829dbd949ab01d0b45697f11001e2bfe5f5e864a1ddea32d63f2e1b4d348",
-    "bytes": 258946,
+    "sha256": "1507f1fb3f6c8ca39c2283250d70aedacb1ac25bef910486d7d536d6bfb031cc",
+    "bytes": 259770,
     "pages": 19,
     "page_size": "A4",
-    "status": "pre-experimental; pilot proposal stage reported"
+    "status": "working draft; pilot proposal stage and directed literature review reported"
   },
   "automated_checks": {
     "status": "PASS",
@@ -26,23 +26,23 @@
     "required_main_headings": 6,
     "forbidden_placeholders": 0,
     "page_word_counts": [
-      353,
-      547,
-      578,
-      548,
-      578,
-      429,
-      523,
-      337,
-      436,
-      458,
-      401,
-      664,
-      562,
-      440,
-      542,
-      517,
-      589,
+      354,
+      545,
+      603,
+      590,
+      560,
+      484,
+      468,
+      457,
+      456,
+      465,
+      406,
+      675,
+      561,
+      444,
+      546,
+      520,
+      592,
       416,
       292
     ],
@@ -95,8 +95,8 @@
   },
   "source_sha256": {
     "paper/main.tex": "a879efdc460b734d7ad7332923c9320e2fdd71f3e1e8dffad667c3659e704263",
-    "paper/sections/01-introducao.tex": "5523f12a93452a58f0e83927245e2d297a8761365e6c6e2aa1ac4d30a2978084",
-    "paper/sections/02-referencial.tex": "7b444689afbc3c749b144d34c8246708d311842dcf44eefdab14c68abbcf0e8f",
+    "paper/sections/01-introducao.tex": "af8353cedd8be8cc746a37c080ae9c3c1a02668976887c7ccce2f65c3ea58ded",
+    "paper/sections/02-referencial.tex": "2acff57d946d0879e30a0afdb897d6aead3115e99a13d0fdc012354317600e84",
     "paper/sections/03-metodologia.tex": "55b1fc9cca8a0aa1ef63081dae1b973e39cca281e1a32cf2d7532a9d1f706c4e",
     "paper/sections/04-resultados.tex": "9074942d35457629ea09add448d7bf54969fe2f9cc7f923141a79e59cdf1db92",
     "paper/sections/05-conclusao.tex": "3b255bf0f3f2c7e678a638298f52945f61c22803b8d4a726a43a29e7ccbf3505",
@@ -107,7 +107,7 @@
     "scripts/validate_current_docs.py": "23f161cadc29107034eecaefc757c7d566c7fa920803d06d37794dcdb183532b"
   },
   "build_evidence": {
-    "final_log_sha256": "f84235a556459c70bfe66cfd64e9104c9f66c0ece63583f02e13c4c45f22aeff",
+    "final_log_sha256": "4dc8469becbab6783ce43043df3d1eb09417350d62fd9b9da86786cbeedf3163",
     "bibliography_output_sha256": "ea745caa3a868a0f7f2e4ec1500ff39287172aa467cdefdcb8df38edcc03f5e6",
     "logs_retained_outside_git": true,
     "attempts_note": "Built with paper/build.ps1 on Windows MiKTeX. The first full validator run failed decoding pdftotext output as cp1252; rerunning Python in UTF-8 mode passed. No downloads or installations."
@@ -150,7 +150,7 @@
     "connect the integrated Odoo cycle to the 12 pilot pairs and measure ASR-state, UACR and BTSR",
     "complete nominal review of documents, C1, protocol and analysis rules before freeze",
     "generate and independently review final ground truth; freeze and execute the principal dataset, preserving raw custody",
-    "complete directed literature selection/matrix and replace unmeasured result states with observed effects and intervals",
+    "replace unmeasured result states with observed effects and intervals after principal execution",
     "confirm accepted extension, AI disclosure policy and final group/advisor approval in Oriente"
   ]
 }

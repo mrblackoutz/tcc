@@ -31,7 +31,7 @@
 - [x] não há percentuais confirmatórios inventados
 - [ ] adapter LLM e C0 científico competente foram validados no piloto
 - [ ] C1 e seus testes de autorização foram concluídos
-- [ ] revisão dirigida tem matriz crítica e registro verificável de origem/data/seleção; não é apresentada como busca sistemática executada
+- [x] revisão dirigida tem matriz crítica e registro verificável de origem/data/seleção; não é apresentada como busca sistemática executada
 - [ ] transporte, supervisão, autorização, captura, registro e reset estão integrados e revisados; `execute` não é aberto por este corte
 - [ ] dataset final e ground truth foram revisados, hasheados e congelados
 - [ ] experimento principal foi executado e todos os denominadores foram reconciliados

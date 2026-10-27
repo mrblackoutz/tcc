@@ -34,7 +34,7 @@ O Odoo 19 introduziu a API externa JSON-2, na qual métodos de modelos são aces
 
 \subsection{Síntese dos trabalhos relacionados}
 
-A revisão é dirigida, voltada a fontes primárias sobre injeção indireta, agentes com ferramentas, autorização e experimentação. Não se reivindica cobertura exaustiva nem revisão sistemática. A consolidação do registro de origem, data, critérios de seleção e conferência das referências ainda exige revisão; a presença de uma fonte na bibliografia não comprova essa etapa. A Tabela~\ref{tab:related-work} é uma síntese de posicionamento, não substitui a matriz crítica a completar. A coluna “estado empresarial” diferencia a observação de resposta ou ferramenta da verificação de mutações em um ERP. Nenhum dos trabalhos é reduzido a uma única característica; a comparação identifica apenas o recorte que motiva o artefato proposto.
+A revisão é dirigida, voltada a fontes primárias sobre injeção indireta, agentes com ferramentas, autorização em tempo de execução e experimentação, com registro verificável das consultas realizadas em 26 de outubro de 2026, critérios de seleção, conferência das referências e matriz crítica consolidada na documentação do projeto. Não se reivindica cobertura exaustiva nem revisão sistemática. A Tabela~\ref{tab:related-work} resume o posicionamento das obras citadas neste artigo. A coluna “estado empresarial” diferencia a observação de texto ou ambiente simulado de ferramentas da verificação de mutações transacionais em um ERP. Nenhum dos trabalhos é reduzido a uma única característica; a comparação delimita apenas o recorte empírico que motiva o artefato avaliado.
 
 \begin{table}[H]
 \centering
@@ -51,10 +51,11 @@ AgentDojo \cite{debenedetti2024agentdojo} & Tarefas, ataques e defesas em ambien
 BIPIA \cite{yi2025bipia} & IPI em tarefas textuais e defesas de fronteira & sim & não & Apoia separação de contexto e entrega do payload \\
 StruQ \cite{chen2025struq} & Consulta estruturada e modelo treinado & sim & não & Demonstra separação de canais como camada possível \\
 Task Shield \cite{jia2025taskshield} & Alinhamento de instruções e tool calls à tarefa & sim & ambiente de ferramentas & Motiva verificação externa da ação proposta \\
+DRIFT \cite{li2025drift} & Regras dinâmicas, privilégio mínimo e isolamento & sim & estado simulado & Apoia restrição de esquema e validação de parâmetros \\
 Ataques adaptativos \cite{zhan2025adaptive} & Bypass de defesas conhecidas & sim & ambiente de ferramentas & Delimita a robustez não avaliada e o trabalho futuro \\
 Este trabalho & Defesa em profundidade no fluxo de Contas a Pagar & sim & Odoo & Mede efeito end-to-end, utilidade, custo e fronteiras \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-A lacuna específica não é a ausência de listas de controles. NIST e OWASP já oferecem taxonomias úteis, e a literatura propõe mecanismos promissores. O problema é instanciar uma arquitetura no limite entre documento financeiro, LLM e ERP e avaliá-la com pares contrafactuais, fontes de verdade internas, autorização por ação e oráculo de estado. Esse é o elo entre a revisão e a metodologia descrita a seguir.
+A lacuna explorada não é a ausência de taxonomias de risco ou de mecanismos de autorização na literatura: NIST e OWASP já estruturam controles de governança, e estudos recentes já investigam verificação de estado, isolamento de privilégio, proveniência e gates de política em tempo de execução. A contribuição deste trabalho consiste em instanciar e avaliar, de forma contextualizada e reproduzível, uma arquitetura no limite entre documentos financeiros sintéticos, propostas estruturadas de um LLM e o fluxo de Contas a Pagar no Odoo 19.0 Community, combinando pares contrafactuais, reconciliação determinística com fontes internas, aprovação vinculada para ações críticas e oráculo de estado com restauração verificada. Esse é o elo entre a revisão e a metodologia descrita a seguir.
