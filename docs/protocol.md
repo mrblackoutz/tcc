@@ -1,6 +1,6 @@
 # Protocolo experimental operacional — candidato pré-piloto
 
-**Versão:** 0.3 (26/10/2026). **Estado:** a [seção 5](#proposta-enquadramento-estimativo) traz uma **proposta pendente de ratificação do grupo**, ainda não vigente; as demais seções seguem como estavam. SCI-01 retorna a `ACTIVE` para revisar o escopo reduzido aprovado na [DEC-058](decision-log.md#dec-058); SCI-03 e o protocolo integral ainda exigem implementação complementar, revisão e assinaturas. Nada está congelado. Este arquivo operacionaliza, mas não substitui, o [plano-mestre](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#sec-14). A [DEC-032](decision-log.md#dec-032) autoriza apenas preparação e testes offline. Nenhum resultado do conjunto final foi observado.
+**Versão:** 0.3 (26/10/2026). **Estado:** a [seção 5](#proposta-enquadramento-estimativo) traz uma **decisão de enquadramento adotada em 26/10 ([DEC-094](decision-log.md#dec-094))**, que prevalece sobre as seções 1–4 onde houver conflito; as demais seções seguem como estavam. SCI-01 retorna a `ACTIVE` para revisar o escopo reduzido aprovado na [DEC-058](decision-log.md#dec-058); SCI-03 e o protocolo integral ainda exigem implementação complementar, revisão e assinaturas. Nada está congelado. Este arquivo operacionaliza, mas não substitui, o [plano-mestre](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#sec-14). A [DEC-032](decision-log.md#dec-032) autoriza apenas preparação e testes offline. Nenhum resultado do conjunto final foi observado.
 
 ## 1. Perguntas, hipóteses e desfechos
 
@@ -65,9 +65,21 @@ O protocolo ainda **não está assinável**. Bloqueios verificáveis:
 
 <a id="proposta-enquadramento-estimativo"></a>
 
-## 5. Proposta pendente de ratificação: enquadramento estimativo
+## 5. Enquadramento adotado: estudo descritivo, com o piloto como avaliação
 
-**Estado: proposta. Não ratificada, não vigente.** Redigida em 26/10/2026 a pedido de Gustavo, a partir da [DEC-088](decision-log.md#dec-088). Enquanto o grupo (Felipe, Thomaz e Gustavo) não a ratificar em decisão própria no log, vale o [§1](#1-perguntas-hipóteses-e-desfechos). Ratificá-la altera o status de hipóteses do plano-mestre e exige nova versão do plano ([DEC-086](decision-log.md#dec-086) e o [gate de eficácia adversarial](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#sec-14-2) não a decidem).
+**Estado: decidido em 26/10/2026 por Gustavo, em nome do grupo ([DEC-094](decision-log.md#dec-094)).** Felipe e Thomaz podem reabrir até 02/11. Onde houver conflito, esta seção prevalece sobre as seções 1–4.
+
+- **Segurança:** relatar a taxa de ataques bem-sucedidos no ERP e de contabilizações sem autorização em cada versão (simples, C0, e protegida, C1) e a diferença, com IC95%. Não se testa se a protegida "reduz ataques": no piloto nenhum ataque funcionou na versão simples.
+- **Utilidade:** relatar a taxa de tarefas normais concluídas em cada versão e a diferença, com IC95%. A margem de 10 pontos fica só como referência.
+- **Tamanho:** a avaliação é o piloto, 12 pares (24 documentos) × 2 versões × 3 repetições = 144 execuções no Odoo, com as propostas da rodada 2. O conjunto de 90 pares e as 1.080 execuções saem desta entrega.
+- **Revisão:** vale a revisão por um segundo agente de IA; o artigo declara o que só foi revisado assim.
+- **Configuração fixa:** antes de rodar o piloto no Odoo, registrar commit, prompt, política, semente e ordem; nada é ajustado depois de ver os resultados.
+
+A proposta abaixo motivou a decisão. A decisão difere dela em dois pontos: a utilidade também passa a ser só relatada, e o tamanho fica no piloto.
+
+### Proposta original de 26/10 (histórico)
+
+**Estado da proposta: substituída pela DEC-094.** Redigida em 26/10/2026 a pedido de Gustavo, a partir da [DEC-088](decision-log.md#dec-088). Enquanto o grupo (Felipe, Thomaz e Gustavo) não a ratificar em decisão própria no log, vale o [§1](#1-perguntas-hipóteses-e-desfechos). Ratificá-la altera o status de hipóteses do plano-mestre e exige nova versão do plano ([DEC-086](decision-log.md#dec-086) e o [gate de eficácia adversarial](../Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#sec-14-2) não a decidem).
 
 ### 5.1 Fato que dispara o gate
 

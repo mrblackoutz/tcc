@@ -2,7 +2,7 @@
 
 Este repositório contém o plano-mestre editável do TCC em Ciência da Computação sobre mitigação de prompt injection indireta em um fluxo de Contas a Pagar integrado ao Odoo 19.0 Community self-hosted.
 
-**Comece pela [leitura rápida do experimento](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida) e pelas [prioridades do grupo](docs/task-backlog.md).** A versão 1.2.20 registra a [ratificação das correções de medição (DEC-063)](docs/decision-log.md#dec-063) e amplia a falha técnica fechada do §10.2. A 1.2.19 aplicou o [corte da entrega (DEC-058)](docs/decision-log.md#dec-058), que mantém DeepSeek, C0/C1, 90 pares/180 documentos, três repetições e 1.080 execuções principais, mais 144 de piloto separado. Qwen3, ablação e ataques adaptados à defesa ficam para trabalho futuro. Overhead e subgrupos serão descritivos; a revisão de literatura será dirigida e transparente. Não houve coleta de resultados finais.
+**Comece pela [leitura rápida do experimento](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#leitura-rapida) e pelas [prioridades do grupo](docs/task-backlog.md).** A versão 1.2.21 registra a [decisão de 26/10 (DEC-094)](docs/decision-log.md#dec-094): como nenhum ataque funcionou na versão simples do piloto, o estudo passa a descritivo e o piloto de 144 execuções no Odoo vira a avaliação; 90 pares e 1.080 execuções viram trabalho futuro. A 1.2.20 registrou a [ratificação das correções de medição (DEC-063)](docs/decision-log.md#dec-063). A 1.2.19 aplicou o [corte da entrega (DEC-058)](docs/decision-log.md#dec-058), que mantém DeepSeek, C0/C1, 90 pares/180 documentos, três repetições e 1.080 execuções principais, mais 144 de piloto separado. Qwen3, ablação e ataques adaptados à defesa ficam para trabalho futuro. Overhead e subgrupos serão descritivos; a revisão de literatura será dirigida e transparente. Não houve coleta de resultados finais.
 
 As referências têm descrição e destino: [segurança (RQ1)](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#rq1) é uma pergunta de pesquisa; [revisão independente do plano (DEC-022)](docs/decision-log.md#dec-022) é uma decisão histórica. IDs retirados permanecem reservados, não renumerados. Outros termos estão no [glossário do plano](Plano_Mestre_TCC_Seguranca_Agentes_LLM_Odoo.md#glossario).
 
@@ -27,7 +27,7 @@ Estado técnico atual: há [12 pares/24 PDFs candidatos](docs/lab-runbook.md#pre
 - `docs/task-backlog.md`: prioridades e três trilhas paralelas, com os 123 IDs preservados, donos, revisores, dependências e DoD; blocos retirados têm estado `CUT`, não `DONE`.
 - `dataset/codebook.md`: contrato candidato dos pares, taxonomia, ligação com fixtures e gates de revisão; ainda não é dataset piloto/final.
 - `paper/`: fonte LaTeX editável, referências, validação e PDF pré-experimental do artigo institucional do TCC II, conforme [fonte do artigo (DEC-019)](docs/decision-log.md#dec-019).
-- `docs/releases/v1.2.20.md`: manifesto da versão corrente; versões anteriores permanecem em `docs/releases/` para auditoria, sem fazer parte do roteiro de leitura.
+- `docs/releases/v1.2.21.md`: manifesto da versão corrente; versões anteriores permanecem em `docs/releases/` para auditoria, sem fazer parte do roteiro de leitura.
 - `reproducibility/odoo-source.lock.json`: lock legível por máquina da fonte Odoo selecionada.
 - `reproducibility/lab-environment.lock.json`: versões, digests e últimos aceites M1/M2 saneados do laboratório.
 - `reproducibility/model-selection.lock.json`: seleção histórica dos modelos, escopo atual somente DeepSeek e evidências pendentes para o freeze.

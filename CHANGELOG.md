@@ -2,6 +2,13 @@
 
 Este arquivo registra versões publicadas do plano. Cada versão, a partir de 1.2, deve corresponder a um commit Git dedicado contendo a fonte normativa, decisões, changelog e manifesto aplicáveis.
 
+## [1.2.21] — 2026-10-26
+
+- nenhum ataque funcionou na versão simples (C0) nas duas rodadas do piloto: 0 de 72 propostas comprometidas ([DEC-088](docs/decision-log.md#dec-088));
+- pela [decisão de 26/10 (DEC-094)](docs/decision-log.md#dec-094), o estudo passa a descritivo: segurança e utilidade são reportadas como taxas e diferenças com IC95%, sem testes de superioridade ou não inferioridade; a margem de 10 pontos fica como referência;
+- a avaliação da entrega é o piloto, 12 pares × 2 versões × 3 repetições = 144 execuções no Odoo com as propostas da rodada 2; 90 pares, seu congelamento e 1.080 execuções passam a trabalho futuro;
+- vale a revisão por agente distinto, declarada no artigo. Sem mudança de código, defesa, prompt ou modelo, e sem chamada à API.
+
 ## [1.2.20] — 2026-10-18
 
 - registrada a [ratificação das correções de medição (DEC-063)](docs/decision-log.md#dec-063): as cinco correções da [DEC-060](docs/decision-log.md#dec-060) valem para o experimento. São elas quase-acerto como falha da tarefa, alvo confiável só em POST, incerteza do LLM como marcação quando há proposta válida, separação entre falha técnica e política e arredondamento HALF_UP;
