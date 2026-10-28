@@ -1,12 +1,12 @@
 {
   "schema_version": "paper-validation/v1",
   "validated_on": "2026-10-27",
-  "decision": "DEC-094/095/096/097/098/099; user-requested editorial consolidation of audited results and five corrections",
+  "decision": "DEC-094/095/096/097/098/099; user-requested editorial consolidation of audited results and five corrections; three post-review text corrections (hard negatives, attack strategies, forced-proposal component check)",
   "plan_version": "1.2.21",
   "artifact": {
     "path": "paper/relatorio_tcc_ii.pdf",
-    "sha256": "a6631dc87709162cc75df9ec12c0a5ef4c6e2af038336a9165404fddcdb6c62d",
-    "bytes": 276181,
+    "sha256": "3c52aeb9881578e35459c6ca0dce4741e761055f3dd78a1823fba65fa5a600a6",
+    "bytes": 276441,
     "pages": 19,
     "page_size": "A4",
     "status": "working draft with audited Odoo results; final human approval pending"
@@ -36,14 +36,14 @@
       480,
       426,
       458,
-      491,
-      412,
+      490,
+      427,
       615,
       413,
       450,
       510,
-      579,
-      539,
+      582,
+      565,
       348,
       226
     ],
@@ -54,10 +54,10 @@
     "encrypted": false,
     "javascript": false
   },
-  "validation_command": "python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log .runtime/paper-build-20261027-odoo/main.log --report .runtime/paper-build-20261027-odoo/checks.json",
+  "validation_command": "python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log .runtime/paper-build-20261027-fix/main.log --report .runtime/paper-build-20261027-fix/checks.json",
   "visual_inspection": {
     "status": "PASS",
-    "pdf_sha256": "a6631dc87709162cc75df9ec12c0a5ef4c6e2af038336a9165404fddcdb6c62d",
+    "pdf_sha256": "3c52aeb9881578e35459c6ca0dce4741e761055f3dd78a1823fba65fa5a600a6",
     "pages_inspected": [
       1,
       2,
@@ -85,14 +85,20 @@
     "conclusion_and_references": "PASS",
     "header_only_or_residual_table_pages": 0,
     "detailed_result_table_page": 16,
-    "method": "All 19 final PDF pages rendered at 90 dpi and inspected in five contact sheets; page 16 also inspected separately. Images remain under .runtime."
+    "method": "Rebuild after three text corrections: changed pages 10, 11 and 16-18 rendered at 80 dpi and inspected individually (Discussion sentence shortened to avoid a one-word residual line at the top of page 18); all 19 pages rendered at 60 dpi. Images remain under .runtime."
   },
   "independent_text_review": {
     "status": "PASS",
     "reviewer": "Codex agent paper_validation_review, distinct from authors; GPT-6 family, exact backend not exposed",
     "scope": "Five corrections, numbers, confidence intervals, summaries, conclusions and final Introduction delta; source and extracted PDF checked",
     "pdf_sha256": "a6631dc87709162cc75df9ec12c0a5ef4c6e2af038336a9165404fddcdb6c62d",
-    "human_signature": false
+    "human_signature": false,
+    "post_review_changes": {
+      "pdf_sha256": "3c52aeb9881578e35459c6ca0dce4741e761055f3dd78a1823fba65fa5a600a6",
+      "author": "Claude Opus 5.5 coding assistant, at Gustavo request",
+      "changes": "Hard negatives 2 -> 4 (cohort .4 recipes: 8 ORDINARY, 4 HARD); five attack strategies listed as in the cohort; forced-proposal component check now states 11/12 denied and 1 accepted (document reference, A1), exploratory and outside the evaluation",
+      "independent_review": false
+    }
   },
   "metadata": {
     "title": "Desenvolvimento e implementação de uma arquitetura de proteção na integração de LLMs em ERPs: estudo de caso com Odoo e Contas a Pagar",
@@ -108,8 +114,8 @@
     "paper/referencias.bib": "9e448f74bee367e5536ea4fb14772d3c4207f22b7d85895444fa73cb7648e1a3",
     "paper/sections/01-introducao.tex": "94cfee555725f0bb5f3d8db8ab1862a01dd4b9c32b293f5b08a18dc7c56e5d74",
     "paper/sections/02-referencial.tex": "2acff57d946d0879e30a0afdb897d6aead3115e99a13d0fdc012354317600e84",
-    "paper/sections/03-metodologia.tex": "2593f108fc45ab11e24accbe71d4f52e893d5614554ace8f682d75b33455f6de",
-    "paper/sections/04-resultados.tex": "27eac271a036f4978f39ba236a6645cf3a78be6995ce61e74a432a30d2dd1d7a",
+    "paper/sections/03-metodologia.tex": "be0bd40f9ed125c4779701563e9b48d40c8238c24818b032be94735d0be7f134",
+    "paper/sections/04-resultados.tex": "6ff532b332418784c7c255ff2c0a1ba079e5369c96816c07e4e1ae02c4634af2",
     "paper/sections/05-conclusao.tex": "ba1f52e8a73f8ac1f0c22169068832a1f4ac0d3703769ddd795824a3b76010d1",
     "paper/sections/resumo-en.tex": "26ed942aa4cb4a2247c935d465ae42ac43c3584d0e7e9818d41a3a68161d8efb",
     "paper/sections/resumo-pt.tex": "0a38f995bf540b99db9ecdbdf81346bcb74f189b7432c1db01c056017ecf7fbe",
@@ -117,12 +123,12 @@
     "scripts/validate_current_docs.py": "23f161cadc29107034eecaefc757c7d566c7fa920803d06d37794dcdb183532b"
   },
   "build_evidence": {
-    "final_log_sha256": "b92de67b703f2b59fbba2ad944f07599a9067997f8ed010cf685b5c7d143f539",
+    "final_log_sha256": "81bd672f5c8062d80c581a7e892ee3423b07265faa5e0ad703e15873de0578c9",
     "bibliography_output_sha256": "ef2c564b7c0ce9fa6afc6aa303b75a0dd112f45c79f5edd99f6e0ae31d3859af",
     "output_pdf_matches_built_pdf": true,
     "logs_retained_outside_git": true,
-    "procedure": "pdfLaTeX -no-shell-escape, BibTeX, pdfLaTeX twice; final PDF validated and visually inspected from the same source tree",
-    "attempts_note": "Final rebuild includes the corrected cover and Introduction. Windows console printing was retried with UTF-8; no source, metric or experimental data was altered by that diagnostic."
+    "procedure": "pdfLaTeX -no-shell-escape, BibTeX, pdfLaTeX three more passes (no LaTeX warnings in final log); final PDF validated and visually inspected from the same source tree",
+    "attempts_note": "Rebuild after three text corrections in Methodology and Discussion; same TeX Live toolchain in Ubuntu/WSL. No experimental data, metric, hypothesis or defense changed."
   },
   "toolchain": {
     "pdflatex": "pdfTeX 1.40.25 / TeX Live 2023 (Debian), Ubuntu/WSL",

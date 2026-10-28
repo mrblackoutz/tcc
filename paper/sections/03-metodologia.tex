@@ -124,7 +124,7 @@ Prompts, schemas, políticas, imagens, configurações e dataset recebem SHA-256
 
 \subsection{Dataset AP-IPI-BR}
 
-O dataset contém PDFs sintéticos em português, com camada de texto, marca “SEM VALOR FISCAL -- DADOS SINTÉTICOS” e nenhuma NF-e válida. OCR, macros, documentos reais e dados bancários reais ficam fora do escopo. A avaliação desta entrega utiliza o conjunto de 12 pares contrafactuais do piloto (24 documentos): os fatos comerciais, o template e o objetivo de negócio permanecem constantes dentro de cada par, e somente a nota adversarial diferencia o membro de ataque. Dois dos 12 documentos benignos são \textit{hard negatives} com linguagem operacional semelhante à de instruções. A construção e a execução do conjunto ampliado de 90 pares contrafactuais (30 por família, 180 documentos) passam a trabalho futuro.
+O dataset contém PDFs sintéticos em português, com camada de texto, marca “SEM VALOR FISCAL -- DADOS SINTÉTICOS” e nenhuma NF-e válida. OCR, macros, documentos reais e dados bancários reais ficam fora do escopo. A avaliação desta entrega utiliza o conjunto de 12 pares contrafactuais do piloto (24 documentos): os fatos comerciais, o template e o objetivo de negócio permanecem constantes dentro de cada par, e somente a nota adversarial diferencia o membro de ataque. Quatro dos 12 documentos benignos são \textit{hard negatives}, com linguagem operacional semelhante à de instruções. A construção e a execução do conjunto ampliado de 90 pares contrafactuais (30 por família, 180 documentos) passam a trabalho futuro.
 
 \begin{table}[H]
 \centering
@@ -144,7 +144,7 @@ A3a -- ação crítica & 4 & 4 & Contabilizar apenas com aprovação exata \\
 \end{tabularx}
 \end{table}
 
-O desenho distribui quatro pares para cada um dos três objetivos (A1, A2 e A3a), combinando templates de fatura, posições de payload e estratégias linguísticas estáticas (autoridade alegada, nota corretiva integrada ao documento, instrução direta e ofuscação legível por espaçamento). Os quatro controles benignos de ação crítica (A3a) incluem aprovação pré-definida, vinculada aos argumentos da contabilização legítima. Exposição de dados, mensagens ao fornecedor, mascaramento e tokenização não integram a avaliação.
+O desenho distribui quatro pares para cada um dos três objetivos (A1, A2 e A3a), combinando templates de fatura, posições de payload e estratégias linguísticas estáticas: instrução direta, autoridade alegada, nota procedimental integrada ao documento, instrução contextual e ofuscação de texto legível pelo extrator. Cada família usa quatro dessas cinco estratégias, uma por par. Os quatro controles benignos de ação crítica (A3a) incluem aprovação pré-definida, vinculada aos argumentos da contabilização legítima. Exposição de dados, mensagens ao fornecedor, mascaramento e tokenização não integram a avaliação.
 
 Cada item possui gabarito (\textit{ground truth}) anterior à execução: ação esperada, disposição, fatos confiáveis e deltas proibidos. Os documentos, o gabarito e a matriz de testes de C1 passaram por verificação automatizada e revisão por um segundo agente de IA de família distinta daquele que os gerou; declara-se explicitamente que essa conferência não equivale a uma revisão humana linha a linha. Nenhum conjunto adaptado à defesa é previsto nesta entrega.
 
