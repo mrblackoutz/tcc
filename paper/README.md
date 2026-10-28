@@ -4,11 +4,13 @@ Este diretório contém a fonte editável do artigo científico estendido destin
 
 ## Estado atual
 
-A fonte corrente foi revisada em **26/10/2026** conforme o plano **v1.2.19** e o [corte de entrega (DEC-058)](../docs/decision-log.md#dec-058). Além das provas técnicas, ela reporta o estágio de propostas do piloto ([rodada 1](../docs/pilot-round1-propostas.md), [rodada 2](../docs/pilot-round2-resultado.md), [DEC-088](../docs/decision-log.md#dec-088)) e a [proposta de enquadramento estimativo](../docs/protocol.md#proposta-enquadramento-estimativo), registrada sem adoção. Efeito no estado do ERP, revisão nominal, freeze e coleta principal continuam pendentes; nenhum resultado confirmatório é reportado.
+A fonte corrente foi atualizada em **27/10/2026** com os [resultados do piloto no Odoo](../docs/pilot-state-resultado.md), a [DEC-098](../docs/decision-log.md#dec-098) e a [revisão independente](../docs/reviews/2026-10-27-piloto-concluido.md). A avaliação descritiva tem **12 pares, 24 documentos e 144 execuções**, com novas chamadas ao `deepseek-flash` dentro de cada slot; as duas rodadas anteriores de propostas são reportadas separadamente. Os ciclos foram tecnicamente válidos, o que não significa conclusão de todas as tarefas.
 
-O compromisso é um único modelo DeepSeek, 90 pares/180 documentos, C0/C1 e três repetições: **1.080 execuções principais**, mais **144 do piloto separado**, totalizando **1.224**, sem retries. Qwen3, ablação e ataques adaptados à defesa são trabalhos futuros, não blocos condicionais desta entrega. H4 deixa de ser hipótese de aceitabilidade e a eficiência será descritiva; RQ4/H5 ficam retiradas com IDs reservados. H1/H3/H2, a margem de −10 pontos percentuais, o pareamento e os gates de poder/intervalos permanecem. A revisão dirigida da literatura não é apresentada como revisão sistemática executada.
+No ERP, ASR-state foi 0/36 e UACR 0/12 em cada condição; BTSR foi 36/36 em C0 e 35/36 em C1, diferença de −2,8 pontos percentuais e IC95% BCa por par [−13,9; 0,0]. A falha foi saída fora do schema, sem bloqueio da política. Não se demonstra redução de ataques, equivalência de segurança ou não inferioridade. O texto declara amostra pequena, modelo único, enquadramento após o estágio de propostas, ausência de freeze formal e revisão por agentes sem assinatura humana.
 
-O PDF serve para revisão científica, editorial e de template com o grupo e o orientador, não para submissão final. Após qualquer edição de fonte, sua compilação, relatório e inspeção visual precisam ser renovados na mesma árvore; um `PASS` histórico não vale para a nova fonte.
+Foram corrigidos prompt/envelope comuns, origem das propostas, embaralhamento global, parada conservadora da captura, exceção do provedor e análise sem McNemar. A custódia é uma cópia local DPAPI com restauração verificada, sem imutabilidade ou proteção externa. Os 90 pares adicionais, Qwen3, ablação e ataques adaptados à defesa permanecem como trabalhos futuros. Não há campos de resultado por preencher.
+
+O PDF serve para revisão científica, editorial e de template com o grupo e o orientador. Após qualquer edição de fonte, sua compilação, relatório e inspeção visual precisam ser renovados na mesma árvore; um `PASS` histórico não vale para a nova fonte.
 
 ## Arquivos
 
@@ -32,7 +34,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\paper\build.ps1
 
 Arquivos auxiliares e logs ficam em `.runtime`, fora do Git. O script copia para este diretório somente o PDF final e executa a validação automaticamente.
 
-A compilação de 26/10/2026 tem **19 páginas**, Resumo de **242 palavras** e Abstract de **217**, com 20 citações e referências reconciliadas. Passou nos gates automáticos, metadados e inspeção visual das 19 páginas, sem caixas excedentes ou referências indefinidas. Os hashes dos fontes, PDF e log final estão em `validation-report.json`. Isso valida o artefato editorial desta revisão, não o conteúdo confirmatório.
+A compilação de **27/10/2026**, com TeX Live instalado no Ubuntu/WSL, tem **19 páginas**, Resumo de **229 palavras** e Abstract de **217**. Foram reconciliadas 20 citações e 20 referências; não há placeholders de resultados, caixas excedentes ou referências indefinidas. As 19 páginas foram inspecionadas, incluindo a tabela de resultados em detalhe. Fontes, PDF, log, versões e limites de aceite estão registrados em `validation-report.json`.
 
 Também é possível compilar com a toolchain TeX Live já instalada no Ubuntu/WSL, sem rede ou instalação de pacotes. A sequência é pdfLaTeX, BibTeX no diretório de saída e mais duas passagens de pdfLaTeX, com fontes e estilos resolvidos localmente. Usar `-no-shell-escape`, manter auxiliares em `.runtime` e registrar versões e hashes. Se faltar dependência, interromper e relatar; não ativar instalação automática durante a compilação.
 
@@ -61,4 +63,4 @@ O PDF original possuía título e autor de metadados não relacionados ao TCC. E
 
 ## Antes da submissão
 
-O artigo final deverá substituir as declarações “não executado” pelos resultados reais, com denominadores, missing, efeitos e IC95%. Também será necessário confirmar a extensão aceita pelo Oriente, contatos, política de IA, aprovação do orientador e aderência visual final ao arquivo disponibilizado na tarefa vigente. Consulte `SUBMISSION_CHECKLIST.md`.
+Os resultados do Odoo e os intervalos auditados estão preenchidos. Antes do envio, falta atender aos gates institucionais: extensão aceita, declaração de IA assinada, contatos, aprovação final do grupo/orientador e comparação com o arquivo de template vigente. Consulte `SUBMISSION_CHECKLIST.md`.

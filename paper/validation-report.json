@@ -1,15 +1,15 @@
 {
   "schema_version": "paper-validation/v1",
-  "validated_on": "2026-10-26",
-  "decision": "DEC-058; pilot proposal results from DEC-085, DEC-086 and DEC-088; directed literature review and critical matrix from DEC-092",
-  "plan_version": "1.2.19",
+  "validated_on": "2026-10-27",
+  "decision": "DEC-094/095/096/097/098/099; user-requested editorial consolidation of audited results and five corrections",
+  "plan_version": "1.2.21",
   "artifact": {
     "path": "paper/relatorio_tcc_ii.pdf",
-    "sha256": "1507f1fb3f6c8ca39c2283250d70aedacb1ac25bef910486d7d536d6bfb031cc",
-    "bytes": 259770,
+    "sha256": "a6631dc87709162cc75df9ec12c0a5ef4c6e2af038336a9165404fddcdb6c62d",
+    "bytes": 276181,
     "pages": 19,
     "page_size": "A4",
-    "status": "working draft; pilot proposal stage and directed literature review reported"
+    "status": "working draft with audited Odoo results; final human approval pending"
   },
   "automated_checks": {
     "status": "PASS",
@@ -17,42 +17,47 @@
     "citation_keys": 20,
     "bibliography_entries": 20,
     "internal_article_targets": 9,
-    "resumo_words": 242,
+    "resumo_words": 229,
     "abstract_words": 217,
     "overfull_boxes": 0,
     "underfull_boxes": 0,
     "undefined_citations_or_references": 0,
+    "pages": 19,
     "inherited_template_metadata": false,
     "required_main_headings": 6,
     "forbidden_placeholders": 0,
     "page_word_counts": [
-      354,
-      545,
-      603,
-      590,
-      560,
-      484,
-      468,
-      457,
-      456,
-      465,
-      406,
-      675,
-      561,
-      444,
-      546,
-      520,
-      592,
-      416,
-      292
+      328,
+      526,
+      593,
+      578,
+      563,
+      492,
+      480,
+      426,
+      458,
+      491,
+      412,
+      615,
+      413,
+      450,
+      510,
+      579,
+      539,
+      348,
+      226
     ],
     "pdf_text_and_metadata": "PASS",
+    "literal_result_placeholders_in_source": 0,
+    "literal_result_placeholders_in_pdf": 0,
+    "stale_pending_results_claims_in_pdf": 0,
     "encrypted": false,
     "javascript": false
   },
-  "validation_command": "python -X utf8 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log .runtime/paper-build/main.log",
+  "validation_command": "python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log .runtime/paper-build-20261027-odoo/main.log --report .runtime/paper-build-20261027-odoo/checks.json",
   "visual_inspection": {
     "status": "PASS",
+    "pdf_sha256": "a6631dc87709162cc75df9ec12c0a5ef4c6e2af038336a9165404fddcdb6c62d",
     "pages_inspected": [
       1,
       2,
@@ -78,79 +83,83 @@
     "dense_tables": "PASS",
     "section_transitions": "PASS",
     "conclusion_and_references": "PASS",
-    "intermediate_header_only_pages": 0,
-    "residual_table_line_pages": 0,
-    "method": "Poppler rendered all 19 final pages at 45 dpi in four contact sheets; cover, pilot results page and pending-results page (1, 15, 16) were also inspected at 70 dpi."
+    "header_only_or_residual_table_pages": 0,
+    "detailed_result_table_page": 16,
+    "method": "All 19 final PDF pages rendered at 90 dpi and inspected in five contact sheets; page 16 also inspected separately. Images remain under .runtime."
+  },
+  "independent_text_review": {
+    "status": "PASS",
+    "reviewer": "Codex agent paper_validation_review, distinct from authors; GPT-6 family, exact backend not exposed",
+    "scope": "Five corrections, numbers, confidence intervals, summaries, conclusions and final Introduction delta; source and extracted PDF checked",
+    "pdf_sha256": "a6631dc87709162cc75df9ec12c0a5ef4c6e2af038336a9165404fddcdb6c62d",
+    "human_signature": false
   },
   "metadata": {
     "title": "Desenvolvimento e implementação de uma arquitetura de proteção na integração de LLMs em ERPs: estudo de caso com Odoo e Contas a Pagar",
+    "subject": "Trabalho de Conclusão de Curso II em Ciência da Computação",
+    "author": "Felipe Ujvari Gasparino de Sousa; Gustavo Nascimento Siqueira; Thomaz de Souza Scopel; Mario Olimpio de Menezes",
     "creator": "Universidade Presbiteriana Mackenzie - Faculdade de Computação e Informática",
-    "javascript": false,
-    "encrypted": false
-  },
-  "institutional_sources": {
-    "template_doc_sha256": "56cb33c40e6c3d43ce809ba95999d04700da420db526bbc1e84ec627bb579945",
-    "template_reference_pdf_sha256": "18b5802047437639edf0bcd5e2cfbfa15106bf6c9d2bb4ad406e71ad1435074b",
-    "traceability": "reproducibility/institutional-sources.lock.json"
+    "producer": "pdfTeX-1.40.25"
   },
   "source_sha256": {
-    "paper/main.tex": "a879efdc460b734d7ad7332923c9320e2fdd71f3e1e8dffad667c3659e704263",
-    "paper/sections/01-introducao.tex": "af8353cedd8be8cc746a37c080ae9c3c1a02668976887c7ccce2f65c3ea58ded",
-    "paper/sections/02-referencial.tex": "2acff57d946d0879e30a0afdb897d6aead3115e99a13d0fdc012354317600e84",
-    "paper/sections/03-metodologia.tex": "55b1fc9cca8a0aa1ef63081dae1b973e39cca281e1a32cf2d7532a9d1f706c4e",
-    "paper/sections/04-resultados.tex": "9074942d35457629ea09add448d7bf54969fe2f9cc7f923141a79e59cdf1db92",
-    "paper/sections/05-conclusao.tex": "3b255bf0f3f2c7e678a638298f52945f61c22803b8d4a726a43a29e7ccbf3505",
-    "paper/sections/resumo-en.tex": "cd714ad2377ecdb30955b130a7c85c5ae0e2859e92de6794f2ebcc625147691d",
-    "paper/sections/resumo-pt.tex": "424503d76acc2e471c81a152443453df54cf4677ede0632101c4a9bab6eb965b",
-    "paper/referencias.bib": "9e448f74bee367e5536ea4fb14772d3c4207f22b7d85895444fa73cb7648e1a3",
     "paper/assets/fci-header.png": "ad7c11fbe2cbf8da370fecb8d2f0316eaef8bc962f8c26338ff5910cf1939d9c",
+    "paper/build.ps1": "b6b60167cb045436cef664acce497fbc379fc7b6219bb6f9a91b1d6d0e1c4b57",
+    "paper/main.tex": "6fce03d7edf3a8f5358831df6169f8479ce42b3e7b88ff82249fdb9eebf831a3",
+    "paper/referencias.bib": "9e448f74bee367e5536ea4fb14772d3c4207f22b7d85895444fa73cb7648e1a3",
+    "paper/sections/01-introducao.tex": "94cfee555725f0bb5f3d8db8ab1862a01dd4b9c32b293f5b08a18dc7c56e5d74",
+    "paper/sections/02-referencial.tex": "2acff57d946d0879e30a0afdb897d6aead3115e99a13d0fdc012354317600e84",
+    "paper/sections/03-metodologia.tex": "2593f108fc45ab11e24accbe71d4f52e893d5614554ace8f682d75b33455f6de",
+    "paper/sections/04-resultados.tex": "27eac271a036f4978f39ba236a6645cf3a78be6995ce61e74a432a30d2dd1d7a",
+    "paper/sections/05-conclusao.tex": "ba1f52e8a73f8ac1f0c22169068832a1f4ac0d3703769ddd795824a3b76010d1",
+    "paper/sections/resumo-en.tex": "26ed942aa4cb4a2247c935d465ae42ac43c3584d0e7e9818d41a3a68161d8efb",
+    "paper/sections/resumo-pt.tex": "0a38f995bf540b99db9ecdbdf81346bcb74f189b7432c1db01c056017ecf7fbe",
+    "paper/validate_paper.ps1": "af9e6438a657034ea3c709ea73c651dd3bc4cda153ebca111ef332a07968d7e1",
     "scripts/validate_current_docs.py": "23f161cadc29107034eecaefc757c7d566c7fa920803d06d37794dcdb183532b"
   },
   "build_evidence": {
-    "final_log_sha256": "4dc8469becbab6783ce43043df3d1eb09417350d62fd9b9da86786cbeedf3163",
-    "bibliography_output_sha256": "ea745caa3a868a0f7f2e4ec1500ff39287172aa467cdefdcb8df38edcc03f5e6",
+    "final_log_sha256": "b92de67b703f2b59fbba2ad944f07599a9067997f8ed010cf685b5c7d143f539",
+    "bibliography_output_sha256": "ef2c564b7c0ce9fa6afc6aa303b75a0dd112f45c79f5edd99f6e0ae31d3859af",
+    "output_pdf_matches_built_pdf": true,
     "logs_retained_outside_git": true,
-    "attempts_note": "Built with paper/build.ps1 on Windows MiKTeX. The first full validator run failed decoding pdftotext output as cp1252; rerunning Python in UTF-8 mode passed. No downloads or installations."
+    "procedure": "pdfLaTeX -no-shell-escape, BibTeX, pdfLaTeX twice; final PDF validated and visually inspected from the same source tree",
+    "attempts_note": "Final rebuild includes the corrected cover and Introduction. Windows console printing was retried with UTF-8; no source, metric or experimental data was altered by that diagnostic."
   },
   "toolchain": {
-    "pdflatex": "MiKTeX-pdfTeX 4.23 (MiKTeX 25.12), producer pdfTeX-1.40.28",
-    "bibtex": "MiKTeX-BibTeX 4.2 (MiKTeX 25.12)",
-    "pdfinfo": "Poppler 24.04.0",
-    "pdftotext": "from PATH at validation time",
-    "bibliography_style": "abntex2-alf 1.9.7",
-    "notice": "Existing local toolchain; no network, package downloads or installations. Auxiliaries and logs remain outside Git."
+    "pdflatex": "pdfTeX 1.40.25 / TeX Live 2023 (Debian), Ubuntu/WSL",
+    "bibtex": "BibTeX 0.99d / TeX Live 2023 (Debian)",
+    "pdfinfo": "Poppler 24.02.0",
+    "pdftotext": "Poppler 24.02.0",
+    "pdftoppm": "Poppler 24.02.0",
+    "python_validation": "Python 3.12.3 on Ubuntu/WSL",
+    "bibliography_style": "abntex2-alf",
+    "notice": "Existing local tools; no network, package installation or shell escape. Auxiliaries and preview images excluded from Git."
   },
   "scientific_boundary": {
-    "technical_evidence_date": "Historical M1/M2: 2026-08-31; later private checkpoints cited through DEC-057; pilot proposal stage rounds 1 and 2 on 2026-10-26 (DEC-083, DEC-085, DEC-088), not rerun by the paper build.",
-    "runtime_tests_rerun_in_this_revision": false,
     "experimental_runs_in_this_revision": 0,
-    "not_yet_measured": [
-      "C1 efficacy",
-      "ASR-state",
-      "BTSR in ERP state",
-      "UACR",
-      "end-to-end latency and cost"
-    ],
-    "scope": "One DeepSeek model; 90 pairs, 30 per A1/A2/A3a; 180 documents, C0/C1, three repetitions, 1080 principal runs plus 144 separate pilot runs; overhead descriptive. Qwen3, ablation and defense-aware are future work.",
-    "previous_technical_evidence": [
-      "M1 laboratory and reversible synthetic vendor-bill smoke",
-      "M2 PDF-to-typed-proposal-to-draft vertical slice",
-      "private C0/C1 paths with their own technical acceptance",
-      "native state capture and snapshot restoration",
-      "candidate records preserving failures"
-    ],
+    "runtime_tests_rerun_in_this_revision": false,
+    "integrated_run_id": "fc6da3e17e5c475fb1c072d1894f3d64",
+    "integrated_run_date": "2026-10-27",
+    "technically_valid_runs": 144,
+    "state_captures": 576,
+    "verified_restorations": 144,
+    "scientific_run": false,
+    "formal_experimental_freeze": false,
+    "proposal_rounds_and_odoo_measurements_reported_separately": true,
+    "reused_round2_proposals": false,
+    "human_signature": false,
     "measured_in_pilot": [
-      "ASR-proposal and ASR-policy, C0 and C1, two rounds",
-      "benign proposal exactness",
-      "LLM stage latency, tokens and cost"
-    ]
+      "ASR-state C0 0/36 and C1 0/36",
+      "UACR C0 0/12 and C1 0/12",
+      "BTSR C0 36/36 and C1 35/36; paired difference -2.8 pp, BCa CI95 [-13.9,0.0] pp",
+      "API and laboratory latency, token usage and approximate cost",
+      "approval behavior, model schema error and restoration integrity"
+    ],
+    "scope": "Descriptive, 12 pairs, one model, static synthetic attacks, three dependent repetitions. No demonstrated attack reduction, security equivalence or non-inferiority. Current-task edits change no experimental data, metric, hypothesis or defense.",
+    "custody": "Local Windows DPAPI CurrentUser copy, restore verified; same computer, not immutable, portable or offsite"
   },
   "submission_blockers": [
-    "group decision on the pending estimative framing proposal (docs/protocol.md section 5)",
-    "connect the integrated Odoo cycle to the 12 pilot pairs and measure ASR-state, UACR and BTSR",
-    "complete nominal review of documents, C1, protocol and analysis rules before freeze",
-    "generate and independently review final ground truth; freeze and execute the principal dataset, preserving raw custody",
-    "replace unmeasured result states with observed effects and intervals after principal execution",
-    "confirm accepted extension, AI disclosure policy and final group/advisor approval in Oriente"
+    "confirm accepted file extension and final template requirements",
+    "complete and sign the institutional AI-use declaration with authors and advisor",
+    "final group/advisor content approval and remaining submission checklist items"
   ]
 }
