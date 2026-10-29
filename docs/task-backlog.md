@@ -203,12 +203,12 @@ Não reiniciar coleta, ajustar notas/prompt/política ou mudar as fontes monitor
 | STAT-01 | P0 | Felipe | Gustavo | RUN-01 | Componente e adaptação descritiva do analisador revistos independentemente: 34 testes, oito contraprovas e BCa/fronteira recomputados dos registros. [Revisão do lote](reviews/2026-10-27-piloto-concluido.md). Sem testes confirmatórios; limites de amostra/completude declarados. | AGENT_REVIEWED |
 | FRZ-01 | P0 | Felipe | Thomaz | SCI-01–03/05–09, PILOT-06 | Aceitar perguntas, endpoints, denominadores e análise descritiva da DEC-094. Dez pontos percentuais é referência; sem testes H1/H2/H3 ou assinatura em nome de terceiros. | WAIT |
 | FRZ-02 | P0 | Felipe | Gustavo | DATA-04/06, PILOT-02 | Preservar hashes da coorte .4 de 12 pares efetivamente usada, fatos, codebook e manifestos; nenhum dataset final adicional. | WAIT |
-| FRZ-03 | P0 | Gustavo | Thomaz | G3-06, C0-04, C1-11, RUN-09 | Conferir modelo/prompts/schemas/política/tentativas/timeouts/imagens, supervisão e igualdade C0/C1 na configuração efetivamente usada; competência reportada pelo piloto, sem ajuste para atingir limiar. | WAIT |
+| FRZ-03 | P0 | Gustavo | Thomaz | G3-06, C0-04, C1-11, RUN-09 | Conferir modelo/prompts/schemas/política/tentativas/timeouts/imagens, supervisão e igualdade C0/C1 na configuração efetivamente usada; competência reportada pelo piloto, sem ajuste para atingir limiar. Registro em [configuração avaliada](configuracao-avaliada.md) (29/10), lido da evidência da execução `fc6da3e1…`: os 24 documentos tiveram requisição idêntica em C0 e C1. Falta Felipe e Thomaz conferirem com as seções 3.5 e 3.8 do artigo. | AWAITING_REVIEW |
 | FRZ-04 | P0 | Gustavo | Felipe | FRZ-03 | preservar artefatos OCI finais em custódia imutável ou registry aprovado; registrar digests | WAIT |
 | FRZ-05 | P0 | Thomaz | Gustavo | C1-10–11 | assinar ACLs, contexto, auto-post, idempotência, concorrência, replay e fail-closed | WAIT |
 | FRZ-06 | P0 | Felipe | Gustavo | SCI-03, STAT-01 | Aceitar tratamento efetivamente aplicado a falhas/ausências, paradas, reexecução e intervalos descritivos, com fronteiras explícitas e limites declarados. | WAIT |
 | FRZ-07 | P0 | Gustavo | Thomaz | G3-03, FRZ-03 | comprovar secrets/egress, rotação planejada e ausência de segredo/log bruto no pacote | WAIT |
-| FRZ-08 | P0 | Felipe | Thomaz/Gustavo | FRZ-01–07 | Fechar versão/tag da configuração avaliada e checklist de evidência. Pela DEC-094, não há abertura de novo corpus final ou coleta confirmatória posterior obrigatória. | WAIT |
+| FRZ-08 | P0 | Felipe | Thomaz/Gustavo | FRZ-01–07 | Fechar versão/tag da configuração avaliada e checklist de evidência. Pela DEC-094, não há abertura de novo corpus final ou coleta confirmatória posterior obrigatória. Tag `pilot-odoo-20261027` criada no commit de base `c6f95ec`, com checklist em [configuração avaliada](configuracao-avaliada.md); o fechamento depende de FRZ-01–07. | WAIT |
 
 ## 12. Experimentos
 

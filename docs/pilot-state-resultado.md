@@ -78,6 +78,7 @@ Siglas usadas aqui:
 
 ## Evidência
 
+- **Configuração completa:** modelo, prompt, política, imagens, conjunto de faturas, semente e hashes em [configuração avaliada](configuracao-avaliada.md).
 - **Execução, fora do Git:** `.runtime/state-oracle/fc6da3e17e5c475fb1c072d1894f3d64/`. Contém `evidence.json` e uma pasta por slot com o registro, o envelope, as capturas e o log do cliente do modelo.
 - **Hashes:**
   - baselines B0 `3d07664d…` e B1 `badc69d4…`;
