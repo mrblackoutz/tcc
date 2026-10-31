@@ -4,7 +4,7 @@ Este diretório contém a fonte editável do artigo científico estendido destin
 
 ## Estado atual
 
-A fonte corrente foi atualizada em **27/10/2026** com os [resultados do piloto no Odoo](../docs/pilot-state-resultado.md), a [DEC-098](../docs/decision-log.md#dec-098) e a [revisão independente](../docs/reviews/2026-10-27-piloto-concluido.md). A avaliação descritiva tem **12 pares, 24 documentos e 144 execuções**, com novas chamadas ao `deepseek-flash` dentro de cada slot; as duas rodadas anteriores de propostas são reportadas separadamente. Os ciclos foram tecnicamente válidos, o que não significa conclusão de todas as tarefas.
+A fonte corrente foi atualizada em **27/10/2026** com os [resultados do piloto no Odoo](../docs/pilot-state-resultado.md), a [DEC-098](../docs/decision-log.md#dec-098) e a [revisão independente](../docs/reviews/2026-10-27-piloto-concluido.md). Em **31/10/2026** recebeu os ajustes da [auditoria documental do Felipe](../docs/reviews/2026-10-29-auditoria-felipe.md). A avaliação descritiva tem **12 pares, 24 documentos e 144 execuções**, com novas chamadas ao `deepseek-flash` dentro de cada slot; as duas rodadas anteriores de propostas são reportadas separadamente. Os ciclos foram tecnicamente válidos, o que não significa conclusão de todas as tarefas.
 
 No ERP, ASR-state foi 0/36 e UACR 0/12 em cada condição; BTSR foi 36/36 em C0 e 35/36 em C1, diferença de −2,8 pontos percentuais e IC95% BCa por par [−13,9; 0,0]. A falha foi saída fora do schema, sem bloqueio da política. Não se demonstra redução de ataques, equivalência de segurança ou não inferioridade. O texto declara amostra pequena, modelo único, enquadramento após o estágio de propostas, ausência de freeze formal e revisão por agentes sem assinatura humana.
 
@@ -32,9 +32,9 @@ Pré-requisitos: MiKTeX com `pdflatex`, `bibtex`, `pdfinfo` e `pdftotext`.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\paper\build.ps1
 ```
 
-Arquivos auxiliares e logs ficam em `.runtime`, fora do Git. O script copia para este diretório somente o PDF final e executa a validação automaticamente.
+Arquivos auxiliares e logs ficam em `.runtime`, fora do Git. O script usa `-no-shell-escape`, impede o MiKTeX de instalar pacotes durante a compilação e valida o PDF novo antes de copiá-lo para este diretório. Se a validação reprovar, o PDF versionado fica como estava. Com `-SkipValidation`, o PDF novo fica só em `.runtime/paper-build`.
 
-A compilação de **27/10/2026**, com TeX Live instalado no Ubuntu/WSL, tem **19 páginas**, Resumo de **229 palavras** e Abstract de **217**. Foram reconciliadas 20 citações e 20 referências; não há placeholders de resultados, caixas excedentes ou referências indefinidas. As 19 páginas foram inspecionadas, incluindo a tabela de resultados em detalhe. Fontes, PDF, log, versões e limites de aceite estão registrados em `validation-report.json`.
+A compilação de **31/10/2026**, com TeX Live instalado no Ubuntu/WSL, tem **19 páginas**, Resumo de **244 palavras** e Abstract de **234**. Foram reconciliadas 20 citações e 20 referências; não há placeholders de resultados, caixas excedentes ou referências indefinidas. As 19 páginas foram inspecionadas, incluindo a tabela de resultados em detalhe. Fontes, PDF, log, versões e limites de aceite estão registrados em `validation-report.json`.
 
 Também é possível compilar com a toolchain TeX Live já instalada no Ubuntu/WSL, sem rede ou instalação de pacotes. A sequência é pdfLaTeX, BibTeX no diretório de saída e mais duas passagens de pdfLaTeX, com fontes e estilos resolvidos localmente. Usar `-no-shell-escape`, manter auxiliares em `.runtime` e registrar versões e hashes. Se faltar dependência, interromper e relatar; não ativar instalação automática durante a compilação.
 
@@ -45,6 +45,15 @@ python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf 
 ```
 
 O log precisa ser da mesma compilação do PDF. A inspeção visual continua obrigatória e é registrada separadamente.
+
+**Contagem de palavras:** `validate_paper.ps1` e `scripts/validate_current_docs.py` contam a partir da fonte do Resumo e do Abstract, com a mesma regra:
+
+- retiram comentários, comandos LaTeX, chaves, `~` e travessões;
+- contam sequências de letras e números;
+- hífen ou apóstrofo interno não divide a palavra: `deepseek-flash` e `C0's` contam uma vez;
+- números separados contam separadamente: `0/36` são duas palavras.
+
+As duas contagens devem coincidir; o valor registrado é o do `validation-report.json` da compilação corrente.
 
 Para validar um PDF já existente no Windows:
 

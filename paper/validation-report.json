@@ -1,15 +1,15 @@
 {
   "schema_version": "paper-validation/v1",
-  "validated_on": "2026-10-29",
-  "decision": "DEC-094/095/096/097/098/099; user-requested editorial consolidation of audited results and five corrections; three post-review text corrections (hard negatives, attack strategies, forced-proposal component check); schema-error passage shortened with the identical-request fact, tokens and cost corrected from the provider usage export",
+  "validated_on": "2026-10-31",
+  "decision": "DEC-094/095/096/097/098/099; user-requested editorial consolidation of audited results and five corrections; three post-review text corrections (hard negatives, attack strategies, forced-proposal component check); schema-error passage shortened with the identical-request fact, tokens and cost corrected from the provider usage export; Felipe's documentary audit of 29/10 applied on 31/10",
   "plan_version": "1.2.21",
   "artifact": {
     "path": "paper/relatorio_tcc_ii.pdf",
-    "sha256": "bdd362554a03e97bc3eb2c16601bec9231bb4e309592608ebc02b91361a7fe46",
-    "bytes": 276047,
+    "sha256": "1d64b019164d865819eb17882fff92ed0b56c9719b521fab31345c81f40b9cf3",
+    "bytes": 276320,
     "pages": 19,
     "page_size": "A4",
-    "status": "working draft with audited Odoo results; final human approval pending"
+    "status": "working draft with audited Odoo results and Felipe's audit adjustments; final human approval pending"
   },
   "automated_checks": {
     "status": "PASS",
@@ -17,8 +17,8 @@
     "citation_keys": 20,
     "bibliography_entries": 20,
     "internal_article_targets": 9,
-    "resumo_words": 238,
-    "abstract_words": 222,
+    "resumo_words": 244,
+    "abstract_words": 234,
     "overfull_boxes": 0,
     "underfull_boxes": 0,
     "undefined_citations_or_references": 0,
@@ -27,8 +27,8 @@
     "required_main_headings": 6,
     "forbidden_placeholders": 0,
     "page_word_counts": [
-      337,
-      531,
+      343,
+      543,
       593,
       578,
       563,
@@ -38,42 +38,33 @@
       458,
       490,
       427,
-      613,
-      430,
+      618,
+      458,
       450,
       510,
       607,
-      577,
-      348,
-      226
+      605,
+      329,
+      245
     ],
     "pdf_text_and_metadata": "PASS",
     "literal_result_placeholders_in_source": 0,
     "literal_result_placeholders_in_pdf": 0,
     "stale_pending_results_claims_in_pdf": 0,
     "encrypted": false,
-    "javascript": false
+    "javascript": false,
+    "windows_validate_paper_ps1": "PASS",
+    "word_count_rule": "validate_paper.ps1 and validate_current_docs.py count the Resumo/Abstract sources with the same rule (strip comments, LaTeX commands, braces, ~ and dashes; count letter/number runs; inner hyphen or apostrophe does not split); both report 244/234"
   },
-  "validation_command": "python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log .runtime/paper-build-20261029-schema/main.log --report .runtime/paper-build-20261029-schema/checks.json",
+  "validation_command": "python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log .runtime/paper-build-20261031-felipe/main.log --report .runtime/paper-build-20261031-felipe/checks.json",
   "visual_inspection": {
     "status": "PASS",
-    "pdf_sha256": "bdd362554a03e97bc3eb2c16601bec9231bb4e309592608ebc02b91361a7fe46",
+    "pdf_sha256": "1d64b019164d865819eb17882fff92ed0b56c9719b521fab31345c81f40b9cf3",
     "pages_inspected": [
       1,
       2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
       12,
       13,
-      14,
-      15,
       16,
       17,
       18,
@@ -85,7 +76,7 @@
     "conclusion_and_references": "PASS",
     "header_only_or_residual_table_pages": 0,
     "detailed_result_table_page": 16,
-    "method": "Rebuild on 29/10: changed pages 1, 2, 12, 16 and 17 rendered at 70-80 dpi and inspected individually; page 13 and all 19 pages rendered at 60 dpi. Page count and reference pages unchanged. Images remain under .runtime."
+    "method": "Rebuild on 31/10: pages 1, 2, 12, 13, 16, 17, 18 and 19 rendered at 80 dpi and inspected individually (cover, abstracts, changed method and conclusion pages, references); all 19 pages rendered at 60 dpi. Conclusion still ends on page 17. Images remain under .runtime."
   },
   "independent_text_review": {
     "status": "PASS",
@@ -109,26 +100,26 @@
   },
   "source_sha256": {
     "paper/assets/fci-header.png": "ad7c11fbe2cbf8da370fecb8d2f0316eaef8bc962f8c26338ff5910cf1939d9c",
-    "paper/build.ps1": "b6b60167cb045436cef664acce497fbc379fc7b6219bb6f9a91b1d6d0e1c4b57",
-    "paper/main.tex": "6fce03d7edf3a8f5358831df6169f8479ce42b3e7b88ff82249fdb9eebf831a3",
-    "paper/referencias.bib": "9e448f74bee367e5536ea4fb14772d3c4207f22b7d85895444fa73cb7648e1a3",
+    "paper/build.ps1": "81d44484d853d11477c52036fa8452687837725b388c38757dd223c3f5598779",
+    "paper/main.tex": "a1131d31d53c5a944e4d7339d0fe9c8707c5a441fa54b14b1e3aa06c79e66e76",
+    "paper/referencias.bib": "5d3312f63602949aefd0907facc7a8e6c9989bf926d621bfafa2202487bddf08",
     "paper/sections/01-introducao.tex": "94cfee555725f0bb5f3d8db8ab1862a01dd4b9c32b293f5b08a18dc7c56e5d74",
     "paper/sections/02-referencial.tex": "2acff57d946d0879e30a0afdb897d6aead3115e99a13d0fdc012354317600e84",
-    "paper/sections/03-metodologia.tex": "c353e6ecd9da84b0ec073867ae8883d5ac5e6dfb5ce1442ca8a934f89e641e9a",
-    "paper/sections/04-resultados.tex": "08aaa3dc950b1245e728792db29d65ce8f3283b47a02332f6feeb0f3781dab40",
-    "paper/sections/05-conclusao.tex": "07c56fddcff5e648a80063a4f3420116badca2d27b8dd22c19070f8acc37c4e7",
-    "paper/sections/resumo-en.tex": "69defd80b9629765219b6932826448f5d9d2a0f86ace02237641739c26f3c32e",
-    "paper/sections/resumo-pt.tex": "465b56722059ea26869f7cccfb5e724706da90503f09e4ac7da23b3fbc55b02c",
-    "paper/validate_paper.ps1": "af9e6438a657034ea3c709ea73c651dd3bc4cda153ebca111ef332a07968d7e1",
+    "paper/sections/03-metodologia.tex": "074bf95ddcf203cc6a06b0beafe6231410e68e69a309036a228240400618d1d9",
+    "paper/sections/04-resultados.tex": "d974a955ca6bae26b09009bb07f90c1aeaca1dff1f36a7386366cc273aa80409",
+    "paper/sections/05-conclusao.tex": "c1f7d02114bd184021f2a0d2554261c1c682e823cdfa9a04e48f87ad23834632",
+    "paper/sections/resumo-en.tex": "5975468c48944a547941e178306e42919e8977f1fe6a67703e65ff09e91b1d82",
+    "paper/sections/resumo-pt.tex": "2b1129fee47fd40c6c8a4dba750ed3b4105bfba3d37d486b355ec528947c0eb3",
+    "paper/validate_paper.ps1": "02a8944ca9a9511cd0e6fa5b10d99e7e09df094664fa5dc860f10ee1d15384fc",
     "scripts/validate_current_docs.py": "23f161cadc29107034eecaefc757c7d566c7fa920803d06d37794dcdb183532b"
   },
   "build_evidence": {
-    "final_log_sha256": "3d8df2d4fd77562b73c832c4a4117bebe4244d3cec37459dfbe6cdd12e656b98",
-    "bibliography_output_sha256": "ef2c564b7c0ce9fa6afc6aa303b75a0dd112f45c79f5edd99f6e0ae31d3859af",
+    "final_log_sha256": "d853fa92b5f33592e56a7bd44a3c89a298ff6af0b6bba30069452b2f8fc079c8",
+    "bibliography_output_sha256": "2a712c47559ef8125044485a6c99549360eec9b3618661fce14be5cf9f87ec72",
     "output_pdf_matches_built_pdf": true,
     "logs_retained_outside_git": true,
-    "procedure": "pdfLaTeX -no-shell-escape, BibTeX, pdfLaTeX three more passes (no LaTeX warnings in final log); final PDF validated and visually inspected from the same source tree",
-    "attempts_note": "Rebuild on 29/10 after text corrections in Abstract, Resumo, Methodology, Results and Conclusion; same TeX Live toolchain in Ubuntu/WSL. No experimental data, metric, hypothesis or defense changed."
+    "procedure": "pdfLaTeX -no-shell-escape, BibTeX, pdfLaTeX three more passes (no LaTeX warnings in final log); final PDF validated by validate_current_docs.py and validate_paper.ps1 and visually inspected from the same source tree",
+    "attempts_note": "Rebuild on 31/10 after Felipe's audit: BibTeX title protection, AgentDojo pages, clarity edits in Resumo/Abstract/Conclusion, static-attacks versus formal-freeze wording, draft-box toggle. paper/build.ps1 now passes -no-shell-escape and --disable-installer and validates the new PDF before replacing the versioned one; tested in isolated copies (failing Resumo of 284 words: exit 1, previous PDF unchanged; normal build: PASS and replaced). validate_paper.ps1 now reads pdfinfo output as UTF-8, which previously failed every PDF on Windows. No experimental data, metric, hypothesis or defense changed."
   },
   "toolchain": {
     "pdflatex": "pdfTeX 1.40.25 / TeX Live 2023 (Debian), Ubuntu/WSL",
@@ -164,8 +155,48 @@
     "custody": "Local Windows DPAPI CurrentUser copy, restore verified; same computer, not immutable, portable or offsite"
   },
   "submission_blockers": [
-    "confirm accepted file extension and final template requirements",
-    "complete and sign the institutional AI-use declaration with authors and advisor",
-    "final group/advisor content approval and remaining submission checklist items"
+    "edital V5 file not received: hash and own reading pending",
+    "AI-use declaration: generated PDF and the four signatures pending; annex not yet attached",
+    "accepted file extension and whether the annex counts toward 20 pages not confirmed",
+    "visual equivalence to the official template, second affiliation and contact e-mails need a human decision",
+    "final group and advisor approval; draft box removed only then (workingdraftfalse)"
+  ],
+  "human_reviews": [
+    {
+      "reviewer": "Felipe (co-author)",
+      "date": "2026-10-29",
+      "type": "documentary audit of text, references, scripts and submission process",
+      "pdf_sha256": "bdd362554a03e97bc3eb2c16601bec9231bb4e309592608ebc02b91361a7fe46",
+      "pdf_identification": "inferred from the figures the report cites (Resumo 238, Abstract 222, 217,862 tokens, about USD 0.03)",
+      "report_sha256": "6502698eb9b369680eda6fdffec0904d1849918bd15ebc823ddbad8fcbbef642",
+      "result": "numbers, scientific limits and the seven configuration items consistent; nine adjustments requested",
+      "record": "docs/reviews/2026-10-29-auditoria-felipe.md"
+    }
+  ],
+  "build_history": [
+    {
+      "pdf_sha256": "a6631dc87709162cc75df9ec12c0a5ef4c6e2af038336a9165404fddcdb6c62d",
+      "commit": "c565c3d",
+      "date": "2026-10-27",
+      "review": "independent agent review PASS (paper_validation_review)"
+    },
+    {
+      "pdf_sha256": "3c52aeb9881578e35459c6ca0dce4741e761055f3dd78a1823fba65fa5a600a6",
+      "commit": "8646578",
+      "date": "2026-10-27",
+      "review": "none; three post-review corrections"
+    },
+    {
+      "pdf_sha256": "bdd362554a03e97bc3eb2c16601bec9231bb4e309592608ebc02b91361a7fe46",
+      "commit": "1a339d2",
+      "date": "2026-10-29",
+      "review": "human documentary audit by Felipe on 2026-10-29"
+    },
+    {
+      "pdf_sha256": "1d64b019164d865819eb17882fff92ed0b56c9719b521fab31345c81f40b9cf3",
+      "commit": "this commit",
+      "date": "2026-10-31",
+      "review": "none yet; adjustments from Felipe's audit await his final check and Thomaz's review"
+    }
   ]
 }

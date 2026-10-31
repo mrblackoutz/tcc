@@ -59,6 +59,17 @@ Na V4, a declaração de uso de IA é obrigatória para o TCC II. Fluxo: (1) um 
 
 O edital não informa a extensão de arquivo aceita para o TCC II. Não presumir DOC, DOCX ou PDF: confirmar na tarefa do Oriente e registrar a resposta antes de gerar o pacote de submissão.
 
+**Edital V5, informado por Felipe em 29/10/2026.** Segundo a [auditoria do Felipe](reviews/2026-10-29-auditoria-felipe.md), a p. 7 do V5 confirma:
+
+- artigo de 10 a 20 páginas;
+- template do Oriente;
+- submissão de 03 a 09/11/2026;
+- declaração de IA assinada pelos integrantes e pelo orientador, anexada ao final do artigo.
+
+O V5 também não diz qual extensão de arquivo é aceita nem se o anexo conta nas 20 páginas. O arquivo do V5 não foi recebido. Por isso o hash e a leitura própria ficam pendentes, e o V4 continua sendo a última fonte registrada em `reproducibility/institutional-sources.lock.json`.
+
+Situação da declaração, segundo Felipe: o formulário de IA foi preenchido e depois removido. Falta confirmar se o PDF gerado foi baixado ou chegou por e-mail e colher as assinaturas. Sem cópia, pedir pela coordenação, sem presumir que o formulário removido invalide ou comprove o envio.
+
 ## 5. Uso correto do template
 
 O arquivo `.doc` recebido é a autoridade de layout. Não reconstruir o artigo a partir do gerador do plano-mestre e não normalizar estilos indiscriminadamente. A inspeção técnica encontrou A4, uma coluna, corpo predominantemente em Times 12 justificado e espaçamento simples, título centralizado em 16 pontos e seções em 14 pontos. As margens observadas foram aproximadamente 3,25 cm superior, 2,0 cm direita, 2,2 cm inferior e 2,5 cm esquerda. Esses valores são informativos; a cópia do arquivo-base é que preserva a configuração normativa.
@@ -117,7 +128,8 @@ Para conceito Excelente ou Muito Bom, o termo de autorização do Adelpha deve s
 - [ ] obter Regulamento Geral e Guia Geral de TCC vigentes;
 - [ ] confirmar a extensão aceita pela tarefa de submissão no Oriente;
 - [x] política institucional de uso e declaração de IA: definida no edital V4 (Anexo I da RE-CONSU-017/2026, anexado ao final do artigo);
-- [ ] preencher, assinar (três alunos e orientador) e anexar a declaração de uso de IA;
+- [ ] registrar o edital V5 (arquivo e hash), citado na auditoria do Felipe de 29/10/2026;
+- [ ] preencher, assinar (três alunos e orientador) e anexar a declaração de uso de IA — formulário preenchido e depois removido, segundo Felipe; falta o PDF gerado e as assinaturas;
 - [ ] confirmar se o anexo da declaração conta no limite de 20 páginas;
 - [ ] confirmar janela, horários e elegibilidade dos avaliadores da banca diante do erro `31/11/2026` e das condições PPI/PPP/PPA;
 - [ ] confirmar condição PPI/PPP e dados institucionais do orientador;

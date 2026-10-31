@@ -111,12 +111,14 @@ Os caminhos entre `<>` são os derivados do Odoo da [DEC-090](decision-log.md#de
 
 Felipe e Thomaz conferem se o artigo diz o mesmo que esta página e marcam cada item. Se algo divergir, anotem página, trecho e diferença.
 
+Felipe conferiu os sete itens em 29/10/2026, na [auditoria documental](reviews/2026-10-29-auditoria-felipe.md). A conferência é documental; os registros brutos foram validados na [revisão independente da execução](reviews/2026-10-27-piloto-concluido.md). Falta a coluna do Thomaz.
+
 | Conferir no artigo | Seção e página do PDF | Valor nesta página | Felipe | Thomaz |
 |---|---|---|---|---|
-| Commit do Odoo, PostgreSQL 18 e gateway Python 3.12 | 3.5, p. 10 | seção "Odoo, banco e imagens" | [ ] | [ ] |
-| Modelo `deepseek-flash`, temperatura 0, raciocínio desligado, 2.048 tokens | 3.5, p. 10 | seção "Modelo" | [ ] | [ ] |
-| Prompt `ap-task-prompt/v1`, igual em C0 e C1 | 3.5, p. 10 | seção "Prompt e schema" | [ ] | [ ] |
-| 12 pares, 24 documentos, 3 repetições, 144 execuções | 3.8, p. 12 | seção "Ordem e análise" | [ ] | [ ] |
-| Sorteio único com semente 2026102701 | 3.8, p. 12 | seção "Ordem e análise" | [ ] | [ ] |
-| Tentativa parcial excluída (36 chamadas cobradas) | 3.8, p. 12 | seção "Execução" | [ ] | [ ] |
-| Bootstrap com 10.000 réplicas, semente 2026102801 | 3.8, p. 12 | seção "Ordem e análise" | [ ] | [ ] |
+| Commit do Odoo, PostgreSQL 18 e gateway Python 3.12 | 3.5, p. 10 | seção "Odoo, banco e imagens" | [x] | [ ] |
+| Modelo `deepseek-flash`, temperatura 0, raciocínio desligado, 2.048 tokens | 3.5, p. 10 | seção "Modelo" | [x] | [ ] |
+| Prompt `ap-task-prompt/v1`, igual em C0 e C1 | 3.5, p. 10 | seção "Prompt e schema" | [x] | [ ] |
+| 12 pares, 24 documentos, 3 repetições, 144 execuções | 3.8, p. 12 | seção "Ordem e análise" | [x] | [ ] |
+| Sorteio único com semente 2026102701 | 3.8, p. 12 | seção "Ordem e análise" | [x] | [ ] |
+| Tentativa parcial excluída (36 chamadas cobradas) | 3.8, p. 12 | seção "Execução" | [x] | [ ] |
+| Bootstrap com 10.000 réplicas, semente 2026102801 | 3.8, p. 12 | seção "Ordem e análise" | [x] | [ ] |

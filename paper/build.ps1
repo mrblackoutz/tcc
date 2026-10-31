@@ -40,7 +40,7 @@ try {
     Push-Location $paperDir
     try {
         Invoke-Checked -Description 'First pdfLaTeX pass' -Command {
-            & pdflatex -interaction=nonstopmode -halt-on-error -file-line-error -recorder "-output-directory=$runtimeDir" main.tex
+            & pdflatex --disable-installer -no-shell-escape -interaction=nonstopmode -halt-on-error -file-line-error -recorder "-output-directory=$runtimeDir" main.tex
         }
     }
     finally {
@@ -50,7 +50,7 @@ try {
     Push-Location $runtimeDir
     try {
         Invoke-Checked -Description 'BibTeX pass' -Command {
-            & bibtex main
+            & bibtex --disable-installer main
         }
     }
     finally {
@@ -61,7 +61,7 @@ try {
         Push-Location $paperDir
         try {
             Invoke-Checked -Description "pdfLaTeX pass $pass" -Command {
-                & pdflatex -interaction=nonstopmode -halt-on-error -file-line-error -recorder "-output-directory=$runtimeDir" main.tex
+                & pdflatex --disable-installer -no-shell-escape -interaction=nonstopmode -halt-on-error -file-line-error -recorder "-output-directory=$runtimeDir" main.tex
             }
         }
         finally {
@@ -79,21 +79,27 @@ try {
     if (-not (Test-Path -LiteralPath $builtPdf)) {
         throw "Expected PDF was not produced: $builtPdf"
     }
-
-    Copy-Item -LiteralPath $builtPdf -Destination $outputPdf -Force
 }
 finally {
     $env:TEXINPUTS = $oldTexInputs
     $env:BIBINPUTS = $oldBibInputs
 }
 
-if (-not $SkipValidation) {
-    & (Join-Path $paperDir 'validate_paper.ps1') -PdfPath $outputPdf
-    if ($LASTEXITCODE -ne 0) {
-        throw "Paper validation failed with exit code $LASTEXITCODE."
-    }
+# The versioned PDF is replaced only after the new build passes validation.
+if ($SkipValidation) {
+    $pdfHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $builtPdf).Hash.ToLowerInvariant()
+    Write-Output "Paper build: NOT VALIDATED; $outputPdf was left unchanged"
+    Write-Output "PDF: $builtPdf"
+    Write-Output "SHA-256: $pdfHash"
+    exit 0
 }
 
+& (Join-Path $paperDir 'validate_paper.ps1') -PdfPath $builtPdf
+if ($LASTEXITCODE -ne 0) {
+    throw "Paper validation failed with exit code $LASTEXITCODE; $outputPdf was left unchanged."
+}
+
+Copy-Item -LiteralPath $builtPdf -Destination $outputPdf -Force
 $pdfHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $outputPdf).Hash.ToLowerInvariant()
 Write-Output "Paper build: PASS"
 Write-Output "PDF: $outputPdf"

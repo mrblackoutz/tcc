@@ -24,6 +24,8 @@
 \definecolor{MackenzieRed}{RGB}{235,0,40}
 \definecolor{LinkBlue}{RGB}{0,61,165}
 \definecolor{DraftGray}{RGB}{246,246,246}
+\newif\ifworkingdraft
+\workingdrafttrue % trocar para \workingdraftfalse somente na versão final aprovada pelo grupo e pelo orientador
 
 \geometry{
   top=3.15cm,
@@ -121,11 +123,13 @@
   \vspace{0.55cm}
   2026
 
+  \ifworkingdraft
   \vspace{0.65cm}
 
   \fcolorbox{black!25}{DraftGray}{%
     \parbox{0.91\textwidth}{\centering\small
-      Versão de trabalho, revisada em 27 de outubro de 2026. Contém os resultados auditados de 144 execuções no Odoo, com análise descritiva de segurança e utilidade. Aprovação final do grupo e do orientador pendente.}}
+      Versão de trabalho, revisada em 31 de outubro de 2026. Contém os resultados auditados de 144 execuções no Odoo, com análise descritiva de segurança e utilidade. Aprovação final do grupo e do orientador pendente.}}
+  \fi
 \end{center}
 
 \vspace{0.75cm}

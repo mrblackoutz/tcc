@@ -4,6 +4,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# pdfinfo prints metadata in UTF-8; Windows PowerShell would decode it with the OEM code page.
+[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
 $paperDir = $PSScriptRoot
 $projectRoot = Split-Path -Parent $paperDir
 $validationDir = Join-Path $projectRoot '.runtime\paper-validation'
