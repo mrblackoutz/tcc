@@ -155,9 +155,7 @@
     "custody": "Local Windows DPAPI CurrentUser copy, restore verified; same computer, not immutable, portable or offsite"
   },
   "submission_blockers": [
-    "edital V5 file not received: hash and own reading pending",
-    "AI-use declaration: generated PDF and the four signatures pending; annex not yet attached",
-    "accepted file extension and whether the annex counts toward 20 pages not confirmed",
+    "AI-use declaration: form to submit, generated PDF and the four signatures pending; annex not yet attached",
     "visual equivalence to the official template, second affiliation and contact e-mails need a human decision",
     "final group and advisor approval; draft box removed only then (workingdraftfalse)"
   ],
@@ -198,5 +196,10 @@
       "date": "2026-10-31",
       "review": "none yet; adjustments from Felipe's audit await his final check and Thomaz's review"
     }
-  ]
+  ],
+  "submission_facts": {
+    "file_format": "PDF",
+    "ai_declaration_annex_counts_toward_20_pages": false,
+    "source": "informed by Gustavo on 2026-10-31; edital V5 registered (sha256 440266cb815727587d5af863c3d66e8526c860117252ab439d0ead300fbfdeae)"
+  }
 }

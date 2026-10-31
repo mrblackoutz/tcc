@@ -1,6 +1,6 @@
 # Matriz de conformidade institucional — TCC II FCI 2026/2
 
-**Status da auditoria:** edital semestral e template de artigo conferidos em 30/08/2026; edital V4 conferido em 27/10/2026; lacunas residuais identificadas.
+**Status da auditoria:** edital semestral e template de artigo conferidos em 30/08/2026; edital V4 conferido em 27/10/2026; edital V5 conferido em 31/10/2026; lacunas residuais identificadas.
 
 **Decisões vinculadas:** DEC-010 / D14 e DEC-011 / D15.
 
@@ -15,7 +15,8 @@ O plano-mestre não é o arquivo de submissão. Ele preserva a especificação c
 | Fonte | Identidade observada | Papel | Estado |
 |---|---|---|---|
 | `assets/EditalTCC.pdf` | `EditalTCC_2026_2-V1`, 16 páginas, criado em 17/08/2026 | regras e calendário de 2026/2 | substituído pela V4 |
-| `EditalTCC_2026_2-V4.pdf` (cópia local ignorada) | 17 páginas, criado em 09/09/2026, recebido em 27/10/2026 | edital vigente de 2026/2 | auditado |
+| `EditalTCC_2026_2-V4.pdf` (cópia local ignorada) | 17 páginas, criado em 09/09/2026, recebido em 27/10/2026 | regras e calendário de 2026/2 | substituído pela V5 |
+| `EditalTCC_2026_2-V5.pdf` (cópia local ignorada) | 17 páginas, criado em 06/10/2026, recebido em 31/10/2026, SHA-256 `440266cb81572758…` | edital vigente de 2026/2 | auditado; difere da V4 só na data das bancas |
 | `TemplateArtigo_TCC_FCI_2026.doc` | Word legado, quatro páginas | arquivo-base editável do artigo | auditado em modo somente leitura |
 | `TemplateArtigo_TCC_FCI_2026.pdf` | criado em 15/08/2026, quatro páginas | referência visual e textual | auditado |
 | `src/relatorio_tcc_fci.tex` | fonte histórica do TCC I | continuidade de conteúdo; não é o template TCC II vigente | auditado |
@@ -53,11 +54,11 @@ O cadastro do grupo no Oriente e o requerimento no Portal do Aluno devem ser rea
 | Referências bibliográficas | ABNT NBR 6023:2018; somente obras citadas | auditoria bidirecional citação↔referência |
 | Formato | template disponibilizado no Oriente | comparação visual e checklist assinado |
 | Submissão | tarefa do Oriente entre 03 e 09/11/2026 | recibo de envio preservado |
-| Declaração de uso de IA | Anexo I da Resolução RE-CONSU-017/2026, preenchido no formulário REDCap indicado no edital, baixado, assinado pelos três alunos e pelo orientador e anexado ao final do artigo (edital V4) | PDF assinado anexado ao arquivo submetido |
+| Declaração de uso de IA | Anexo I da Resolução RE-CONSU-017/2026, preenchido no formulário REDCap indicado no edital, baixado, assinado pelos três alunos e pelo orientador e anexado ao final do artigo (editais V4 e V5) | PDF assinado anexado ao arquivo submetido |
 
-Na V4, a declaração de uso de IA é obrigatória para o TCC II. Fluxo: (1) um aluno preenche o formulário do Anexo I declarando o uso de IA no trabalho; (2) baixa o documento gerado, que também chega por e-mail; (3) todos os alunos e o orientador assinam; (4) o documento assinado vai como anexo no final do artigo. A base para as respostas é `docs/ai-usage.md`. O edital não diz se esse anexo conta nas 20 páginas; até confirmar, manter o corpo do artigo com folga.
+Na V4, a declaração de uso de IA é obrigatória para o TCC II. Fluxo: (1) um aluno preenche o formulário do Anexo I declarando o uso de IA no trabalho; (2) baixa o documento gerado, que também chega por e-mail; (3) todos os alunos e o orientador assinam; (4) o documento assinado vai como anexo no final do artigo. A base para as respostas é `docs/ai-usage.md`. O edital não diz se esse anexo conta nas 20 páginas. Em 31/10/2026, Gustavo informou que o anexo **não conta** nas páginas do artigo. As respostas do formulário estão rascunhadas em [respostas da declaração de IA](declaracao-ia-respostas.md).
 
-O edital não informa a extensão de arquivo aceita para o TCC II. Não presumir DOC, DOCX ou PDF: confirmar na tarefa do Oriente e registrar a resposta antes de gerar o pacote de submissão.
+O edital não informa a extensão de arquivo aceita para o TCC II. Não presumir DOC, DOCX ou PDF: confirmar na tarefa do Oriente e registrar a resposta antes de gerar o pacote de submissão. As duas menções a PDF no edital se referem ao TCC I. Em 31/10/2026, Gustavo informou que a submissão do artigo do TCC II é em **PDF**.
 
 **Edital V5, informado por Felipe em 29/10/2026.** Segundo a [auditoria do Felipe](reviews/2026-10-29-auditoria-felipe.md), a p. 7 do V5 confirma:
 
@@ -66,7 +67,7 @@ O edital não informa a extensão de arquivo aceita para o TCC II. Não presumir
 - submissão de 03 a 09/11/2026;
 - declaração de IA assinada pelos integrantes e pelo orientador, anexada ao final do artigo.
 
-O V5 também não diz qual extensão de arquivo é aceita nem se o anexo conta nas 20 páginas. O arquivo do V5 não foi recebido. Por isso o hash e a leitura própria ficam pendentes, e o V4 continua sendo a última fonte registrada em `reproducibility/institutional-sources.lock.json`.
+O V5 também não diz qual extensão de arquivo é aceita nem se o anexo conta nas 20 páginas. O arquivo do V5 foi recebido em 31/10/2026 e registrado em `reproducibility/institutional-sources.lock.json` (17 páginas, SHA-256 `440266cb81572758…`). Comparado com o V4, a única mudança de conteúdo é a correção da data inexistente `31/11/2026` para `30/11/2026` no calendário das bancas, nas duas vezes em que aparece.
 
 Situação da declaração, segundo Felipe: o formulário de IA foi preenchido e depois removido. Falta confirmar se o PDF gerado foi baixado ou chegou por e-mail e colher as assinaturas. Sem cópia, pedir pela coordenação, sem presumir que o formulário removido invalide ou comprove o envio.
 
@@ -103,12 +104,12 @@ Meta editorial: trabalhar para 18–19 páginas, preservando margem para correç
 | Submissão inicial do artigo | 03–09/11/2026 | arquivo aprovado pelo grupo até 02/11; submeter até 08/11 |
 | Indicação dos avaliadores | 03–11/11/2026 | acompanhar com o orientador |
 | Divulgação das bancas | até 13/11/2026 | registrar data e sala |
-| Banca | calendário consolidado: 16/11–01/12/2026 | confirmar no Oriente devido ao erro de data do edital |
+| Banca | 16 a 27/11/2026 fora do horário de aula, com avaliadores PPI/PPP; 30/11 e 01/12/2026 em qualquer horário, podendo ter avaliadores PPA (V5) | confirmar data, sala e avaliadores no Oriente |
 | Artigo corrigido | até 04/12/2026 | revisão do grupo até 03/12 |
 | Termo Adelpha, quando aplicável | até 04/12/2026 | decidir publicação com o orientador antes de assinar |
 | Anuência final do orientador | até 07/12/2026 | preservar confirmação |
 
-O edital associa o período de 16 a 27/11 a bancas fora do horário de aula e a avaliadores nas condições PPI/PPP. Em outro trecho, associa outros horários e a condição PPA ao intervalo malformado `31/11–01/12`. Como `31/11/2026` é uma data inexistente e o calendário consolidado informa bancas entre 16/11 e 01/12, a janela, os horários e a elegibilidade aplicável dos avaliadores devem ser confirmados conjuntamente no Oriente; este documento não corrige a fonte silenciosamente.
+O edital associa o período de 16 a 27/11 a bancas fora do horário de aula e a avaliadores nas condições PPI/PPP. Em outro trecho, associa outros horários e a condição PPA ao intervalo malformado `31/11–01/12`. Como `31/11/2026` é uma data inexistente e o calendário consolidado informa bancas entre 16/11 e 01/12, a janela, os horários e a elegibilidade aplicável dos avaliadores devem ser confirmados conjuntamente no Oriente; este documento não corrige a fonte silenciosamente. O V5 corrigiu o intervalo para 30/11 e 01/12/2026; horários e elegibilidade continuam a confirmar.
 
 ## 8. Apresentação, avaliação e meta de excelência
 
@@ -126,12 +127,12 @@ Para conceito Excelente ou Muito Bom, o termo de autorização do Adelpha deve s
 ## 9. Pendências residuais
 
 - [ ] obter Regulamento Geral e Guia Geral de TCC vigentes;
-- [ ] confirmar a extensão aceita pela tarefa de submissão no Oriente;
+- [x] confirmar a extensão aceita pela tarefa de submissão no Oriente: PDF (informado por Gustavo em 31/10/2026);
 - [x] política institucional de uso e declaração de IA: definida no edital V4 (Anexo I da RE-CONSU-017/2026, anexado ao final do artigo);
-- [ ] registrar o edital V5 (arquivo e hash), citado na auditoria do Felipe de 29/10/2026;
-- [ ] preencher, assinar (três alunos e orientador) e anexar a declaração de uso de IA — formulário preenchido e depois removido, segundo Felipe; falta o PDF gerado e as assinaturas;
-- [ ] confirmar se o anexo da declaração conta no limite de 20 páginas;
-- [ ] confirmar janela, horários e elegibilidade dos avaliadores da banca diante do erro `31/11/2026` e das condições PPI/PPP/PPA;
+- [x] registrar o edital V5 (arquivo e hash), citado na auditoria do Felipe de 29/10/2026: registrado em 31/10/2026;
+- [ ] preencher, assinar (três alunos e orientador) e anexar a declaração de uso de IA — formulário preenchido e depois removido, segundo Felipe; respostas rascunhadas em [respostas da declaração de IA](declaracao-ia-respostas.md) em 31/10; falta enviar, baixar o PDF gerado e colher as assinaturas;
+- [x] confirmar se o anexo da declaração conta no limite de 20 páginas: não conta (informado por Gustavo em 31/10/2026);
+- [ ] confirmar horários e elegibilidade dos avaliadores da banca (PPI/PPP/PPA); o V5 corrigiu a data inexistente `31/11/2026` para `30/11/2026`;
 - [ ] confirmar condição PPI/PPP e dados institucionais do orientador;
 - [ ] confirmar formalmente o alinhamento do tema à área ou projeto de pesquisa do orientador;
 - [x] atribuir papéis P1/P2/P3 nominalmente conforme DEC-021; disponibilidade será revista nos checkpoints semanais;

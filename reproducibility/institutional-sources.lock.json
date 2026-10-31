@@ -50,7 +50,7 @@
     {
       "id": "fci_tcc_notice_2026_2_v4",
       "relative_path": ".runtime/institutional/EditalTCC_2026_2-V4.pdf",
-      "role": "edital semestral vigente; substitui a V1 para regras e calendario de 2026/2",
+      "role": "edital semestral anterior; substituido pela V5 em 31/10/2026",
       "bytes": 400972,
       "pages": 17,
       "document_title": "EditalTCC_2026_2-V4",
@@ -59,6 +59,19 @@
       "received_on": "2026-10-27",
       "tracking_status": "ignored_local_copy",
       "change_note": "Em relacao a V1, o TCC II passa a exigir a Declaracao de Uso de Sistemas de IA (Anexo I da Resolucao RE-CONSU-017/2026), preenchida no formulario REDCap, assinada pelos alunos e pelo orientador e anexada ao final do artigo. Prazos, extensao de 10 a 20 paginas, banca e nota permanecem iguais; a data inexistente 31/11/2026 continua no texto."
+    },
+    {
+      "id": "fci_tcc_notice_2026_2_v5",
+      "relative_path": ".runtime/institutional/EditalTCC_2026_2-V5.pdf",
+      "role": "edital semestral vigente; substitui a V4 para regras e calendario de 2026/2",
+      "bytes": 383322,
+      "pages": 17,
+      "document_title": "EditalTCC_2026_2-V5",
+      "document_created_at": "2026-10-06T08:42:50-03:00",
+      "sha256": "440266cb815727587d5af863c3d66e8526c860117252ab439d0ead300fbfdeae",
+      "received_on": "2026-10-31",
+      "tracking_status": "ignored_local_copy",
+      "change_note": "Em relacao a V4, a unica mudanca de conteudo e a correcao da data inexistente 31/11/2026 para 30/11/2026 no calendario das bancas, nas duas ocorrencias. Prazos, extensao de 10 a 20 paginas e a Declaracao de Uso de IA (Anexo I, com copia enviada ao e-mail informado no formulario) permanecem iguais. As mencoes a PDF referem-se ao TCC I; o edital nao informa o formato do artigo do TCC II nem se o anexo conta nas 20 paginas."
     },
     {
       "id": "fci_article_template_2026_doc",
@@ -110,16 +123,26 @@
   },
   "known_anomalies": [
     "O PDF do template possui titulo de metadado nao relacionado e autoria pessoal herdada; esses metadados nao podem ser propagados.",
-    "O edital associa 16/11 a 27/11 a horarios fora das aulas e avaliadores PPI/PPP, mas outro trecho associa outros horarios e PPA ao intervalo impossivel 31/11 a 01/12; janela, horarios e elegibilidade exigem confirmacao no Oriente.",
+    "Ate a V4, o edital associava outros horarios e avaliadores PPA ao intervalo impossivel 31/11 a 01/12; a V5 corrige para 30/11 e 01/12/2026. Horarios e elegibilidade dos avaliadores ainda exigem confirmacao no Oriente.",
     "O pacote nao contem o Regulamento Geral de TCC nem o Guia Geral de TCC citados pelo edital.",
     "A pasta Latex do template recebido esta vazia; o arquivo TeX do TCC I nao e template oficial de 2026."
   ],
   "open_confirmations": [
-    "extensao de arquivo aceita pela tarefa de TCC II no Oriente",
     "Regulamento Geral e Guia Geral de TCC vigentes",
-    "se a Declaracao de Uso de IA (Anexo I, definida no edital V4) conta nas 20 paginas do artigo",
-    "janela, horarios e elegibilidade dos avaliadores da banca diante do erro 31/11 e das condicoes PPI/PPP/PPA",
+    "horarios e elegibilidade dos avaliadores da banca (PPI/PPP/PPA), com o intervalo de 30/11 e 01/12 corrigido na V5",
     "alinhamento do tema com a area ou projeto de pesquisa do orientador",
     "condicao PPI ou PPP e dados institucionais do orientador"
+  ],
+  "resolved_confirmations": [
+    {
+      "item": "extensao de arquivo aceita para o artigo do TCC II",
+      "answer": "PDF",
+      "source": "informado por Gustavo (P3) em 2026-10-31; a resposta original fica fora do Git"
+    },
+    {
+      "item": "se a Declaracao de Uso de IA (Anexo I) conta nas 20 paginas do artigo",
+      "answer": "nao conta",
+      "source": "informado por Gustavo (P3) em 2026-10-31; a resposta original fica fora do Git"
+    }
   ]
 }

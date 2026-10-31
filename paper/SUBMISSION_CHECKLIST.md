@@ -48,9 +48,10 @@
 
 ## Gates do Oriente
 
-- [ ] extensão aceita pela tarefa de submissão foi confirmada
-- [ ] edital V5, citado na auditoria do Felipe, registrado com arquivo e hash
-- [ ] política institucional de uso/declaração de IA foi confirmada e atendida — formulário preenchido e depois removido, segundo Felipe; falta o PDF gerado, as quatro assinaturas e o anexo ao final do artigo
+- [x] extensão aceita pela tarefa de submissão foi confirmada: PDF (informado por Gustavo em 31/10/2026)
+- [x] anexo da declaração de IA não conta nas 20 páginas do artigo (informado por Gustavo em 31/10/2026)
+- [x] edital V5, citado na auditoria do Felipe, registrado com arquivo e hash (31/10/2026)
+- [ ] política institucional de uso/declaração de IA foi confirmada e atendida — formulário preenchido e depois removido, segundo Felipe; respostas rascunhadas em [respostas da declaração de IA](../docs/declaracao-ia-respostas.md); falta enviar, baixar o PDF gerado, colher as quatro assinaturas e anexar ao final do artigo
 - [ ] alinhamento do tema à área/projeto do orientador foi confirmado formalmente
 - [ ] grupo e orientador aprovaram o conteúdo e a versão final
 - [ ] autores e orientador constam corretamente no cadastro do Oriente
