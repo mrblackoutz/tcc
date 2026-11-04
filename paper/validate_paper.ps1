@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
-    [string]$PdfPath
+    [string]$PdfPath,
+    # Trailing pages of the signed AI-use declaration; they do not count toward the 20-page limit.
+    [int]$AnnexPages = 0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -48,8 +50,9 @@ if ($pdfInfo -notmatch '(?m)^Pages:\s+(\d+)\s*$') {
     throw 'Could not read PDF page count.'
 }
 $pageCount = [int]$Matches[1]
-if ($pageCount -lt 10 -or $pageCount -gt 20) {
-    throw "PDF page count must be between 10 and 20, including references; observed $pageCount."
+$articlePages = $pageCount - $AnnexPages
+if ($articlePages -lt 10 -or $articlePages -gt 20) {
+    throw "Article must have 10 to 20 pages including references, excluding $AnnexPages annex page(s); observed $articlePages."
 }
 
 if ($pdfInfo -notmatch '(?m)^Title:\s+(.+?)\s*$') {

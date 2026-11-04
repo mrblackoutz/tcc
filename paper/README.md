@@ -46,6 +46,22 @@ python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf 
 
 O log precisa ser da mesma compilação do PDF. A inspeção visual continua obrigatória e é registrada separadamente.
 
+**PDF de submissão:** o edital exige a declaração de uso de IA assinada anexada ao fim do artigo, e a secretaria confirmou que ela não conta nas 20 páginas. No WSL ou Linux, a partir da raiz:
+
+```bash
+bash paper/build_submission.sh <declaracao-assinada.pdf>
+```
+
+O script:
+
+- confere com o `pdfsig` que a declaração tem assinaturas digitais íntegras;
+- achata o arquivo com o `pdftocairo`, porque os carimbos do gov.br são anotações que o `pdfpages` descartaria;
+- compila o artigo sem a caixa de "versão de trabalho", com a declaração depois das referências;
+- valida o resultado descontando as páginas do anexo;
+- grava `.runtime/submission/relatorio_tcc_ii_submissao.pdf`.
+
+O resultado nunca vai para `paper/` nem para o Git, porque a declaração traz RAs e um e-mail. A cópia achatada perde a validação criptográfica das assinaturas; guarde o original assinado.
+
 **Contagem de palavras:** `validate_paper.ps1` e `scripts/validate_current_docs.py` contam a partir da fonte do Resumo e do Abstract, com a mesma regra:
 
 - retiram comentários, comandos LaTeX, chaves, `~` e travessões;

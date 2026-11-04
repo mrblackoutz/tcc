@@ -11,6 +11,14 @@ Rascunho das respostas ao formulário REDCap do Anexo I da Resolução RE-CONSU-
 
 **Antes de enviar:** o registro só mostra o Codex como produto da OpenAI. Se alguém do grupo usou o ChatGPT ou o Copilot diretamente, marque também essas opções.
 
+## Situação
+
+- **Envio:** o formulário foi enviado em 31/10/2026, às 15:40, com estas respostas. Além do rascunho, o grupo marcou também ChatGPT, Copilot e Geração de imagens.
+- **Assinaturas:** os três alunos assinaram pelo gov.br em 01/11/2026. A verificação local (`pdfsig`) encontrou três assinaturas digitais íntegras. Falta a do orientador.
+- **Onde fica:** o PDF assinado fica fora do Git, porque traz os RAs e um e-mail (SHA-256 `a7d29822fb140986…`, versão com três assinaturas).
+- **Anexo ao artigo:** o PDF de submissão é gerado por `paper/build_submission.sh`, que acrescenta a declaração depois das referências. As páginas da declaração não contam nas 20.
+- **Validação das assinaturas:** para juntar ao artigo, a declaração é achatada, o que mantém os carimbos visíveis mas não a validação criptográfica. Essa validação continua no arquivo original assinado, que deve ser guardado.
+
 ## Respostas
 
 **Esta produção utilizou sistemas de Inteligência Artificial?**

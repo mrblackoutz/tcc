@@ -111,7 +111,7 @@ Os caminhos entre `<>` são os derivados do Odoo da [DEC-090](decision-log.md#de
 
 Felipe e Thomaz conferem se o artigo diz o mesmo que esta página e marcam cada item. Se algo divergir, anotem página, trecho e diferença.
 
-Felipe conferiu os sete itens em 29/10/2026, na [auditoria documental](reviews/2026-10-29-auditoria-felipe.md). A conferência é documental; os registros brutos foram validados na [revisão independente da execução](reviews/2026-10-27-piloto-concluido.md). Falta a coluna do Thomaz.
+Felipe conferiu os sete itens em 29/10/2026, na [auditoria documental](reviews/2026-10-29-auditoria-felipe.md). A conferência é documental; os registros brutos foram validados na [revisão independente da execução](reviews/2026-10-27-piloto-concluido.md). A coluna do Thomaz não foi preenchida até 04/11, e o grupo seguiu sem ela ([DEC-100](decision-log.md#dec-100)).
 
 | Conferir no artigo | Seção e página do PDF | Valor nesta página | Felipe | Thomaz |
 |---|---|---|---|---|

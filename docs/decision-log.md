@@ -1662,3 +1662,16 @@ Substitui ou é substituída por:
 - **Validação do utilitário:** mudança de teto/índice revisada por agente distinto no SHA-256 `1c2be3ccdf03c0c9de9cbf7a1a0e1b6de5f873914682f2ecc6213be3c317960c`; oito ZIPs sintéticos e quatro comparações de seleção aprovados. As 28 verificações sintéticas existentes passaram novamente, incluindo restauração byte a byte, adulteração, reparse, mutação e exclusividade. Cópia anterior interrompida somente nesta frente; originais preservados. A cópia real reiniciada só será declarada válida depois de concluir restauração e reconferência dos originais.
 
 - **Custódia concluída (DEC-099):** cópia `b9a2d1004fb04c6da9a316a331564608` PASS para 20.678 arquivos/370.323.575 bytes; restauração verificada e originais inalterados. Hashes reconferidos pelo integrador: cifra `6913e545e80b40c5c04a5eb5e4291ba79513a1778134bc9c4e17ecd08b806164`, manifesto privado `c360d758ae5fa53c1708a8d13f5a0779840fdadf516103b61e745604a9720553`. [Cobertura e limites](reviews/2026-10-27-piloto-concluido.md#custódia-concluída). Nenhum bruto ou segredo preparado para Git.
+<a id="dec-100"></a>
+
+## DEC-100 — Seguir para a avaliação do orientador sem a revisão técnica do Thomaz
+
+- **Data:** 04/11/2026.
+- **Status:** aceita por Gustavo, coordenador, nesta conversa.
+- **Contexto:** Thomaz era o revisor da parte técnica e de segurança do artigo (PAPER-03), da sua coluna na [conferência da configuração](configuracao-avaliada.md#conferência-pelo-grupo) e de outras entregas (FRZ-05, PAPER-09). Até 04/11 essa revisão não foi entregue. A aprovação interna prevista para 02/11 já passou, e a submissão no Oriente vai até 09/11. Thomaz assinou a declaração de uso de IA em 01/11.
+- **Alternativas:** (1) esperar a revisão (rejeitado pelo prazo); (2) substituí-la por uma nova revisão por agente de IA (não adotado agora; pode ser feito se sobrar prazo); (3) seguir com as revisões que existem, isto é, a [auditoria documental do Felipe](reviews/2026-10-29-auditoria-felipe.md), as revisões por agentes distintos ([DEC-081](#dec-081), [DEC-097](#dec-097), [DEC-099](#dec-099)) e a avaliação do orientador. Adota-se a 3.
+- **Decisão:** o artigo e a declaração seguem para o orientador sem a revisão do Thomaz. Nada é registrado como revisado por ele: a coluna dele na conferência da configuração fica em branco e os itens em que ele era revisor ficam sem esse aceite. O artigo não alega revisão humana além da que houve.
+- **Consequências e limites:** a revisão humana da parte técnica e de segurança passa a ser a do orientador. A limitação já declarada no artigo (partes revisadas apenas por IA) continua válida e cobre esse caso.
+- **Evidência:** escolha registrada nesta conversa; auditoria do Felipe de 29/10; revisão independente do piloto de 27/10.
+- **Responsável:** Gustavo.
+- **Seções e artefatos afetados:** backlog (PAPER-03, FRZ-03, FRZ-05, PAPER-09), [configuração avaliada](configuracao-avaliada.md) e página de tarefas do grupo.

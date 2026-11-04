@@ -51,9 +51,10 @@
 - [x] extensão aceita pela tarefa de submissão foi confirmada: PDF (informado por Gustavo em 31/10/2026)
 - [x] anexo da declaração de IA não conta nas 20 páginas do artigo (informado por Gustavo em 31/10/2026)
 - [x] edital V5, citado na auditoria do Felipe, registrado com arquivo e hash (31/10/2026)
-- [ ] política institucional de uso/declaração de IA foi confirmada e atendida — formulário preenchido e depois removido, segundo Felipe; respostas rascunhadas em [respostas da declaração de IA](../docs/declaracao-ia-respostas.md); falta enviar, baixar o PDF gerado, colher as quatro assinaturas e anexar ao final do artigo
+- [ ] política institucional de uso/declaração de IA foi confirmada e atendida — formulário preenchido e depois removido, segundo Felipe; respostas rascunhadas em [respostas da declaração de IA](../docs/declaracao-ia-respostas.md); enviado em 31/10; três alunos assinaram em 01/11; falta a assinatura do orientador e gerar o PDF de submissão com `paper/build_submission.sh`
 - [ ] alinhamento do tema à área/projeto do orientador foi confirmado formalmente
 - [ ] grupo e orientador aprovaram o conteúdo e a versão final
 - [ ] autores e orientador constam corretamente no cadastro do Oriente
 - [ ] grupo aprovou a versão interna até 02/11; arquivo foi enviado até 08/11 dentro da janela institucional de 03 a 09/11/2026
+- [x] PDF de submissão com a declaração anexada é gerado por `paper/build_submission.sh`, validado com as páginas do anexo fora do limite e mantido fora do Git (testado em 04/11 com três assinaturas)
 - [ ] recibo de submissão foi preservado fora do Git

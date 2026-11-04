@@ -19,6 +19,10 @@
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{url}
+% Submission build only (build_submission.sh): the signed AI-use declaration is appended as a final annex.
+\ifdefined\tccannex
+\usepackage{pdfpages}
+\fi
 \usepackage[alf]{abntex2cite}
 
 \definecolor{MackenzieRed}{RGB}{235,0,40}
@@ -26,6 +30,7 @@
 \definecolor{DraftGray}{RGB}{246,246,246}
 \newif\ifworkingdraft
 \workingdrafttrue % trocar para \workingdraftfalse somente na versão final aprovada pelo grupo e pelo orientador
+\ifdefined\tccfinal\workingdraftfalse\fi
 
 \geometry{
   top=3.15cm,
@@ -178,5 +183,9 @@
 \renewcommand{\refname}{6. Referências bibliográficas}
 \bibliographystyle{abntex2-alf}
 \bibliography{referencias}
+
+\ifdefined\tccannex
+\includepdf[pages=-,pagecommand={\thispagestyle{empty}}]{\tccannex}
+\fi
 
 \end{document}

@@ -34,6 +34,8 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--paper-pdf", type=Path, help="Also inspect a newly compiled article PDF")
 parser.add_argument("--paper-log", type=Path, help="Final pdfLaTeX log for this PDF")
 parser.add_argument("--report", type=Path, help="Write measured checks as JSON")
+parser.add_argument("--paper-annex-pages", type=int, default=0,
+                    help="Trailing annex pages (signed AI-use declaration) excluded from the 20-page limit")
 args = parser.parse_args()
 measurements: dict[str, object] = {}
 
@@ -274,7 +276,12 @@ if args.paper_pdf:
         pdf_text = subprocess.check_output(["pdftotext", "-enc", "UTF-8", "-layout", str(args.paper_pdf), "-"], text=True)
         pages = int(re.search(r"(?m)^Pages:\s+(\d+)", info).group(1))
         measurements["pages"] = pages
-        if not 10 <= pages <= 20:
+        # The secretariat confirmed the signed declaration annex does not count toward the limit.
+        article_pages = pages - args.paper_annex_pages
+        if args.paper_annex_pages:
+            measurements["annex_pages"] = args.paper_annex_pages
+            measurements["article_pages"] = article_pages
+        if not 10 <= article_pages <= 20:
             errors.append("Article outside institutional page limit")
         for required in (r"(?m)^Encrypted:\s+no$", r"(?m)^JavaScript:\s+no$", r"(?m)^Page size:.*\(A4\)"):
             if not re.search(required, info):

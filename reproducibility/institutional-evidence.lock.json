@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "schemaVersion": 1,
-  "updatedOn": "2026-09-02",
+  "updatedOn": "2026-11-04",
   "evidence": [
     {
       "evidenceId": "ADM-07-2026-09-01-01",
@@ -68,6 +68,26 @@
         "receiptEvidenceKind": "request-details-page-with-protocol"
       },
       "conclusion": "adm-08-complete-request-protocolled-all-three-authors-verified-and-private-receipt-evidence-preserved"
+    },
+    {
+      "evidenceId": "ADM-02-2026-11-01-01",
+      "taskId": "ADM-02",
+      "sourceKind": "redcap-ai-use-declaration-signed-govbr",
+      "localPath": ".runtime/submission/declaracao-ia-3-assinaturas.pdf",
+      "sha256": "a7d29822fb140986c8c57520d09f016cdf809a1768012765c6c28ab02dfa4d45",
+      "byteCount": 175353,
+      "containsAcademicIdentifiers": true,
+      "trackedByGit": false,
+      "publishable": false,
+      "observation": {
+        "formSubmittedOn": "2026-10-31",
+        "pages": 3,
+        "digitalSignatures": 3,
+        "digitalSignaturesIntact": 3,
+        "advisorSignaturePresent": false,
+        "answersMatchDraft": "yes, with ChatGPT, Copilot and image generation also marked"
+      },
+      "conclusion": "students-signed-advisor-signature-pending"
     }
   ]
 }

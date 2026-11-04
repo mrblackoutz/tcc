@@ -1,11 +1,11 @@
 {
   "schema_version": "paper-validation/v1",
-  "validated_on": "2026-10-31",
-  "decision": "DEC-094/095/096/097/098/099; user-requested editorial consolidation of audited results and five corrections; three post-review text corrections (hard negatives, attack strategies, forced-proposal component check); schema-error passage shortened with the identical-request fact, tokens and cost corrected from the provider usage export; Felipe's documentary audit of 29/10 applied on 31/10",
+  "validated_on": "2026-11-04",
+  "decision": "DEC-094/095/096/097/098/099; user-requested editorial consolidation of audited results and five corrections; three post-review text corrections (hard negatives, attack strategies, forced-proposal component check); schema-error passage shortened with the identical-request fact, tokens and cost corrected from the provider usage export; Felipe's documentary audit of 29/10 applied on 31/10; 04/11: submission-build hooks (annex), no article text change",
   "plan_version": "1.2.21",
   "artifact": {
     "path": "paper/relatorio_tcc_ii.pdf",
-    "sha256": "1d64b019164d865819eb17882fff92ed0b56c9719b521fab31345c81f40b9cf3",
+    "sha256": "050fac7a93c0c2add85029cf861523a0a2b77f76f96fd21918a23d87f5c4fec1",
     "bytes": 276320,
     "pages": 19,
     "page_size": "A4",
@@ -56,10 +56,10 @@
     "windows_validate_paper_ps1": "PASS",
     "word_count_rule": "validate_paper.ps1 and validate_current_docs.py count the Resumo/Abstract sources with the same rule (strip comments, LaTeX commands, braces, ~ and dashes; count letter/number runs; inner hyphen or apostrophe does not split); both report 244/234"
   },
-  "validation_command": "python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log .runtime/paper-build-20261031-felipe/main.log --report .runtime/paper-build-20261031-felipe/checks.json",
+  "validation_command": "python3 scripts/validate_current_docs.py --paper-pdf paper/relatorio_tcc_ii.pdf --paper-log .runtime/paper-build-20261104/main.log --report .runtime/paper-build-20261104/checks.json",
   "visual_inspection": {
     "status": "PASS",
-    "pdf_sha256": "1d64b019164d865819eb17882fff92ed0b56c9719b521fab31345c81f40b9cf3",
+    "pdf_sha256": "050fac7a93c0c2add85029cf861523a0a2b77f76f96fd21918a23d87f5c4fec1",
     "pages_inspected": [
       1,
       2,
@@ -76,7 +76,7 @@
     "conclusion_and_references": "PASS",
     "header_only_or_residual_table_pages": 0,
     "detailed_result_table_page": 16,
-    "method": "Rebuild on 31/10: pages 1, 2, 12, 13, 16, 17, 18 and 19 rendered at 80 dpi and inspected individually (cover, abstracts, changed method and conclusion pages, references); all 19 pages rendered at 60 dpi. Conclusion still ends on page 17. Images remain under .runtime."
+    "method": "04/11: text extracted with pdftotext is identical to the 31/10 build page by page, whose pages 1, 2, 12, 13 and 16-19 were inspected at 80 dpi; cover and annex pages of the submission test were inspected at 55-60 dpi. Images remain under .runtime."
   },
   "independent_text_review": {
     "status": "PASS",
@@ -101,7 +101,7 @@
   "source_sha256": {
     "paper/assets/fci-header.png": "ad7c11fbe2cbf8da370fecb8d2f0316eaef8bc962f8c26338ff5910cf1939d9c",
     "paper/build.ps1": "81d44484d853d11477c52036fa8452687837725b388c38757dd223c3f5598779",
-    "paper/main.tex": "a1131d31d53c5a944e4d7339d0fe9c8707c5a441fa54b14b1e3aa06c79e66e76",
+    "paper/main.tex": "dd933dde612563c68455422d4ac333014ea1f722086d5686931401f36ba2d614",
     "paper/referencias.bib": "5d3312f63602949aefd0907facc7a8e6c9989bf926d621bfafa2202487bddf08",
     "paper/sections/01-introducao.tex": "94cfee555725f0bb5f3d8db8ab1862a01dd4b9c32b293f5b08a18dc7c56e5d74",
     "paper/sections/02-referencial.tex": "2acff57d946d0879e30a0afdb897d6aead3115e99a13d0fdc012354317600e84",
@@ -110,16 +110,17 @@
     "paper/sections/05-conclusao.tex": "c1f7d02114bd184021f2a0d2554261c1c682e823cdfa9a04e48f87ad23834632",
     "paper/sections/resumo-en.tex": "5975468c48944a547941e178306e42919e8977f1fe6a67703e65ff09e91b1d82",
     "paper/sections/resumo-pt.tex": "2b1129fee47fd40c6c8a4dba750ed3b4105bfba3d37d486b355ec528947c0eb3",
-    "paper/validate_paper.ps1": "02a8944ca9a9511cd0e6fa5b10d99e7e09df094664fa5dc860f10ee1d15384fc",
-    "scripts/validate_current_docs.py": "23f161cadc29107034eecaefc757c7d566c7fa920803d06d37794dcdb183532b"
+    "paper/validate_paper.ps1": "5735821b72c681ff50123e45bca2c6088ba09e42b7b954fa5b5346d3830e2c62",
+    "scripts/validate_current_docs.py": "c95a7b0d7231473737da65839118cd5ddc62a250a124b2cc7b12cb8682e5d1ba",
+    "paper/build_submission.sh": "f1fdb6444e233be2e4b52c2ba5de58d14351663131fed7821f4c99c11bcda3c7"
   },
   "build_evidence": {
-    "final_log_sha256": "d853fa92b5f33592e56a7bd44a3c89a298ff6af0b6bba30069452b2f8fc079c8",
+    "final_log_sha256": "4b3ba04280ff458d665b1fd9d7708809c4c2080addc67bb204a41da4036bf2bb",
     "bibliography_output_sha256": "2a712c47559ef8125044485a6c99549360eec9b3618661fce14be5cf9f87ec72",
     "output_pdf_matches_built_pdf": true,
     "logs_retained_outside_git": true,
     "procedure": "pdfLaTeX -no-shell-escape, BibTeX, pdfLaTeX three more passes (no LaTeX warnings in final log); final PDF validated by validate_current_docs.py and validate_paper.ps1 and visually inspected from the same source tree",
-    "attempts_note": "Rebuild on 31/10 after Felipe's audit: BibTeX title protection, AgentDojo pages, clarity edits in Resumo/Abstract/Conclusion, static-attacks versus formal-freeze wording, draft-box toggle. paper/build.ps1 now passes -no-shell-escape and --disable-installer and validates the new PDF before replacing the versioned one; tested in isolated copies (failing Resumo of 284 words: exit 1, previous PDF unchanged; normal build: PASS and replaced). validate_paper.ps1 now reads pdfinfo output as UTF-8, which previously failed every PDF on Windows. No experimental data, metric, hypothesis or defense changed."
+    "attempts_note": "Rebuild on 04/11 after adding the submission hooks to main.tex (pdfpages and the annex are loaded only when build_submission.sh defines them; tccfinal removes the draft box). The extracted text and the per-page word counts are identical to the 31/10 build. validate_current_docs.py gained --paper-annex-pages and validate_paper.ps1 -AnnexPages, so annex pages are excluded from the 10-20 page limit, as the secretariat confirmed."
   },
   "toolchain": {
     "pdflatex": "pdfTeX 1.40.25 / TeX Live 2023 (Debian), Ubuntu/WSL",
@@ -155,9 +156,9 @@
     "custody": "Local Windows DPAPI CurrentUser copy, restore verified; same computer, not immutable, portable or offsite"
   },
   "submission_blockers": [
-    "AI-use declaration: form to submit, generated PDF and the four signatures pending; annex not yet attached",
-    "visual equivalence to the official template, second affiliation and contact e-mails need a human decision",
-    "final group and advisor approval; draft box removed only then (workingdraftfalse)"
+    "advisor evaluation and approval",
+    "advisor signature on the AI-use declaration, then build_submission.sh with the fully signed file",
+    "visual equivalence to the official template, second affiliation and contact e-mails need a human decision"
   ],
   "human_reviews": [
     {
@@ -192,14 +193,37 @@
     },
     {
       "pdf_sha256": "1d64b019164d865819eb17882fff92ed0b56c9719b521fab31345c81f40b9cf3",
-      "commit": "this commit",
+      "commit": "bb569a0",
       "date": "2026-10-31",
       "review": "none yet; adjustments from Felipe's audit await his final check and Thomaz's review"
+    },
+    {
+      "pdf_sha256": "050fac7a93c0c2add85029cf861523a0a2b77f76f96fd21918a23d87f5c4fec1",
+      "commit": "this commit",
+      "date": "2026-11-04",
+      "review": "same text as bb569a0; Felipe's adjustments still without independent review; Thomaz did not review (DEC-100)"
     }
   ],
   "submission_facts": {
     "file_format": "PDF",
     "ai_declaration_annex_counts_toward_20_pages": false,
     "source": "informed by Gustavo on 2026-10-31; edital V5 registered (sha256 440266cb815727587d5af863c3d66e8526c860117252ab439d0ead300fbfdeae)"
+  },
+  "submission_build": {
+    "script": "paper/build_submission.sh",
+    "toolchain": "TeX Live 2023 and Poppler in Ubuntu/WSL (pdfpages is not installed in MiKTeX)",
+    "output": ".runtime/submission/relatorio_tcc_ii_submissao.pdf (outside Git: the declaration carries student IDs and an e-mail)",
+    "test_2026_11_04": {
+      "annex": "declaration with the three student signatures (advisor signature pending)",
+      "annex_sha256": "a7d29822fb140986c8c57520d09f016cdf809a1768012765c6c28ab02dfa4d45",
+      "pdf_sha256": "fbb6f2060295c769f8ab588b7fee9f3de24b7e14727eaa11ed0e237fd84100b4",
+      "pages_total": 22,
+      "article_pages": 19,
+      "annex_pages": 3,
+      "valid_digital_signatures_in_original": 3,
+      "stamps_visible_after_flattening": true,
+      "status": "PASS (test only, not the file to submit)",
+      "finding": "without flattening, pdfpages dropped the gov.br signature stamps; the script now flattens with pdftocairo"
+    }
   }
 }
