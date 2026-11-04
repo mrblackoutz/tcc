@@ -56,5 +56,6 @@
 - [ ] grupo e orientador aprovaram o conteúdo e a versão final
 - [ ] autores e orientador constam corretamente no cadastro do Oriente
 - [ ] grupo aprovou a versão interna até 02/11; arquivo foi enviado até 08/11 dentro da janela institucional de 03 a 09/11/2026
-- [x] PDF de submissão com a declaração anexada é gerado por `paper/build_submission.sh`, validado com as páginas do anexo fora do limite e mantido fora do Git (testado em 04/11 com três assinaturas)
+- [x] PDF único para assinatura (artigo + declaração sem assinaturas) gerado por `paper/build_submission.sh` em 04/11: 22 páginas (19 + 3), validado com as páginas do anexo fora do limite e mantido fora do Git
+- [ ] PDF único assinado pelos três alunos e pelo orientador e aprovado por `paper/check_signed_submission.sh`
 - [ ] recibo de submissão foi preservado fora do Git

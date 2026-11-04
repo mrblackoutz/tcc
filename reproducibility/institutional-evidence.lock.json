@@ -88,6 +88,28 @@
         "answersMatchDraft": "yes, with ChatGPT, Copilot and image generation also marked"
       },
       "conclusion": "students-signed-advisor-signature-pending"
+    },
+    {
+      "evidenceId": "ADM-02-2026-10-31-02",
+      "taskId": "ADM-02",
+      "sourceKind": "redcap-ai-use-declaration-unsigned-export",
+      "localPath": ".runtime/submission/declaracao-ia-sem-assinaturas.pdf",
+      "sha256": "a92f2d721f22caec7876e6b3ccfb8bca1d0a9d2d92cbee1a4937c23cd9fa4b25",
+      "byteCount": 45337,
+      "containsAcademicIdentifiers": true,
+      "trackedByGit": false,
+      "publishable": false,
+      "observation": {
+        "formSubmittedOn": "2026-10-31",
+        "pages": 3,
+        "digitalSignatures": 0,
+        "exportListsAllOptions": true,
+        "answersMatchSignedExport": true,
+        "usedForSinglePdfOn": "2026-11-04",
+        "singlePdfSha256": "2e95885e83da5aea645a5c34f67065162a8648325882d27d25adb55c90981d35",
+        "singlePdfPages": 22
+      },
+      "conclusion": "single-pdf-built-awaiting-four-signatures"
     }
   ]
 }

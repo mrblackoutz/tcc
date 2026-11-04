@@ -52,15 +52,18 @@ O log precisa ser da mesma compilação do PDF. A inspeção visual continua obr
 bash paper/build_submission.sh <declaracao-assinada.pdf>
 ```
 
-O script:
+O script compila o artigo sem a caixa de "versão de trabalho", com a declaração depois das referências, e valida o resultado descontando as páginas do anexo. Ele funciona de dois modos, conforme a declaração recebida:
 
-- confere com o `pdfsig` que a declaração tem assinaturas digitais íntegras;
-- achata o arquivo com o `pdftocairo`, porque os carimbos do gov.br são anotações que o `pdfpages` descartaria;
-- compila o artigo sem a caixa de "versão de trabalho", com a declaração depois das referências;
-- valida o resultado descontando as páginas do anexo;
-- grava `.runtime/submission/relatorio_tcc_ii_submissao.pdf`.
+- **Declaração sem assinaturas (caminho adotado):** gera `.runtime/submission/relatorio_tcc_ii_para_assinatura.pdf`, um arquivo único com artigo e declaração, que os três alunos e o orientador assinam pelo gov.br. Assim as assinaturas digitais valem sobre o arquivo inteiro que vai para o Oriente. Depois das assinaturas, rode:
 
-O resultado nunca vai para `paper/` nem para o Git, porque a declaração traz RAs e um e-mail. A cópia achatada perde a validação criptográfica das assinaturas; guarde o original assinado.
+  ```bash
+  bash paper/check_signed_submission.sh <arquivo-assinado.pdf>
+  ```
+
+  A checagem exige ao menos quatro assinaturas íntegras, o mesmo número de páginas, o mesmo texto nas páginas do artigo e todas as linhas originais da declaração. O arquivo aprovado é copiado para `.runtime/submission/relatorio_tcc_ii_submissao.pdf`.
+- **Declaração já assinada (alternativa):** confere as assinaturas com o `pdfsig` e achata o arquivo com o `pdftocairo`, porque os carimbos do gov.br são anotações que o `pdfpages` descartaria. A cópia achatada perde a validação criptográfica, que fica só no original assinado.
+
+Nada disso vai para `paper/` nem para o Git, porque a declaração traz RAs e um e-mail.
 
 **Contagem de palavras:** `validate_paper.ps1` e `scripts/validate_current_docs.py` contam a partir da fonte do Resumo e do Abstract, com a mesma regra:
 

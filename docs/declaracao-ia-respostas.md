@@ -17,7 +17,7 @@ Rascunho das respostas ao formulário REDCap do Anexo I da Resolução RE-CONSU-
 - **Assinaturas:** os três alunos assinaram pelo gov.br em 01/11/2026. A verificação local (`pdfsig`) encontrou três assinaturas digitais íntegras. Falta a do orientador.
 - **Onde fica:** o PDF assinado fica fora do Git, porque traz os RAs e um e-mail (SHA-256 `a7d29822fb140986…`, versão com três assinaturas).
 - **Anexo ao artigo:** o PDF de submissão é gerado por `paper/build_submission.sh`, que acrescenta a declaração depois das referências. As páginas da declaração não contam nas 20.
-- **Validação das assinaturas:** para juntar ao artigo, a declaração é achatada, o que mantém os carimbos visíveis mas não a validação criptográfica. Essa validação continua no arquivo original assinado, que deve ser guardado.
+- **Mudança de 04/11:** em vez de juntar a declaração já assinada, o que exige achatá-la e perde a validação criptográfica, o grupo vai assinar de novo um **PDF único** com artigo e declaração sem assinaturas (SHA-256 `a92f2d721f22caec…`). O arquivo para assinatura tem 22 páginas, 19 de artigo e 3 de declaração. Os três alunos assinam, o orientador avalia e, se aprovar sem ajustes, assina por último. `paper/check_signed_submission.sh` confere o resultado. A versão com três assinaturas fica guardada como registro.
 
 ## Respostas
 
