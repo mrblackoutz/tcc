@@ -90,3 +90,6 @@ Desktop.ini
 *.tmp
 *.temp
 /_qa_*
+
+# Sessões locais de assistentes de código (worktrees e configurações locais)
+/.claude/

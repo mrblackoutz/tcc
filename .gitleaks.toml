@@ -1,0 +1,16 @@
+# Gitleaks configuration: the default rules plus two narrow exceptions reviewed on
+# 04/11/2026 (docs/reviews/2026-11-04-varredura-segredos.md). Nothing else is ignored.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "SHA-256 file hashes in the paper validation report; 'resumo-pt.tex' triggers the Sumo Logic rule"
+condition = "AND"
+paths = ['''^paper/validation-report\.json$''']
+regexTarget = "secret"
+regexes = ['''^[0-9a-f]{64}$''']
+
+[[allowlists]]
+description = "Synthetic placeholder keys used by tests and the mocked model client"
+regexTarget = "secret"
+regexes = ['''^synthetic[-_a-z0-9]*$''']
