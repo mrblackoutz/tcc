@@ -1675,3 +1675,28 @@ Substitui ou é substituída por:
 - **Evidência:** escolha registrada nesta conversa; auditoria do Felipe de 29/10; revisão independente do piloto de 27/10.
 - **Responsável:** Gustavo.
 - **Seções e artefatos afetados:** backlog (PAPER-03, FRZ-03, FRZ-05, PAPER-09), [configuração avaliada](configuracao-avaliada.md) e página de tarefas do grupo.
+<a id="dec-101"></a>
+
+## DEC-101 — Reescrita do histórico para retirar e-mails reais dos metadados dos commits
+
+- **Data:** 04/11/2026.
+- **Status:** aceita e executada por Gustavo, dono do repositório, nesta conversa.
+- **Contexto:** a [varredura antes de publicar](reviews/2026-11-04-varredura-segredos.md) mostrou que nove commits de 07 e 08/09/2026 levavam e-mails reais nos metadados de autor e de quem gravou o commit: oito com um endereço corporativo, que não pode ficar associado a este trabalho, e um com o endereço pessoal de Gustavo. Nenhum dos dois aparece no conteúdo de arquivos, mensagens ou tags. O repositório ainda era privado e sem forks; tinham acesso Gustavo e as contas de Felipe e Thomaz.
+- **Alternativas:**
+  1. Publicar assim (rejeitado: o endereço corporativo ficaria exposto).
+  2. Manter o repositório privado e só convidar o orientador (rejeitado: o grupo quer o repositório público, e o endereço continuaria nos clones).
+  3. Reescrever só os metadados desses commits. Adota-se a 3.
+- **Decisão:** trocar o autor e quem gravou o commit, nesses nove commits, pela identidade genérica já usada nos demais (`mrblackoutz <default@example.com>`). O conteúdo dos arquivos, as mensagens e as datas foram preservados. O resultado foi verificado commit a commit: mesmo conteúdo, mesma mensagem, mesmas datas e mesmos pais, com diferença só nas nove identidades. Depois disso, o force-push atualizou a `main` e a tag `pilot-odoo-20261027` no GitHub.
+- **Consequências e limites:**
+  - Os identificadores dos commits a partir de 07/09/2026 mudaram. Os documentos e decisões anteriores a esta citam os identificadores antigos e não foram editados.
+  - A correspondência de cada commit público está em [`reproducibility/commit-map-2026-11-04.json`](../reproducibility/commit-map-2026-11-04.json). Por exemplo, o commit de base da execução do Odoo passou de `c6f95ec` para `a785406`, e a tag acompanha o novo.
+  - A evidência da execução, fora do Git, continua registrando o identificador antigo. O conteúdo das fontes é o mesmo, e os hashes de arquivos e do pacote de fontes não mudaram.
+  - Abre-se, por motivo de privacidade, uma exceção à regra do `AGENTS.md` de não reescrever commits de versão já publicados: as releases v1.2.11 e v1.2.12 estão entre os nove commits.
+  - O histórico original fica num backup local fora do Git (`.runtime/backup/`), não publicável.
+  - Clones feitos antes de 04/11 precisam ser descartados e clonados de novo, e nenhuma branch antiga pode ser enviada ao GitHub.
+- **Evidência:**
+  - verificação automática: 164 commits percorridos, 123 com identificador novo, 9 identidades trocadas, nenhuma outra diferença;
+  - GitHub depois do force-push: 156 commits na `main`, nenhum com os endereços antigos;
+  - gitleaks sem achados.
+- **Responsável:** Gustavo.
+- **Seções e artefatos afetados:** histórico do Git, tag `pilot-odoo-20261027`, mapa de commits, [configuração avaliada](configuracao-avaliada.md) e [resultado do piloto](pilot-state-resultado.md).

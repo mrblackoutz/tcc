@@ -176,31 +176,31 @@
   "build_history": [
     {
       "pdf_sha256": "a6631dc87709162cc75df9ec12c0a5ef4c6e2af038336a9165404fddcdb6c62d",
-      "commit": "c565c3d",
+      "commit": "87150bb",
       "date": "2026-10-27",
       "review": "independent agent review PASS (paper_validation_review)"
     },
     {
       "pdf_sha256": "3c52aeb9881578e35459c6ca0dce4741e761055f3dd78a1823fba65fa5a600a6",
-      "commit": "8646578",
+      "commit": "2884af2",
       "date": "2026-10-27",
       "review": "none; three post-review corrections"
     },
     {
       "pdf_sha256": "bdd362554a03e97bc3eb2c16601bec9231bb4e309592608ebc02b91361a7fe46",
-      "commit": "1a339d2",
+      "commit": "ae4881e",
       "date": "2026-10-29",
       "review": "human documentary audit by Felipe on 2026-10-29"
     },
     {
       "pdf_sha256": "1d64b019164d865819eb17882fff92ed0b56c9719b521fab31345c81f40b9cf3",
-      "commit": "bb569a0",
+      "commit": "04689fc",
       "date": "2026-10-31",
       "review": "none yet; adjustments from Felipe's audit await his final check and Thomaz's review"
     },
     {
       "pdf_sha256": "050fac7a93c0c2add85029cf861523a0a2b77f76f96fd21918a23d87f5c4fec1",
-      "commit": "this commit",
+      "commit": "5948ed3",
       "date": "2026-11-04",
       "review": "same text as bb569a0; Felipe's adjustments still without independent review; Thomaz did not review (DEC-100)"
     }
@@ -237,5 +237,6 @@
       "status": "PASS; awaiting the signatures of the three students and the advisor",
       "post_signature_check": "paper/check_signed_submission.sh: at least four intact signatures, same page count, identical article text, all original declaration lines kept; failure paths tested"
     }
-  }
+  },
+  "commit_ids_note": "commit identifiers after the 2026-11-04 rewrite (DEC-101); earlier ids map through reproducibility/commit-map-2026-11-04.json"
 }

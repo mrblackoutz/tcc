@@ -26,7 +26,7 @@ Com ele, a varredura do histórico termina com **0 achados**.
 
 ## O que não é conteúdo, mas fica visível com o repositório público
 
-- **E-mails nos commits:** nove commits de 07 e 08/09/2026 levam endereços reais nos metadados de autor, um pessoal e um de outro domínio. Os demais 152 commits usam um endereço genérico. Remover esses endereços exigiria reescrever o histórico, o que mudaria os identificadores de commits citados nas decisões e nas releases. O `AGENTS.md` veda isso sem autorização. A decisão de publicar assim é de Gustavo.
+- **E-mails nos commits:** nove commits de 07 e 08/09/2026 levavam endereços reais nos metadados de autor, um corporativo e um pessoal. Em 04/11 o histórico foi reescrito só nesses metadados ([DEC-101](../decision-log.md#dec-101)): agora todos os commits usam o endereço genérico, e o [mapa de commits](../../reproducibility/commit-map-2026-11-04.json) liga os identificadores antigos aos novos.
 - **Nomes:** os nomes dos autores e do orientador aparecem no artigo, no README e nos documentos do grupo.
 
 ## Pasta de trabalho fora do Git

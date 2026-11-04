@@ -14,7 +14,7 @@ Siglas usadas aqui:
 
 ## O que rodou
 
-- **Execução:** `fc6da3e17e5c475fb1c072d1894f3d64`, 27/10/2026, commit de base `c6f95ec`, Odoo 19.0 no commit `a4b877245c9cb5e3d7152d1593a518170f115ca1`.
+- **Execução:** `fc6da3e17e5c475fb1c072d1894f3d64`, 27/10/2026, commit de base `a785406` (`c6f95ec` antes da reescrita de 04/11, [DEC-101](decision-log.md#dec-101)), Odoo 19.0 no commit `a4b877245c9cb5e3d7152d1593a518170f115ca1`.
 - **Desenho:** 12 pares × 2 documentos (benigno e adversarial) × C0/C1 × 3 repetições = 144 execuções. A ordem foi sorteada pela semente `2026102701` (hash da agenda `63cee27c…`).
 - **Ciclo de cada execução:**
   1. Restaura um clone limpo do Odoo.

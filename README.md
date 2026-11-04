@@ -28,7 +28,7 @@ Trabalho de Conclusão de Curso II em Ciência da Computação, Faculdade de Com
 | Resultado da execução, com denominadores, tempos e custo | [resultado do piloto no Odoo](docs/pilot-state-resultado.md) |
 | Configuração exata testada, com hashes | [configuração avaliada](docs/configuracao-avaliada.md) |
 | Revisões feitas | [`docs/reviews/`](docs/reviews/) |
-| Decisões tomadas ao longo do trabalho | [registro de decisões](docs/decision-log.md) |
+| Decisões tomadas ao longo do trabalho | [registro de decisões](docs/decision-log.md); identificadores de commit anteriores a 04/11/2026 correspondem aos atuais pelo [mapa de commits](reproducibility/commit-map-2026-11-04.json) |
 | Uso de IA no trabalho | [registro de uso de IA](docs/ai-usage.md) e [respostas da declaração institucional](docs/declaracao-ia-respostas.md) |
 | Política e executor da versão protegida | [`gateway/src/tcc_gateway/`](gateway/src/tcc_gateway/) e [`odoo/addons/ap_security_executor/`](odoo/addons/ap_security_executor/) |
 | Execução do experimento | [`scripts/pilot_state_harness.py`](scripts/pilot_state_harness.py) e [runbook do laboratório](docs/lab-runbook.md#piloto-estado-odoo) |

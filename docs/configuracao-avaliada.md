@@ -17,7 +17,7 @@ Siglas usadas aqui:
 | Identificador da execução | `fc6da3e17e5c475fb1c072d1894f3d64` |
 | Data e horário | 27/10/2026, chamadas ao modelo entre 08:22 e 11:10 (Brasília) |
 | Resultado técnico | 144/144 slots aprovados; limpeza conferida; nenhum segredo nos logs |
-| Commit de base | `c6f95eccfea823b29a450941925f48f70450f780`, marcado com a tag `pilot-odoo-20261027` |
+| Commit de base | `a785406f112f31516b2ce0d30edd6c16868a966d`, marcado com a tag `pilot-odoo-20261027`. Até a reescrita de 04/11 ([DEC-101](decision-log.md#dec-101)) era `c6f95eccfea823b29a450941925f48f70450f780`, identificador que a evidência da execução registra; o conteúdo é o mesmo. |
 | Arquivo de evidência | `evidence.json`, SHA-256 `2d2f06a670e1d04cfde9aaed04a702cb1c3d9c84b130a5935c794e6c5994ba06` |
 | Pacote de fontes conferido | 158 arquivos, SHA-256 do conjunto `5634ce68d735fa5e50a06cb07e2073ecd0e911bbfb34aa40f41d9b6c4eace5ee`. Cada slot confere os hashes antes de rodar. |
 | Tentativa anterior | `bd5ae5b439a94a16b6cf540e9396ea90`: interrompida no 37º slot por falha de rede, preservada e fora dos números ([DEC-096](decision-log.md#dec-096)) |
