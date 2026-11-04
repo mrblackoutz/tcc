@@ -1700,3 +1700,23 @@ Substitui ou é substituída por:
   - gitleaks sem achados.
 - **Responsável:** Gustavo.
 - **Seções e artefatos afetados:** histórico do Git, tag `pilot-odoo-20261027`, mapa de commits, [configuração avaliada](configuracao-avaliada.md) e [resultado do piloto](pilot-state-resultado.md).
+<a id="dec-102"></a>
+
+## DEC-102 — Repositório novo no GitHub para que os commits antigos deixem de existir
+
+- **Data:** 04/11/2026.
+- **Status:** aceita e executada por Gustavo nesta conversa.
+- **Contexto:** depois da [reescrita do histórico (DEC-101)](#dec-101), o GitHub continuava servindo os commits antigos pelo identificador, com o e-mail corporativo. Isso foi testado pela API com um dos nove commits. Commits sem referência só são apagados numa limpeza interna do GitHub, sem prazo garantido, e o mapa de commits e os registros citam os identificadores antigos.
+- **Alternativas:**
+  1. Pedir ao suporte do GitHub a remoção (rejeitado pelo prazo da submissão).
+  2. Manter o repositório privado e só convidar o orientador (rejeitado: o grupo quer o repositório público).
+  3. Trocar o repositório. Adota-se a 3.
+- **Decisão:** o repositório antigo foi renomeado para `mrblackoutz/tcc-historico-antigo` e continua privado. Um repositório novo, `mrblackoutz/tcc`, foi criado privado e recebeu só o histórico reescrito: `main` e as tags `pilot-odoo-20261027` e `g3c-smoke-source-20260924`. O endereço público continua o mesmo.
+- **Consequências e limites:**
+  - No repositório novo, os identificadores antigos não existem ("No commit found"), e os 157 commits da `main` só têm o endereço genérico.
+  - O repositório antigo ainda guarda os commits antigos e continua acessível às contas que já tinham acesso; apagá-lo é decisão de Gustavo, nas configurações do GitHub.
+  - O repositório novo não tem colaboradores, e os convites são feitos por Gustavo.
+  - Issues, pull requests, forks e estrelas não existiam, então nada se perdeu na troca.
+- **Evidência:** verificação pela API em 04/11/2026: seis identificadores antigos inexistentes no repositório novo, presentes no antigo; commits novos `a785406` (base da execução) e `ec05e77` (ponta da `main`) presentes.
+- **Responsável:** Gustavo.
+- **Seções e artefatos afetados:** repositório no GitHub e [varredura antes de publicar](reviews/2026-11-04-varredura-segredos.md).
